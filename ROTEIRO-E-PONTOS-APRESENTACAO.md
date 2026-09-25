@@ -4,7 +4,7 @@ Registro estruturado para organizacao de tarefas, distribuicao de falas e anotac
 
 ---
 
-## 1. Visao Geral da Apresentacao
+## 1. Visao Geral da Apresentacao.
 
 * **Disciplina**: Desenvolvimento Movel
 * **Professor**: Romualdo Monteiro de Resende Costa

@@ -3,7 +3,7 @@
 Guia prático para a equipe de desenvolvimento do projeto **UniRide (Carona Universitária Solidária)** da disciplina de **Desenvolvimento Móvel (2026-2)** no **UniAcademia**.
 
 ---
-
+.
 ## 1. Passo a Passo Rápido para Cada Membro
 
 1. **Aceitar o convite do repositório**: Acesse [joaooopedro/uniride-mobile/invitations](https://github.com/joaooopedro/uniride-mobile) ou o e-mail do GitHub.
