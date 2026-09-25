@@ -1,12 +1,44 @@
+# Dependencies
 node_modules/
+
+# Expo
 .expo/
 dist/
-npm-debug.*
+web-build/
+
+# Native builds & signing keys
+ios/
+android/
+*.orig.*
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
-*.orig.*
-web-build/
+
+# Logs & Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.log
+*.log
+
+# Environment & Local overrides
+.env
+.env.local
+.env.*.local
+
+# Operating System Files
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Obsidian / Temporary attachments
+Pasted image *
