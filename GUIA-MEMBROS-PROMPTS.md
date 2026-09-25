@@ -412,7 +412,7 @@ O documento completo com a distribuicao de tempo, falas e matriz de registro est
 
 | Integrante | Modulo e Telas | Tempo na Apresentacao | Status Dev | Pontos Anotados |
 | :--- | :--- | :---: | :---: | :---: |
-| **Joao Pedro** | Setup, Tema e Navegacao (#1, #2, #11) | 2 min | [ ] | [ ] |
+| **Joao Pedro** | Setup, Tema e Navegacao (#1, #2, #11) | 2 min | [x] | [x] |
 | **Caio Castilho** | Feed de Caronas e Detalhes (#3, #4) | 2 min | [ ] | [ ] |
 | **Gabriel Caputo** | Oferecer Carona e Minhas Viagens (#5, #6) | 2 min | [ ] | [ ] |
 | **Nicolas Isaac** | Avaliacoes, Selos e Perfil (#7, #8) | 2 min | [ ] | [ ] |
