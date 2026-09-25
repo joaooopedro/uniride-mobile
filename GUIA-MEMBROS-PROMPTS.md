@@ -391,12 +391,30 @@ O QUE FAZER:
 
 ---
 
-## 4. Tabela de Verificação Final da Equipe
+---
 
-| Membro | Tarefa | Status Local | PR Aberto | Validado Expo Go |
+## 4. Registro Continuo de Pontos de Apresentacao por Tarefa
+
+Para facilitar a divisao das falas e garantir que ninguem esqueca os detalhes tecnicos na hora de apresentar para o professor Romualdo, cada integrante deve anotar os pontos-chave da sua funcionalidade assim que terminar o desenvolvimento.
+
+O documento completo com a distribuicao de tempo, falas e matriz de registro esta disponivel em:
+* Arquivo local: `ROTEIRO-E-PONTOS-APRESENTACAO.md`
+* Google Docs da equipe: [UniRide - Guia e Roteiro de Apresentacao](https://docs.google.com/document/d/1bVCXcsRPYZIrjkzKM-Gv3gFNJQoXjUoq_Phd2nvFgyI/edit?usp=drivesdk)
+
+### O que anotar ao finalizar a sua branch:
+1. **3 pontos principais que voce implementou**: recursos da tela, botoes, filtros ou componentes.
+2. **Passo a passo de demonstracao no celular**: onde clicar no Expo Go para mostrar sua parte funcionando.
+3. **Uma decisao tecnica de destaque**: estilizacao com Styled Components, validacao de inputs, passagem de parametros ou uso do contexto.
+
+---
+
+## 5. Tabela de Distribuicao de Tarefas e Falas da Equipe
+
+| Integrante | Modulo e Telas | Tempo na Apresentacao | Status Dev | Pontos Anotados |
 | :--- | :--- | :---: | :---: | :---: |
-| **João Pedro** | Setup, Tema e Navegação (#1, #2, #11) | [ ] | [ ] | [ ] |
-| **Caio Castilho** | Feed de Caronas e Detalhes (#3, #4) | [ ] | [ ] | [ ] |
-| **Gabriel Caputo** | Oferecer Carona e Minhas Viagens (#5, #6) | [ ] | [ ] | [ ] |
-| **Nicolas Isaac** | Avaliações, Selos e Perfil (#7, #8) | [ ] | [ ] | [ ] |
-| **Jonathan Delmonte** | Central de Avisos, Chat e Mock Data (#9, #10) | [ ] | [ ] | [ ] |
+| **Joao Pedro** | Setup, Tema e Navegacao (#1, #2, #11) | 2 min | [ ] | [ ] |
+| **Caio Castilho** | Feed de Caronas e Detalhes (#3, #4) | 2 min | [ ] | [ ] |
+| **Gabriel Caputo** | Oferecer Carona e Minhas Viagens (#5, #6) | 2 min | [ ] | [ ] |
+| **Nicolas Isaac** | Avaliacoes, Selos e Perfil (#7, #8) | 2 min | [ ] | [ ] |
+| **Jonathan Delmonte** | Central de Avisos, Chat e Mock Data (#9, #10) | 2 min | [ ] | [ ] |
+
