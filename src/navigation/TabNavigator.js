@@ -4,6 +4,8 @@ import { useTheme } from 'styled-components/native';
 import { Feather } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
 
+import { useCaronas } from '../context/CaronasContext';
+
 import TelaFeedCaronas from '../screens/TelaFeedCaronas';
 import TelaOferecerCarona from '../screens/TelaOferecerCarona';
 import TelaMinhasViagens from '../screens/TelaMinhasViagens';
@@ -14,6 +16,8 @@ const Tab = createBottomTabNavigator();
 
 export default function TabNavigator({ navigation }) {
   const theme = useTheme();
+  const { mensagensNaoLidas, avisosNaoLidos } = useCaronas();
+  const totalNaoLidos = mensagensNaoLidas + avisosNaoLidos;
 
   return (
     <Tab.Navigator
@@ -96,6 +100,11 @@ export default function TabNavigator({ navigation }) {
           tabBarIcon: ({ color, size }) => (
             <Feather name="message-square" size={size || 22} color={color} />
           ),
+          tabBarBadge: totalNaoLidos > 0 ? totalNaoLidos : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: theme.colors.danger,
+            color: theme.colors.surface,
+          },
         }}
       />
       <Tab.Screen

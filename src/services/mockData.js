@@ -28,6 +28,44 @@ export const TIPOS_MENSAGEM = {
   aviso: 'aviso',
 };
 
+export const CATEGORIAS_AVISO = {
+  transito: 'transito',
+  campus: 'campus',
+  seguranca: 'seguranca',
+  reserva: 'reserva',
+  rota: 'rota',
+  cancelamento: 'cancelamento',
+};
+
+export const AVISOS_RAPIDOS = [
+  {
+    id: 'cheguei-ponto',
+    texto: 'Cheguei no ponto de encontro',
+    icone: 'location-outline',
+    resposta: 'Beleza, chego em 3 minutos.',
+  },
+  {
+    id: 'atraso',
+    texto: 'Atraso de 5 minutos, aguardem',
+    icone: 'time-outline',
+    resposta: 'Sem problema, te espero no ponto.',
+  },
+  {
+    id: 'semaforo',
+    texto: 'Carro parado no semáforo',
+    icone: 'car-outline',
+    resposta: 'Tranquilo, obrigado por avisar.',
+  },
+  {
+    id: 'cheguei-portaria',
+    texto: 'Já cheguei na portaria da faculdade',
+    icone: 'school-outline',
+    resposta: 'Boa aula! Na volta saio da portaria às 22:40.',
+  },
+];
+
+const textoAvisoRapido = (avisoId) => AVISOS_RAPIDOS.find((aviso) => aviso.id === avisoId).texto;
+
 export const estudantes = {
   joao: {
     id: 'joao',
@@ -540,6 +578,7 @@ export const mensagensChatIniciais = [
     texto: 'Boa noite, pessoal! Hoje saio às 18:30 da Praça do São Mateus, em frente à igreja.',
     tipo: TIPOS_MENSAGEM.texto,
     enviadaEm: minutosAtras(34),
+    lida: true,
   },
   {
     id: 'mensagem-2',
@@ -547,6 +586,7 @@ export const mensagensChatIniciais = [
     texto: 'Combinado! Chego uns minutos antes.',
     tipo: TIPOS_MENSAGEM.texto,
     enviadaEm: minutosAtras(31),
+    lida: true,
   },
   {
     id: 'mensagem-3',
@@ -554,6 +594,7 @@ export const mensagensChatIniciais = [
     texto: 'Vou levar o notebook na mochila. Pode ir no porta-malas?',
     tipo: TIPOS_MENSAGEM.texto,
     enviadaEm: minutosAtras(27),
+    lida: true,
   },
   {
     id: 'mensagem-4',
@@ -561,34 +602,74 @@ export const mensagensChatIniciais = [
     texto: 'Pode sim, o porta-malas está livre.',
     tipo: TIPOS_MENSAGEM.texto,
     enviadaEm: minutosAtras(25),
+    lida: true,
   },
   {
     id: 'mensagem-5',
     autor: estudantes.lucas,
-    texto: 'Atraso de 5 minutos, aguardem',
+    texto: textoAvisoRapido('atraso'),
     tipo: TIPOS_MENSAGEM.aviso,
     enviadaEm: minutosAtras(14),
+    lida: true,
   },
   {
     id: 'mensagem-6',
     autor: estudantes.mariana,
-    texto: 'Cheguei no ponto de encontro',
+    texto: textoAvisoRapido('cheguei-ponto'),
     tipo: TIPOS_MENSAGEM.aviso,
     enviadaEm: minutosAtras(11),
+    lida: false,
   },
   {
     id: 'mensagem-7',
     autor: estudantes.joao,
-    texto: 'Cheguei no ponto de encontro',
+    texto: textoAvisoRapido('cheguei-ponto'),
     tipo: TIPOS_MENSAGEM.aviso,
     enviadaEm: minutosAtras(9),
+    lida: true,
   },
   {
     id: 'mensagem-8',
     autor: estudantes.lucas,
-    texto: 'Carro parado no semáforo',
+    texto: textoAvisoRapido('semaforo'),
     tipo: TIPOS_MENSAGEM.aviso,
     enviadaEm: minutosAtras(3),
+    lida: false,
+  },
+];
+
+export const avisosIniciais = [
+  {
+    id: 'aviso-transito-itamar-franco',
+    categoria: CATEGORIAS_AVISO.transito,
+    titulo: 'Trânsito intenso na Av. Presidente Itamar Franco',
+    descricao: 'Lentidão no sentido Centro entre 18h e 19h. Combine a saída com 10 minutos de antecedência.',
+    criadoEm: minutosAtras(12),
+    lido: false,
+  },
+  {
+    id: 'aviso-portaria-estrela-sul',
+    categoria: CATEGORIAS_AVISO.campus,
+    titulo: 'Entrada do Estrela Sul liberada',
+    descricao: 'A portaria principal voltou a funcionar normalmente depois da manutenção.',
+    criadoEm: minutosAtras(47),
+    lido: false,
+  },
+  {
+    id: 'aviso-ponto-iluminado-centro',
+    categoria: CATEGORIAS_AVISO.seguranca,
+    titulo: 'Ponto de encontro iluminado no Centro',
+    descricao: 'Para embarques à noite, prefira o Parque Halfeld, lado da Av. Rio Branco, que tem iluminação e câmeras.',
+    criadoEm: minutosAtras(3 * 60),
+    lido: true,
+  },
+  {
+    id: 'aviso-semana-academica',
+    categoria: CATEGORIAS_AVISO.campus,
+    titulo: 'Semana acadêmica no Campus Academia',
+    descricao: 'Na quinta-feira, embarque e desembarque apenas pela portaria principal.',
+    criadoEm: minutosAtras(26 * 60),
+    lido: true,
   },
 ];
 
