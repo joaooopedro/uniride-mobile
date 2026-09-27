@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTheme } from 'styled-components/native';
 import { Feather } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useCaronas } from '../context/CaronasContext';
 
@@ -16,6 +17,7 @@ const Tab = createBottomTabNavigator();
 
 export default function TabNavigator({ navigation }) {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const { mensagensNaoLidas, avisosNaoLidos } = useCaronas();
   const totalNaoLidos = mensagensNaoLidas + avisosNaoLidos;
 
@@ -46,8 +48,8 @@ export default function TabNavigator({ navigation }) {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.border,
           borderTopWidth: 1,
-          height: 60,
-          paddingBottom: 8,
+          height: 68 + insets.bottom,
+          paddingBottom: 8 + insets.bottom,
           paddingTop: 6,
         },
         tabBarActiveTintColor: theme.colors.primary,
