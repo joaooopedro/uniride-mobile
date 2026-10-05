@@ -26,10 +26,33 @@ const historicoMockado = [
 ];
 
 export function CaronasProvider({ children }) {
-  const [usuarioLogado] = useState({ nome: 'João Pedro Silva', curso: 'Ciência da Computação', matricula: '202301842' });
+  const [usuarioLogado] = useState({ nome: 'João Pedro Silva', iniciais: 'JP', curso: 'Ciência da Computação', periodo: '5º período', matricula: '202301842', nota: '4.8', telefoneEmergencia: '(32) 9****-3317', chavePix: 'joao.silva@uniride.edu.br', veiculo: { marca: 'Volkswagen', modelo: 'Gol', cor: 'Branco', placa: 'RTA-4F32' } });
   const [caronasDisponiveis, setCaronasDisponiveis] = useState(caronasMockadas);
   const [reservas, setReservas] = useState(reservasMockadas);
   const [historicoViagens] = useState(historicoMockado);
+
+  const adicionarCarona = (oferta) => {
+    const { veiculo } = usuarioLogado;
+    const novaCarona = {
+      ...oferta,
+      id: `carona-${Date.now()}`,
+      motorista: usuarioLogado.nome,
+      iniciaisMotorista: usuarioLogado.iniciais,
+      notaMotorista: usuarioLogado.nota,
+      motoristaCurso: `${usuarioLogado.curso}, ${usuarioLogado.periodo}`,
+      telefoneEmergencia: usuarioLogado.telefoneEmergencia,
+      chavePix: usuarioLogado.chavePix,
+      marcaCarro: veiculo.marca,
+      modeloCarro: `${veiculo.modelo} ${veiculo.cor}`,
+      corCarro: veiculo.cor,
+      placaCarro: veiculo.placa,
+      destinoDetalhado: `UniAcademia, Portaria Principal ${oferta.campusDestino.replace(' (Centro)', '')}`,
+      passageirosConfirmados: [],
+      alunoVerificado: true,
+    };
+    setCaronasDisponiveis((caronasAtuais) => [novaCarona, ...caronasAtuais]);
+    return novaCarona;
+  };
 
   const solicitarReserva = (caronaId) => {
     const caronaSelecionada = caronasDisponiveis.find((carona) => carona.id === caronaId);
@@ -50,7 +73,7 @@ export function CaronasProvider({ children }) {
     setReservas((reservasAtuais) => reservasAtuais.filter((reserva) => reserva.caronaId !== caronaId));
   };
 
-  return <CaronasContext.Provider value={{ usuarioLogado, caronasDisponiveis, reservas, historicoViagens, solicitarReserva, cancelarReserva, cancelarRota }}>{children}</CaronasContext.Provider>;
+  return <CaronasContext.Provider value={{ usuarioLogado, caronasDisponiveis, reservas, historicoViagens, solicitarReserva, cancelarReserva, cancelarRota, adicionarCarona }}>{children}</CaronasContext.Provider>;
 }
 
 export function useCaronas() {
