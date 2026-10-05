@@ -7,6 +7,7 @@ import { useHeaderHeight } from '@react-navigation/elements';
 
 import BalaoMensagem from '../components/BalaoMensagem';
 import BotaoStatusRapido from '../components/BotaoStatusRapido';
+import { useAvisos } from '../context/AvisosContext';
 import { useCaronas } from '../context/CaronasContext';
 import { AVISOS_RAPIDOS, CATEGORIAS_AVISO, TIPOS_MENSAGEM } from '../services/mockData';
 
@@ -34,6 +35,13 @@ const VISUAL_CATEGORIA_AVISO = {
     cor: 'danger',
     fundo: 'dangerLight',
   },
+};
+
+const VISUAL_STATUS_VIAGEM = {
+  Confirmada: { cor: 'success', fundo: 'successLight' },
+  'Aguardando Saída': { cor: 'warning', fundo: 'warningLight' },
+  'Em Andamento': { cor: 'secondary', fundo: 'secondaryLight' },
+  Concluída: { cor: 'textSecondary', fundo: 'borderLight' },
 };
 
 const formatarTempoDecorrido = (data) => {
@@ -74,13 +82,13 @@ const RotuloViagem = styled.Text`
 const SeloStatus = styled.View`
   padding: 2px ${(props) => props.theme.spacing.sm}px;
   border-radius: ${(props) => props.theme.radii.full}px;
-  background-color: ${(props) => props.theme.colors.secondaryLight};
+  background-color: ${(props) => props.fundo};
 `;
 
 const TextoSeloStatus = styled.Text`
   font-size: ${(props) => props.theme.typography.micro.fontSize}px;
   font-weight: 600;
-  color: ${(props) => props.theme.colors.primary};
+  color: ${(props) => props.cor};
 `;
 
 const Trajeto = styled.Text`
@@ -97,11 +105,27 @@ const LinhaMotorista = styled.View`
   margin-top: ${(props) => props.theme.spacing.sm}px;
 `;
 
-const FotoMotorista = styled.Image`
+const AvatarMotorista = styled.View`
   width: 24px;
   height: 24px;
+  align-items: center;
+  justify-content: center;
   border-radius: ${(props) => props.theme.radii.full}px;
-  background-color: ${(props) => props.theme.colors.border};
+  background-color: ${(props) => props.theme.colors.primaryLight};
+`;
+
+const IniciaisMotorista = styled.Text`
+  font-size: 10px;
+  font-weight: 700;
+  color: ${(props) => props.theme.colors.primary};
+`;
+
+const ConversaVazia = styled.Text`
+  margin-top: ${(props) => props.theme.spacing.lg}px;
+  font-size: ${(props) => props.theme.typography.body.fontSize}px;
+  line-height: ${(props) => props.theme.typography.body.lineHeight}px;
+  color: ${(props) => props.theme.colors.textSecondary};
+  text-align: center;
 `;
 
 const DetalheMotorista = styled.Text`
@@ -291,16 +315,15 @@ const TextoBotaoEstadoVazio = styled.Text`
   color: ${(props) => props.theme.colors.surface};
 `;
 
-export default function TelaCentralAvisosChat({ navigation }) {
+export default function TelaCentralAvisosChat({ navigation, route }) {
   const theme = useTheme();
   const alturaCabecalho = useHeaderHeight();
   const telaEmFoco = useIsFocused();
   const listaMensagensRef = useRef(null);
   const [abaAtiva, setAbaAtiva] = useState(ABAS.chat);
   const [textoDigitado, setTextoDigitado] = useState('');
+  const { usuarioLogado, caronasDisponiveis, reservas } = useCaronas();
   const {
-    usuarioLogado,
-    viagemAtiva,
     mensagensChat,
     mensagensNaoLidas,
     avisos,
@@ -308,7 +331,20 @@ export default function TelaCentralAvisosChat({ navigation }) {
     enviarMensagem,
     marcarChatComoLido,
     marcarAvisosComoLidos,
-  } = useCaronas();
+  } = useAvisos();
+
+  const reservaEmAndamento = reservas.find((reserva) => reserva.status === 'Em Andamento');
+  const ultimaMensagem = mensagensChat[mensagensChat.length - 1];
+  const caronaIdDaConversa =
+    route.params?.caronaId ?? reservaEmAndamento?.caronaId ?? ultimaMensagem?.caronaId;
+  const caronaDaConversa = caronasDisponiveis.find((carona) => carona.id === caronaIdDaConversa);
+  const statusDaConversa =
+    reservas.find((reserva) => reserva.caronaId === caronaIdDaConversa)?.status ??
+    caronaDaConversa?.statusViagem;
+  const visualStatus = VISUAL_STATUS_VIAGEM[statusDaConversa];
+  const mensagensDaConversa = mensagensChat.filter(
+    (mensagem) => mensagem.caronaId === caronaIdDaConversa,
+  );
 
   useEffect(() => {
     if (!telaEmFoco) return;
@@ -331,14 +367,14 @@ export default function TelaCentralAvisosChat({ navigation }) {
   const textoPronto = textoDigitado.trim().length > 0;
 
   function enviarTextoDigitado() {
-    enviarMensagem(textoDigitado);
+    enviarMensagem(caronaIdDaConversa, textoDigitado);
     setTextoDigitado('');
   }
 
-  function identificarAutor(autor) {
-    if (autor.id === usuarioLogado.id) return 'Você';
-    if (autor.id === viagemAtiva.motorista.id) return `${autor.nome} · Motorista`;
-    return autor.nome;
+  function identificarAutor(nomeAutor) {
+    if (nomeAutor === usuarioLogado.nome) return 'Você';
+    if (nomeAutor === caronaDaConversa.motorista) return `${nomeAutor} · Motorista`;
+    return nomeAutor;
   }
 
   function iconeDoAvisoRapido(mensagem) {
@@ -349,22 +385,30 @@ export default function TelaCentralAvisosChat({ navigation }) {
 
   return (
     <Container behavior="padding" keyboardVerticalOffset={alturaCabecalho}>
-      {viagemAtiva && (
+      {caronaDaConversa && (
         <CartaoViagem>
           <CabecalhoCartao>
-            <RotuloViagem>Viagem ativa</RotuloViagem>
-            <SeloStatus>
-              <TextoSeloStatus>{viagemAtiva.status}</TextoSeloStatus>
-            </SeloStatus>
+            <RotuloViagem>
+              {statusDaConversa === 'Em Andamento' ? 'Viagem ativa' : 'Carona'}
+            </RotuloViagem>
+            {visualStatus && (
+              <SeloStatus fundo={theme.colors[visualStatus.fundo]}>
+                <TextoSeloStatus cor={theme.colors[visualStatus.cor]}>
+                  {statusDaConversa}
+                </TextoSeloStatus>
+              </SeloStatus>
+            )}
           </CabecalhoCartao>
           <Trajeto>
-            {viagemAtiva.origem.bairro} → {viagemAtiva.destino.campus}
+            {caronaDaConversa.bairroOrigem} → {caronaDaConversa.campusDestino}
           </Trajeto>
           <LinhaMotorista>
-            <FotoMotorista source={{ uri: viagemAtiva.motorista.foto }} />
+            <AvatarMotorista>
+              <IniciaisMotorista>{caronaDaConversa.iniciaisMotorista}</IniciaisMotorista>
+            </AvatarMotorista>
             <DetalheMotorista numberOfLines={1}>
-              {viagemAtiva.motorista.nome} · {viagemAtiva.veiculo.modelo}{' '}
-              {viagemAtiva.veiculo.cor} · Saída {viagemAtiva.horarioSaida}
+              {caronaDaConversa.motorista} · {caronaDaConversa.modeloCarro} · Saída{' '}
+              {caronaDaConversa.horarioSaida}
             </DetalheMotorista>
           </LinhaMotorista>
         </CartaoViagem>
@@ -389,7 +433,7 @@ export default function TelaCentralAvisosChat({ navigation }) {
         ))}
       </SeletorAbas>
 
-      {abaAtiva === ABAS.chat && viagemAtiva && (
+      {abaAtiva === ABAS.chat && caronaDaConversa && (
         <>
           <CarrosselAvisosRapidos>
             {AVISOS_RAPIDOS.map((avisoRapido) => (
@@ -397,25 +441,32 @@ export default function TelaCentralAvisosChat({ navigation }) {
                 key={avisoRapido.id}
                 texto={avisoRapido.texto}
                 icone={avisoRapido.icone}
-                onPress={() => enviarMensagem(avisoRapido.texto, TIPOS_MENSAGEM.aviso)}
+                onPress={() =>
+                  enviarMensagem(caronaIdDaConversa, avisoRapido.texto, TIPOS_MENSAGEM.aviso)
+                }
               />
             ))}
           </CarrosselAvisosRapidos>
 
           <FlatList
             ref={listaMensagensRef}
-            data={mensagensChat}
+            data={mensagensDaConversa}
             keyExtractor={(mensagem) => mensagem.id}
             renderItem={({ item: mensagem }) => (
               <BalaoMensagem
                 mensagem={mensagem}
-                enviada={mensagem.autor.id === usuarioLogado.id}
+                enviada={mensagem.autor === usuarioLogado.nome}
                 rotuloAutor={identificarAutor(mensagem.autor)}
                 iconeAviso={iconeDoAvisoRapido(mensagem)}
               />
             )}
             contentContainerStyle={{ padding: theme.spacing.md }}
             keyboardShouldPersistTaps="handled"
+            ListEmptyComponent={
+              <ConversaVazia>
+                Nenhuma mensagem ainda. Use os avisos rápidos para falar com o grupo.
+              </ConversaVazia>
+            }
             onContentSizeChange={() => listaMensagensRef.current.scrollToEnd({ animated: true })}
           />
 
@@ -447,7 +498,7 @@ export default function TelaCentralAvisosChat({ navigation }) {
         </>
       )}
 
-      {abaAtiva === ABAS.chat && !viagemAtiva && (
+      {abaAtiva === ABAS.chat && !caronaDaConversa && (
         <EstadoVazio>
           <IconeEstadoVazio>
             <Ionicons name="chatbubbles-outline" size={32} color={theme.colors.primary} />

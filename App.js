@@ -6,6 +6,7 @@ import { ThemeProvider } from 'styled-components/native';
 
 import theme from './src/theme';
 import { CaronasProvider } from './src/context/CaronasContext';
+import { AvisosProvider } from './src/context/AvisosContext';
 import AppNavigator from './src/navigation/AppNavigator';
 
 export default function App() {
@@ -13,8 +14,10 @@ export default function App() {
     <SafeAreaProvider>
       <ThemeProvider theme={theme}>
         <CaronasProvider>
-          <StatusBar style="dark" backgroundColor={theme.colors.surface} />
-          <AppNavigator />
+          <AvisosProvider>
+            <StatusBar style="dark" backgroundColor={theme.colors.surface} />
+            <AppNavigator />
+          </AvisosProvider>
         </CaronasProvider>
       </ThemeProvider>
     </SafeAreaProvider>

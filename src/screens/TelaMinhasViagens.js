@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components/native';
 import { Feather } from '@expo/vector-icons';
 
-const Container = styled.SafeAreaView`
+const Container = styled.View`
   flex: 1;
   background-color: ${(props) => props.theme.colors.background};
   align-items: center;

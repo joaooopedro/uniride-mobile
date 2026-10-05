@@ -5,7 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useCaronas } from '../context/CaronasContext';
+import { useAvisos } from '../context/AvisosContext';
 
 import TelaFeedCaronas from '../screens/TelaFeedCaronas';
 import TelaOferecerCarona from '../screens/TelaOferecerCarona';
@@ -18,7 +18,7 @@ const Tab = createBottomTabNavigator();
 export default function TabNavigator({ navigation }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { mensagensNaoLidas, avisosNaoLidos } = useCaronas();
+  const { mensagensNaoLidas, avisosNaoLidos } = useAvisos();
   const totalNaoLidos = mensagensNaoLidas + avisosNaoLidos;
 
   return (
@@ -49,8 +49,8 @@ export default function TabNavigator({ navigation }) {
           borderTopColor: theme.colors.border,
           borderTopWidth: 1,
           height: 68 + insets.bottom,
-          paddingBottom: 8 + insets.bottom,
           paddingTop: 6,
+          paddingBottom: 8 + insets.bottom,
         },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textSecondary,

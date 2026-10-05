@@ -16,12 +16,15 @@ const HeaderSection = styled.View`
   border-bottom-color: ${(props) => props.theme.colors.border};
 `;
 
-const UserAvatar = styled.Image`
-  width: 58px;
-  height: 58px;
+const UserAvatarCircle = styled.View`
+  width: 52px;
+  height: 52px;
   border-radius: ${(props) => props.theme.radii.full}px;
+  background-color: ${(props) => props.theme.colors.surface};
   border-width: 2px;
   border-color: ${(props) => props.theme.colors.primary};
+  align-items: center;
+  justify-content: center;
   margin-bottom: 8px;
 `;
 
@@ -116,7 +119,9 @@ export default function CustomDrawerContent({ navigation, state }) {
   return (
     <DrawerContainer>
       <HeaderSection>
-        <UserAvatar source={{ uri: usuarioLogado.foto }} />
+        <UserAvatarCircle>
+          <Feather name="user" size={26} color={theme.colors.primary} />
+        </UserAvatarCircle>
         <UserName>{usuarioLogado.nome}</UserName>
         <UserCourse>{usuarioLogado.curso} • UniAcademia</UserCourse>
         <VerifiedBadge>

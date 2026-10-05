@@ -2,6 +2,14 @@ import React from 'react';
 import styled, { useTheme } from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 
+const iniciaisDoNome = (nome) =>
+  nome
+    .split(' ')
+    .slice(0, 2)
+    .map((parteNome) => parteNome[0])
+    .join('')
+    .toUpperCase();
+
 const formatarHorario = (data) =>
   `${String(data.getHours()).padStart(2, '0')}:${String(data.getMinutes()).padStart(2, '0')}`;
 
@@ -11,11 +19,19 @@ const LinhaMensagem = styled.View`
   margin-bottom: ${(props) => props.theme.spacing.mdSm}px;
 `;
 
-const FotoAutor = styled.Image`
+const AvatarAutor = styled.View`
   width: 32px;
   height: 32px;
+  align-items: center;
+  justify-content: center;
   border-radius: ${(props) => props.theme.radii.full}px;
-  background-color: ${(props) => props.theme.colors.border};
+  background-color: ${(props) => props.theme.colors.primaryLight};
+`;
+
+const IniciaisAutor = styled.Text`
+  font-size: ${(props) => props.theme.typography.caption.fontSize}px;
+  font-weight: 700;
+  color: ${(props) => props.theme.colors.primary};
 `;
 
 const ColunaMensagem = styled.View`
@@ -67,7 +83,9 @@ export default function BalaoMensagem({ mensagem, enviada, rotuloAutor, iconeAvi
 
   return (
     <LinhaMensagem enviada={enviada}>
-      <FotoAutor source={{ uri: mensagem.autor.foto }} />
+      <AvatarAutor>
+        <IniciaisAutor>{iniciaisDoNome(mensagem.autor)}</IniciaisAutor>
+      </AvatarAutor>
       <ColunaMensagem enviada={enviada}>
         <IdentificacaoAutor>
           {rotuloAutor} · {formatarHorario(mensagem.enviadaEm)}
