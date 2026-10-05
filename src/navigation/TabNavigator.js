@@ -3,6 +3,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTheme } from 'styled-components/native';
 import { Feather } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { useAvisos } from '../context/AvisosContext';
 
 import TelaFeedCaronas from '../screens/TelaFeedCaronas';
 import TelaOferecerCarona from '../screens/TelaOferecerCarona';
@@ -14,6 +17,9 @@ const Tab = createBottomTabNavigator();
 
 export default function TabNavigator({ navigation }) {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  const { mensagensNaoLidas, avisosNaoLidos } = useAvisos();
+  const totalNaoLidos = mensagensNaoLidas + avisosNaoLidos;
 
   return (
     <Tab.Navigator
@@ -42,7 +48,9 @@ export default function TabNavigator({ navigation }) {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.border,
           borderTopWidth: 1,
+          height: 68 + insets.bottom,
           paddingTop: 6,
+          paddingBottom: 8 + insets.bottom,
         },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textSecondary,
@@ -94,6 +102,11 @@ export default function TabNavigator({ navigation }) {
           tabBarIcon: ({ color, size }) => (
             <Feather name="message-square" size={size || 22} color={color} />
           ),
+          tabBarBadge: totalNaoLidos > 0 ? totalNaoLidos : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: theme.colors.danger,
+            color: theme.colors.surface,
+          },
         }}
       />
       <Tab.Screen
