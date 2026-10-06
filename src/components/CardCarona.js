@@ -1,67 +1,232 @@
-import React from 'react';
-import styled from 'styled-components/native';
-import { Feather, Ionicons } from '@expo/vector-icons';
-
-const CardContainer = styled.View`
-  background-color: ${(props) => props.theme.colors.surface};
-  border-width: 1px;
-  border-color: ${(props) => props.theme.colors.border};
-  border-radius: ${(props) => props.theme.radii.md}px;
-  padding: ${(props) => props.theme.spacing.md}px;
-  margin-bottom: ${(props) => props.theme.spacing.md}px;
-`;
-const DriverRow = styled.View`flex-direction: row; align-items: center;`;
-const Avatar = styled.View`width: 44px; height: 44px; border-radius: ${(props) => props.theme.radii.full}px; background-color: ${(props) => props.theme.colors.primaryLight}; align-items: center; justify-content: center; margin-right: ${(props) => props.theme.spacing.sm}px;`;
-const AvatarText = styled.Text`color: ${(props) => props.theme.colors.primary}; font-size: 14px; font-weight: 700;`;
-const DriverInfo = styled.View`flex: 1;`;
-const DriverName = styled.Text`color: ${(props) => props.theme.colors.text}; font-size: ${(props) => props.theme.typography.cardTitle.fontSize}px; font-weight: 600; line-height: 22px;`;
-const RatingRow = styled.View`flex-direction: row; align-items: center; margin-top: 2px;`;
-const RatingText = styled.Text`color: ${(props) => props.theme.colors.textSecondary}; font-size: ${(props) => props.theme.typography.caption.fontSize}px; margin-left: 4px;`;
-const VerifiedBadge = styled.View`flex-direction: row; align-items: center; background-color: ${(props) => props.theme.colors.successLight}; border-radius: ${(props) => props.theme.radii.full}px; padding: 5px 8px;`;
-const VerifiedText = styled.Text`color: ${(props) => props.theme.colors.success}; font-size: ${(props) => props.theme.typography.micro.fontSize}px; font-weight: 600; margin-left: 4px;`;
-const RouteSection = styled.View`margin-top: ${(props) => props.theme.spacing.md}px; padding: ${(props) => props.theme.spacing.mdSm}px; background-color: ${(props) => props.theme.colors.background}; border-radius: ${(props) => props.theme.radii.sm}px;`;
-const RouteRow = styled.View`flex-direction: row; align-items: center;`;
-const RouteText = styled.Text`flex: 1; color: ${(props) => props.theme.colors.text}; font-size: ${(props) => props.theme.typography.body.fontSize}px; font-weight: 600; line-height: 20px; margin-left: ${(props) => props.theme.spacing.sm}px;`;
-const RouteArrow = styled.View`align-items: center; margin: 3px 0;`;
-const DetailGrid = styled.View`flex-direction: row; flex-wrap: wrap; margin-top: ${(props) => props.theme.spacing.md}px;`;
-const DetailCell = styled.View`width: 50%; flex-direction: row; align-items: center; margin-bottom: ${(props) => props.theme.spacing.sm}px;`;
-const DetailText = styled.Text`color: ${(props) => props.theme.colors.textSecondary}; font-size: ${(props) => props.theme.typography.caption.fontSize}px; margin-left: ${(props) => props.theme.spacing.sm}px;`;
-const Footer = styled.View`flex-direction: row; align-items: center; justify-content: space-between; margin-top: ${(props) => props.theme.spacing.sm}px;`;
-const AvailabilityBadge = styled.View`background-color: ${(props) => (props.available ? props.theme.colors.successLight : props.theme.colors.dangerLight)}; border-radius: ${(props) => props.theme.radii.sm}px; padding: 6px 8px;`;
-const AvailabilityText = styled.Text`color: ${(props) => (props.available ? props.theme.colors.success : props.theme.colors.danger)}; font-size: ${(props) => props.theme.typography.caption.fontSize}px; font-weight: 600;`;
-const Price = styled.Text`color: ${(props) => props.theme.colors.text}; font-size: ${(props) => props.theme.typography.cardTitle.fontSize}px; font-weight: 700; margin-left: auto; margin-right: ${(props) => props.theme.spacing.md}px;`;
-const DetailsButton = styled.TouchableOpacity`min-height: ${(props) => props.theme.touchTarget.minHeight}px; padding: 0 ${(props) => props.theme.spacing.md}px; border-radius: ${(props) => props.theme.radii.md}px; background-color: ${(props) => props.theme.colors.primary}; flex-direction: row; align-items: center; justify-content: center;`;
-const DetailsButtonText = styled.Text`color: ${(props) => props.theme.colors.surface}; font-size: ${(props) => props.theme.typography.caption.fontSize}px; font-weight: 700; margin-right: 6px;`;
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import MotionPressable from "./MotionPressable";
+import theme from "../theme";
 
 export default function CardCarona({ carona, onVerDetalhes }) {
-  const disponibilidadeAtiva = carona.vagasRestantes > 0;
-
+  const disponivel = carona.vagasRestantes > 0;
   return (
-    <CardContainer>
-      <DriverRow>
-        <Avatar><AvatarText>{carona.iniciaisMotorista}</AvatarText></Avatar>
-        <DriverInfo>
-          <DriverName>{carona.motorista}</DriverName>
-          <RatingRow><Ionicons name="star" size={14} color="#F59E0B" /><RatingText>{carona.notaMotorista}</RatingText></RatingRow>
-        </DriverInfo>
-        {carona.alunoVerificado && <VerifiedBadge><Ionicons name="shield-checkmark" size={13} color="#10B981" /><VerifiedText>Aluno Verificado</VerifiedText></VerifiedBadge>}
-      </DriverRow>
-      <RouteSection>
-        <RouteRow><Feather name="map-pin" size={18} color="#2563EB" /><RouteText>{carona.bairroOrigem}</RouteText></RouteRow>
-        <RouteArrow><Feather name="arrow-down" size={14} color="#94A3B8" /></RouteArrow>
-        <RouteRow><Feather name="flag" size={18} color="#10B981" /><RouteText>{carona.campusDestino}</RouteText></RouteRow>
-      </RouteSection>
-      <DetailGrid>
-        <DetailCell><Feather name="clock" size={16} color="#64748B" /><DetailText>Saída: {carona.horarioSaida}</DetailText></DetailCell>
-        <DetailCell><Feather name="calendar" size={16} color="#64748B" /><DetailText>{carona.turno}</DetailText></DetailCell>
-        <DetailCell><Feather name="truck" size={16} color="#64748B" /><DetailText>{carona.modeloCarro}</DetailText></DetailCell>
-        <DetailCell><Feather name="hash" size={16} color="#64748B" /><DetailText>{carona.placaCarro}</DetailText></DetailCell>
-      </DetailGrid>
-      <Footer>
-        <AvailabilityBadge available={disponibilidadeAtiva}><AvailabilityText available={disponibilidadeAtiva}>{disponibilidadeAtiva ? `${carona.vagasRestantes} vagas restantes` : 'Sem vagas'}</AvailabilityText></AvailabilityBadge>
-        <Price>{carona.valorRateio}</Price>
-        <DetailsButton onPress={() => onVerDetalhes(carona)}><DetailsButtonText>Ver Detalhes</DetailsButtonText><Feather name="arrow-right" size={16} color="#FFFFFF" /></DetailsButton>
-      </Footer>
-    </CardContainer>
+    <View style={styles.card}>
+      <View style={styles.summary}>
+        <View>
+          <Text style={styles.time}>{carona.horarioSaida}</Text>
+          <Text style={styles.caption}>{carona.turno}</Text>
+        </View>
+        <View style={styles.priceColumn}>
+          <Text style={styles.price}>{carona.valorRateio}</Text>
+          <Text style={styles.caption}>por pessoa</Text>
+        </View>
+      </View>
+      <View style={styles.route}>
+        <View style={styles.timeline}>
+          <View style={styles.startDot} />
+          <View style={styles.line} />
+          <View style={styles.endDot} />
+        </View>
+        <View style={styles.routeCopy}>
+          <Text style={styles.origin}>{carona.bairroOrigem}</Text>
+          <Text style={styles.destination}>{carona.campusDestino}</Text>
+        </View>
+      </View>
+      <View style={styles.meta}>
+        <Ionicons
+          name="car-outline"
+          size={15}
+          color={theme.colors.textSecondary}
+        />
+        <Text style={styles.metaText}>
+          {carona.modeloCarro} · {carona.placaCarro}
+        </Text>
+      </View>
+      <View style={styles.meta}>
+        <Ionicons
+          name="people-outline"
+          size={15}
+          color={disponivel ? theme.colors.success : theme.colors.danger}
+        />
+        <Text
+          style={[
+            styles.metaText,
+            { color: disponivel ? theme.colors.success : theme.colors.danger },
+          ]}
+        >
+          {disponivel
+            ? carona.vagasRestantes +
+              (carona.vagasRestantes === 1
+                ? " vaga disponível"
+                : " vagas disponíveis")
+            : "Sem vagas disponíveis"}
+        </Text>
+      </View>
+      <View style={styles.footer}>
+        <View style={styles.avatar}>
+          <Text style={styles.initials}>{carona.iniciaisMotorista}</Text>
+        </View>
+        <View style={styles.driver}>
+          <Text numberOfLines={1} style={styles.driverName}>
+            {carona.motorista}
+          </Text>
+          <View style={styles.rating}>
+            <Ionicons name="star" size={11} color={theme.colors.warning} />
+            <Text style={styles.ratingText}>{carona.notaMotorista}</Text>
+            {carona.alunoVerificado && (
+              <Ionicons
+                accessibilityLabel="Aluno verificado"
+                name="checkmark-circle"
+                size={13}
+                color={theme.colors.success}
+              />
+            )}
+          </View>
+        </View>
+        <MotionPressable
+          onPress={() => onVerDetalhes(carona)}
+          style={styles.details}
+          accessibilityLabel={
+            "Ver detalhes da carona de " +
+            carona.motorista +
+            ", saída " +
+            carona.horarioSaida
+          }
+        >
+          <Text style={styles.detailsText}>Detalhes</Text>
+          <Ionicons
+            name="arrow-forward"
+            size={17}
+            color={theme.colors.primary}
+          />
+        </MotionPressable>
+      </View>
+    </View>
   );
 }
+const styles = StyleSheet.create({
+  card: {
+    paddingVertical: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    backgroundColor: theme.colors.background,
+  },
+  summary: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  time: {
+    fontFamily: theme.fonts.bold,
+    fontSize: 24,
+    letterSpacing: -0.7,
+    color: theme.colors.text,
+    fontVariant: ["tabular-nums"],
+  },
+  priceColumn: { alignItems: "flex-end" },
+  price: {
+    fontFamily: theme.fonts.bold,
+    fontSize: 21,
+    letterSpacing: -0.5,
+    color: theme.colors.text,
+    fontVariant: ["tabular-nums"],
+  },
+  caption: {
+    fontFamily: theme.fonts.regular,
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    marginTop: 3,
+  },
+  route: { flexDirection: "row", alignItems: "stretch", marginTop: 23 },
+  timeline: {
+    width: 15,
+    alignItems: "center",
+    marginRight: 13,
+    paddingTop: 7,
+    paddingBottom: 7,
+  },
+  startDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: theme.colors.accent,
+  },
+  line: {
+    width: 1,
+    flex: 1,
+    minHeight: 19,
+    backgroundColor: theme.colors.border,
+    marginVertical: 4,
+  },
+  endDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 2,
+    backgroundColor: theme.colors.accent,
+  },
+  routeCopy: { flex: 1, gap: 16 },
+  origin: {
+    fontFamily: theme.fonts.medium,
+    fontSize: 14,
+    lineHeight: 21,
+    color: theme.colors.text,
+  },
+  destination: {
+    fontFamily: theme.fonts.semibold,
+    fontSize: 15,
+    lineHeight: 22,
+    color: theme.colors.text,
+  },
+  meta: { flexDirection: "row", alignItems: "center", gap: 9, marginTop: 10 },
+  metaText: {
+    fontFamily: theme.fonts.regular,
+    fontSize: 11,
+    lineHeight: 17,
+    color: theme.colors.textSecondary,
+    flexShrink: 1,
+  },
+  footer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 19,
+    gap: 10,
+  },
+  avatar: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: theme.colors.primaryLight,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  initials: {
+    fontFamily: theme.fonts.bold,
+    fontSize: 11,
+    color: theme.colors.primary,
+    textAlign: "center",
+    includeFontPadding: false,
+  },
+  driver: { flex: 1, minWidth: 0 },
+  driverName: {
+    fontFamily: theme.fonts.semibold,
+    fontSize: 12,
+    color: theme.colors.text,
+  },
+  rating: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 4 },
+  ratingText: {
+    fontFamily: theme.fonts.medium,
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+  },
+  details: {
+    minHeight: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingLeft: 12,
+  },
+  detailsText: {
+    fontFamily: theme.fonts.bold,
+    fontSize: 12,
+    color: theme.colors.primary,
+  },
+});

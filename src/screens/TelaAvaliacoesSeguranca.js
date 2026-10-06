@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
-import styled, { useTheme } from 'styled-components/native';
-import { Feather } from '@expo/vector-icons';
-import { useCaronas } from '../context/CaronasContext';
+import React, { useMemo, useState } from "react";
+import styled, { useTheme } from "styled-components/native";
+import MotionPressable from "../components/MotionPressable";
+import { Feather } from "@expo/vector-icons";
+import { useCaronas } from "../context/CaronasContext";
 
 const distribuicaoNotas = [
   { estrelas: 5, total: 38, percentual: 76 },
@@ -13,98 +14,104 @@ const distribuicaoNotas = [
 
 const selosConfianca = [
   {
-    id: 'aluno-verificado',
-    titulo: 'Aluno Verificado UniAcademia',
-    descricao: 'Matrícula e e-mail institucional checados.',
-    icone: 'check-circle',
-    cor: 'success',
-    fundo: 'successLight',
+    id: "aluno-verificado",
+    titulo: "Aluno verificado",
+    descricao: "Matrícula e e-mail institucional checados.",
+    icone: "check-circle",
+    cor: "success",
+    fundo: "successLight",
   },
   {
-    id: 'motorista-pontual',
-    titulo: 'Motorista Pontual',
-    descricao: '98% de partidas no horário exato.',
-    icone: 'clock',
-    cor: 'primary',
-    fundo: 'primaryLight',
+    id: "motorista-pontual",
+    titulo: "Motorista pontual",
+    descricao: "98% de partidas no horário exato.",
+    icone: "clock",
+    cor: "primary",
+    fundo: "primaryLight",
   },
   {
-    id: 'embaixador-seguranca',
-    titulo: 'Embaixador da Segurança',
-    descricao: '+30 caronas com nota máxima.',
-    icone: 'shield',
-    cor: 'secondary',
-    fundo: 'secondaryLight',
+    id: "embaixador-seguranca",
+    titulo: "Embaixador da segurança",
+    descricao: "+30 caronas com nota máxima.",
+    icone: "shield",
+    cor: "secondary",
+    fundo: "secondaryLight",
   },
   {
-    id: 'eco-carona',
-    titulo: 'Eco Carona',
-    descricao: '+200kg de CO2 evitados.',
-    icone: 'wind',
-    cor: 'success',
-    fundo: 'successLight',
+    id: "eco-carona",
+    titulo: "EcoCarona",
+    descricao: "+200kg de CO2 evitados.",
+    icone: "wind",
+    cor: "success",
+    fundo: "successLight",
   },
 ];
 
 const avaliacoesRecentes = [
   {
-    id: 'avaliacao-001',
-    nome: 'Larissa Prado',
-    iniciais: 'LP',
-    curso: 'Direito, 4º período',
-    dataCarona: '02/10',
-    rota: 'Alto dos Passos para Campus Estrela Sul',
-    nota: '5.0',
-    fotoUrl: 'https://i.pravatar.cc/96?img=32',
-    comentario: 'Saída no horário combinado, direção tranquila e conversa respeitosa durante o trajeto.',
+    id: "avaliacao-001",
+    nome: "Larissa Prado",
+    iniciais: "LP",
+    curso: "Direito, 4º período",
+    dataCarona: "02/10",
+    rota: "Alto dos Passos para Campus Estrela Sul",
+    nota: "5.0",
+    fotoUrl: "https://i.pravatar.cc/96?img=32",
+    comentario:
+      "Saída no horário combinado, direção tranquila e conversa respeitosa durante o trajeto.",
   },
   {
-    id: 'avaliacao-002',
-    nome: 'Gustavo Neves',
-    iniciais: 'GN',
-    curso: 'Engenharia Civil, 6º período',
-    dataCarona: '30/09',
-    rota: 'Centro para Campus Academia',
-    nota: '4.9',
-    fotoUrl: 'https://i.pravatar.cc/96?img=12',
-    comentario: 'Confirmou a rota antes da saída e manteve todos informados pelo chat da carona.',
+    id: "avaliacao-002",
+    nome: "Gustavo Neves",
+    iniciais: "GN",
+    curso: "Engenharia Civil, 6º período",
+    dataCarona: "30/09",
+    rota: "Centro para Campus Academia",
+    nota: "4.9",
+    fotoUrl: "https://i.pravatar.cc/96?img=12",
+    comentario:
+      "Confirmou a rota antes da saída e manteve todos informados pelo chat da carona.",
   },
   {
-    id: 'avaliacao-003',
-    nome: 'Nathalia Reis',
-    iniciais: 'NR',
-    curso: 'Psicologia, 5º período',
-    dataCarona: '27/09',
-    rota: 'Manoel Honório para Campus Academia',
-    nota: '5.0',
-    fotoUrl: 'https://i.pravatar.cc/96?img=47',
-    comentario: 'Ponto de encontro fácil de achar, carro limpo e chegada com tempo para a primeira aula.',
+    id: "avaliacao-003",
+    nome: "Nathalia Reis",
+    iniciais: "NR",
+    curso: "Psicologia, 5º período",
+    dataCarona: "27/09",
+    rota: "Manoel Honório para Campus Academia",
+    nota: "5.0",
+    fotoUrl: "https://i.pravatar.cc/96?img=47",
+    comentario:
+      "Ponto de encontro fácil de achar, carro limpo e chegada com tempo para a primeira aula.",
   },
 ];
 
 const diretrizesSeguranca = [
   {
-    id: 'ponto-encontro',
-    titulo: 'Pontos de encontro iluminados',
-    icone: 'map-pin',
-    texto: 'Combine saídas em locais movimentados, como portarias da UniAcademia, praças centrais ou áreas com boa iluminação.',
+    id: "ponto-encontro",
+    titulo: "Pontos de encontro iluminados",
+    icone: "map-pin",
+    texto:
+      "Combine saídas em locais movimentados, como portarias da UniAcademia, praças centrais ou áreas com boa iluminação.",
   },
   {
-    id: 'confirmacao-matricula',
-    titulo: 'Confirmação de matrícula',
-    icone: 'user-check',
-    texto: 'Antes de embarcar, confira nome, curso e status de aluno verificado no perfil do colega.',
+    id: "confirmacao-matricula",
+    titulo: "Confirmação de matrícula",
+    icone: "user-check",
+    texto:
+      "Antes de embarcar, confira nome, curso e status de aluno verificado no perfil do colega.",
   },
   {
-    id: 'suporte-campus',
-    titulo: 'Canais de suporte do campus',
-    icone: 'headphones',
-    texto: 'Em caso de atraso, mudança de rota ou desconforto, use o chat da carona e acione a recepção do campus mais próximo.',
+    id: "suporte-campus",
+    titulo: "Canais de suporte do campus",
+    icone: "headphones",
+    texto:
+      "Em caso de atraso, mudança de rota ou desconforto, use o chat da carona e acione a recepção do campus mais próximo.",
   },
 ];
 
 const Container = styled.ScrollView.attrs({
-  contentContainerStyle: { padding: 16, paddingBottom: 32 },
+  contentContainerStyle: { padding: 24, paddingBottom: 40 },
   showsVerticalScrollIndicator: false,
 })`
   flex: 1;
@@ -119,14 +126,18 @@ const Eyebrow = styled.Text`
   color: ${(props) => props.theme.colors.textSecondary};
   font-size: ${(props) => props.theme.typography.body.fontSize}px;
   line-height: ${(props) => props.theme.typography.body.lineHeight}px;
+
+  font-family: ${(props) => props.theme.fonts.regular};
 `;
 
 const ScreenTitle = styled.Text`
   color: ${(props) => props.theme.colors.text};
-  font-size: ${(props) => props.theme.typography.display.fontSize}px;
-  font-weight: ${(props) => props.theme.typography.display.fontWeight};
-  line-height: ${(props) => props.theme.typography.display.lineHeight}px;
-  margin-top: 2px;
+  font-size: 29px;
+  font-weight: 700;
+  line-height: 38px;
+  letter-spacing: -0.8px;
+  margin-top: 8px;
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
 const SectionTitle = styled.Text`
@@ -134,15 +145,20 @@ const SectionTitle = styled.Text`
   font-size: ${(props) => props.theme.typography.sectionHeader.fontSize}px;
   font-weight: ${(props) => props.theme.typography.sectionHeader.fontWeight};
   line-height: ${(props) => props.theme.typography.sectionHeader.lineHeight}px;
-  margin: ${(props) => props.theme.spacing.lg}px 0 ${(props) => props.theme.spacing.sm}px;
+  margin: ${(props) => props.theme.spacing.lg}px 0
+    ${(props) => props.theme.spacing.sm}px;
+
+  font-family: ${(props) => props.theme.fonts.semibold};
 `;
 
 const Card = styled.View`
-  background-color: ${(props) => props.theme.colors.surface};
-  border-width: 1px;
-  border-color: ${(props) => props.theme.colors.border};
-  border-radius: ${(props) => props.theme.radii.md}px;
-  padding: ${(props) => props.theme.spacing.md}px;
+  background-color: transparent;
+  border-width: 0px;
+  border-bottom-width: 1px;
+  border-bottom-color: ${(props) => props.theme.colors.border};
+  border-radius: 0px;
+  padding: 24px 0px;
+  margin-bottom: 12px;
 `;
 
 const ReputationHeader = styled.View`
@@ -151,13 +167,11 @@ const ReputationHeader = styled.View`
 `;
 
 const RatingBadge = styled.View`
-  width: 72px;
-  height: 72px;
-  border-radius: ${(props) => props.theme.radii.full}px;
-  background-color: ${(props) => props.theme.colors.warningLight};
+  width: 48px;
+  height: 56px;
   align-items: center;
   justify-content: center;
-  margin-right: ${(props) => props.theme.spacing.md}px;
+  margin-right: 16px;
 `;
 
 const RatingSummary = styled.View`
@@ -169,6 +183,8 @@ const RatingValue = styled.Text`
   font-size: 28px;
   font-weight: 700;
   line-height: 32px;
+
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
 const RatingLabel = styled.Text`
@@ -176,6 +192,8 @@ const RatingLabel = styled.Text`
   font-size: ${(props) => props.theme.typography.caption.fontSize}px;
   line-height: ${(props) => props.theme.typography.caption.lineHeight}px;
   margin-top: ${(props) => props.theme.spacing.xs}px;
+
+  font-family: ${(props) => props.theme.fonts.regular};
 `;
 
 const RatingMetaRow = styled.View`
@@ -187,11 +205,8 @@ const RatingMetaRow = styled.View`
 const MetaPill = styled.View`
   flex-direction: row;
   align-items: center;
-  background-color: ${(props) => props.theme.colors.primaryLight};
-  border-radius: ${(props) => props.theme.radii.full}px;
-  padding: 6px ${(props) => props.theme.spacing.sm}px;
-  margin-right: ${(props) => props.theme.spacing.sm}px;
-  margin-bottom: ${(props) => props.theme.spacing.sm}px;
+  margin-right: 16px;
+  margin-bottom: 8px;
 `;
 
 const MetaPillText = styled.Text`
@@ -199,6 +214,8 @@ const MetaPillText = styled.Text`
   font-size: ${(props) => props.theme.typography.micro.fontSize}px;
   font-weight: 700;
   margin-left: ${(props) => props.theme.spacing.xs}px;
+
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
 const DistributionList = styled.View`
@@ -216,6 +233,8 @@ const StarsLabel = styled.Text`
   color: ${(props) => props.theme.colors.textSecondary};
   font-size: ${(props) => props.theme.typography.caption.fontSize}px;
   font-weight: 600;
+
+  font-family: ${(props) => props.theme.fonts.semibold};
 `;
 
 const ProgressTrack = styled.View`
@@ -238,6 +257,8 @@ const DistributionTotal = styled.Text`
   text-align: right;
   color: ${(props) => props.theme.colors.textSecondary};
   font-size: ${(props) => props.theme.typography.caption.fontSize}px;
+
+  font-family: ${(props) => props.theme.fonts.regular};
 `;
 
 const BadgeGrid = styled.View`
@@ -252,29 +273,26 @@ const BadgeCard = styled.View`
 `;
 
 const BadgeCardInner = styled.View`
-  min-height: 146px;
-  background-color: ${(props) => props.theme.colors.surface};
-  border-width: 1px;
-  border-color: ${(props) => props.theme.colors.border};
-  border-radius: ${(props) => props.theme.radii.md}px;
-  padding: ${(props) => props.theme.spacing.md}px;
+  min-height: 156px;
+  border-top-width: 1px;
+  border-top-color: ${(props) => props.theme.colors.border};
+  padding: 16px 8px 16px 0px;
 `;
 
 const BadgeIcon = styled.View`
-  width: 40px;
-  height: 40px;
-  border-radius: ${(props) => props.theme.radii.full}px;
-  background-color: ${(props) => props.theme.colors[props.fundo]};
+  width: 26px;
+  height: 26px;
   align-items: center;
   justify-content: center;
-  margin-bottom: ${(props) => props.theme.spacing.mdSm}px;
+  margin-bottom: 12px;
 `;
 
 const BadgeTitle = styled.Text`
   color: ${(props) => props.theme.colors.text};
-  font-size: ${(props) => props.theme.typography.cardTitle.fontSize}px;
-  font-weight: ${(props) => props.theme.typography.cardTitle.fontWeight};
-  line-height: ${(props) => props.theme.typography.cardTitle.lineHeight}px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 23px;
+  font-family: ${(props) => props.theme.fonts.semibold};
 `;
 
 const BadgeDescription = styled.Text`
@@ -282,6 +300,8 @@ const BadgeDescription = styled.Text`
   font-size: ${(props) => props.theme.typography.caption.fontSize}px;
   line-height: ${(props) => props.theme.typography.caption.lineHeight}px;
   margin-top: ${(props) => props.theme.spacing.xs}px;
+
+  font-family: ${(props) => props.theme.fonts.regular};
 `;
 
 const ReviewCard = styled(Card)`
@@ -314,6 +334,8 @@ const AvatarFallback = styled.Text`
   font-size: ${(props) => props.theme.typography.caption.fontSize}px;
   font-weight: 700;
   position: absolute;
+
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
 const ReviewInfo = styled.View`
@@ -325,20 +347,22 @@ const ReviewerName = styled.Text`
   font-size: ${(props) => props.theme.typography.cardTitle.fontSize}px;
   font-weight: 600;
   line-height: ${(props) => props.theme.typography.cardTitle.lineHeight}px;
+
+  font-family: ${(props) => props.theme.fonts.semibold};
 `;
 
 const ReviewerCourse = styled.Text`
   color: ${(props) => props.theme.colors.textSecondary};
   font-size: ${(props) => props.theme.typography.caption.fontSize}px;
   line-height: ${(props) => props.theme.typography.caption.lineHeight}px;
+
+  font-family: ${(props) => props.theme.fonts.regular};
 `;
 
 const ReviewRating = styled.View`
   flex-direction: row;
   align-items: center;
-  background-color: ${(props) => props.theme.colors.warningLight};
-  border-radius: ${(props) => props.theme.radii.full}px;
-  padding: 5px ${(props) => props.theme.spacing.sm}px;
+  margin-left: 8px;
 `;
 
 const ReviewRatingText = styled.Text`
@@ -346,6 +370,8 @@ const ReviewRatingText = styled.Text`
   font-size: ${(props) => props.theme.typography.caption.fontSize}px;
   font-weight: 700;
   margin-left: ${(props) => props.theme.spacing.xs}px;
+
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
 const ReviewRoute = styled.Text`
@@ -353,6 +379,8 @@ const ReviewRoute = styled.Text`
   font-size: ${(props) => props.theme.typography.caption.fontSize}px;
   line-height: ${(props) => props.theme.typography.caption.lineHeight}px;
   margin-top: ${(props) => props.theme.spacing.mdSm}px;
+
+  font-family: ${(props) => props.theme.fonts.regular};
 `;
 
 const ReviewComment = styled.Text`
@@ -360,32 +388,29 @@ const ReviewComment = styled.Text`
   font-size: ${(props) => props.theme.typography.body.fontSize}px;
   line-height: ${(props) => props.theme.typography.body.lineHeight}px;
   margin-top: ${(props) => props.theme.spacing.sm}px;
+
+  font-family: ${(props) => props.theme.fonts.regular};
 `;
 
 const AccordionItem = styled.View`
-  background-color: ${(props) => props.theme.colors.surface};
-  border-width: 1px;
-  border-color: ${(props) => props.theme.colors.border};
-  border-radius: ${(props) => props.theme.radii.md}px;
-  margin-bottom: ${(props) => props.theme.spacing.sm}px;
-  overflow: hidden;
+  border-bottom-width: 1px;
+  border-bottom-color: ${(props) => props.theme.colors.border};
+  margin-bottom: 8px;
 `;
 
-const AccordionHeader = styled.TouchableOpacity`
-  min-height: ${(props) => props.theme.touchTarget.minHeight}px;
+const AccordionHeader = styled(MotionPressable)`
+  min-height: 56px;
   flex-direction: row;
   align-items: center;
-  padding: ${(props) => props.theme.spacing.md}px;
+  padding: 16px 0px;
 `;
 
 const AccordionIcon = styled.View`
-  width: 36px;
-  height: 36px;
-  border-radius: ${(props) => props.theme.radii.full}px;
-  background-color: ${(props) => props.theme.colors.primaryLight};
+  width: 24px;
+  height: 24px;
   align-items: center;
   justify-content: center;
-  margin-right: ${(props) => props.theme.spacing.mdSm}px;
+  margin-right: 12px;
 `;
 
 const AccordionTitle = styled.Text`
@@ -394,31 +419,45 @@ const AccordionTitle = styled.Text`
   font-size: ${(props) => props.theme.typography.body.fontSize}px;
   font-weight: 700;
   line-height: ${(props) => props.theme.typography.body.lineHeight}px;
+
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
 const AccordionBody = styled.Text`
+  color: ${(props) => props.theme.colors.text};
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 23px;
   color: ${(props) => props.theme.colors.textSecondary};
-  font-size: ${(props) => props.theme.typography.body.fontSize}px;
-  line-height: ${(props) => props.theme.typography.body.lineHeight}px;
-  padding: 0 ${(props) => props.theme.spacing.md}px ${(props) => props.theme.spacing.md}px 64px;
+  padding: 0px 0px 20px 36px;
+  font-family: ${(props) => props.theme.fonts.regular};
 `;
 
 export default function TelaAvaliacoesSeguranca() {
   const theme = useTheme();
   const { usuarioLogado, historicoViagens } = useCaronas();
-  const [diretrizAbertaId, setDiretrizAbertaId] = useState(diretrizesSeguranca[0].id);
+  const [diretrizAbertaId, setDiretrizAbertaId] = useState(
+    diretrizesSeguranca[0].id,
+  );
 
-  const totalViagens = useMemo(() => historicoViagens.length + 48, [historicoViagens.length]);
+  const totalViagens = useMemo(
+    () => historicoViagens.length + 48,
+    [historicoViagens.length],
+  );
 
   const alternarDiretriz = (diretrizId) => {
-    setDiretrizAbertaId((diretrizAtualId) => (diretrizAtualId === diretrizId ? null : diretrizId));
+    setDiretrizAbertaId((diretrizAtualId) =>
+      diretrizAtualId === diretrizId ? null : diretrizId,
+    );
   };
 
   return (
     <Container>
       <Header>
-        <Eyebrow>{usuarioLogado.nome} • {usuarioLogado.curso}</Eyebrow>
-        <ScreenTitle>Avaliações e Segurança</ScreenTitle>
+        <Eyebrow>
+          {usuarioLogado.nome} • {usuarioLogado.curso}
+        </Eyebrow>
+        <ScreenTitle>Avaliações e segurança</ScreenTitle>
       </Header>
 
       <Card>
@@ -428,13 +467,20 @@ export default function TelaAvaliacoesSeguranca() {
           </RatingBadge>
           <RatingSummary>
             <RatingValue>4.9 / 5.0</RatingValue>
-            <RatingLabel>Baseada em {totalViagens} viagens avaliadas pela comunidade UniAcademia.</RatingLabel>
+            <RatingLabel>
+              Baseada em {totalViagens} viagens avaliadas pela comunidade
+              UniAcademia.
+            </RatingLabel>
           </RatingSummary>
         </ReputationHeader>
 
         <RatingMetaRow>
           <MetaPill>
-            <Feather name="check-circle" size={14} color={theme.colors.primary} />
+            <Feather
+              name="check-circle"
+              size={14}
+              color={theme.colors.primary}
+            />
             <MetaPillText>96% recomendam</MetaPillText>
           </MetaPill>
           <MetaPill>
@@ -462,7 +508,11 @@ export default function TelaAvaliacoesSeguranca() {
           <BadgeCard key={seloConfianca.id}>
             <BadgeCardInner>
               <BadgeIcon fundo={seloConfianca.fundo}>
-                <Feather name={seloConfianca.icone} size={22} color={theme.colors[seloConfianca.cor]} />
+                <Feather
+                  name={seloConfianca.icone}
+                  size={22}
+                  color={theme.colors[seloConfianca.cor]}
+                />
               </BadgeIcon>
               <BadgeTitle>{seloConfianca.titulo}</BadgeTitle>
               <BadgeDescription>{seloConfianca.descricao}</BadgeDescription>
@@ -488,7 +538,9 @@ export default function TelaAvaliacoesSeguranca() {
               <ReviewRatingText>{avaliacaoRecente.nota}</ReviewRatingText>
             </ReviewRating>
           </ReviewHeader>
-          <ReviewRoute>{avaliacaoRecente.dataCarona} • {avaliacaoRecente.rota}</ReviewRoute>
+          <ReviewRoute>
+            {avaliacaoRecente.dataCarona} • {avaliacaoRecente.rota}
+          </ReviewRoute>
           <ReviewComment>{avaliacaoRecente.comentario}</ReviewComment>
         </ReviewCard>
       ))}
@@ -505,12 +557,22 @@ export default function TelaAvaliacoesSeguranca() {
               accessibilityLabel={diretrizSeguranca.titulo}
             >
               <AccordionIcon>
-                <Feather name={diretrizSeguranca.icone} size={20} color={theme.colors.primary} />
+                <Feather
+                  name={diretrizSeguranca.icone}
+                  size={20}
+                  color={theme.colors.primary}
+                />
               </AccordionIcon>
               <AccordionTitle>{diretrizSeguranca.titulo}</AccordionTitle>
-              <Feather name={diretrizAberta ? 'chevron-up' : 'chevron-down'} size={20} color={theme.colors.textSecondary} />
+              <Feather
+                name={diretrizAberta ? "chevron-up" : "chevron-down"}
+                size={20}
+                color={theme.colors.textSecondary}
+              />
             </AccordionHeader>
-            {diretrizAberta && <AccordionBody>{diretrizSeguranca.texto}</AccordionBody>}
+            {diretrizAberta && (
+              <AccordionBody>{diretrizSeguranca.texto}</AccordionBody>
+            )}
           </AccordionItem>
         );
       })}

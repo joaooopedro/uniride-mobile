@@ -1,36 +1,37 @@
-import React, { useMemo, useState } from 'react';
-import { Alert } from 'react-native';
-import styled, { useTheme } from 'styled-components/native';
-import { Feather } from '@expo/vector-icons';
-import { useCaronas } from '../context/CaronasContext';
-import CardEstatistica from '../components/CardEstatistica';
-import TagPreferencia from '../components/TagPreferencia';
+import React, { useMemo, useState } from "react";
+import { Alert } from "react-native";
+import styled, { useTheme } from "styled-components/native";
+import MotionPressable from "../components/MotionPressable";
+import { Feather } from "@expo/vector-icons";
+import { useCaronas } from "../context/CaronasContext";
+import CardEstatistica from "../components/CardEstatistica";
+import TagPreferencia from "../components/TagPreferencia";
 
-const fotoPerfilUrl = 'https://i.pravatar.cc/160?img=11';
+const fotoPerfilUrl = "https://i.pravatar.cc/160?img=11";
 
 const gruposPreferencias = [
   {
-    id: 'estiloMusical',
-    titulo: 'Estilo Musical',
-    icone: 'music',
-    opcoes: ['Sertanejo', 'Rock', 'Pop', 'Silêncio'],
+    id: "estiloMusical",
+    titulo: "Música",
+    icone: "music",
+    opcoes: ["Sertanejo", "Rock", "Pop", "Silêncio"],
   },
   {
-    id: 'climatizacao',
-    titulo: 'Climatização',
-    icone: 'wind',
-    opcoes: ['Ar-condicionado ligado', 'Vidro aberto'],
+    id: "climatizacao",
+    titulo: "Climatização",
+    icone: "wind",
+    opcoes: ["Ar-condicionado ligado", "Vidro aberto"],
   },
   {
-    id: 'conversa',
-    titulo: 'Conversa',
-    icone: 'message-circle',
-    opcoes: ['Adora bater papo', 'Prefere focar nos estudos'],
+    id: "conversa",
+    titulo: "Conversa",
+    icone: "message-circle",
+    opcoes: ["Adora bater papo", "Prefere focar nos estudos"],
   },
 ];
 
 const Container = styled.ScrollView.attrs({
-  contentContainerStyle: { padding: 16, paddingBottom: 32 },
+  contentContainerStyle: { padding: 24, paddingBottom: 40 },
   showsVerticalScrollIndicator: false,
 })`
   flex: 1;
@@ -38,11 +39,9 @@ const Container = styled.ScrollView.attrs({
 `;
 
 const ProfileCard = styled.View`
-  background-color: ${(props) => props.theme.colors.surface};
-  border-width: 1px;
-  border-color: ${(props) => props.theme.colors.border};
-  border-radius: ${(props) => props.theme.radii.md}px;
-  padding: ${(props) => props.theme.spacing.md}px;
+  padding: 12px 0px 24px;
+  border-bottom-width: 1px;
+  border-bottom-color: ${(props) => props.theme.colors.border};
 `;
 
 const ProfileHeader = styled.View`
@@ -51,15 +50,11 @@ const ProfileHeader = styled.View`
 `;
 
 const AvatarRing = styled.View`
-  width: 82px;
-  height: 82px;
-  border-radius: ${(props) => props.theme.radii.full}px;
-  border-width: 3px;
-  border-color: ${(props) => props.theme.colors.success};
-  background-color: ${(props) => props.theme.colors.primaryLight};
+  width: 72px;
+  height: 72px;
   align-items: center;
   justify-content: center;
-  margin-right: ${(props) => props.theme.spacing.md}px;
+  margin-right: 16px;
 `;
 
 const AvatarClip = styled.View`
@@ -82,6 +77,8 @@ const AvatarFallback = styled.Text`
   color: ${(props) => props.theme.colors.primary};
   font-size: 18px;
   font-weight: 700;
+
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
 const ProfileInfo = styled.View`
@@ -90,26 +87,27 @@ const ProfileInfo = styled.View`
 
 const UserName = styled.Text`
   color: ${(props) => props.theme.colors.text};
-  font-size: ${(props) => props.theme.typography.sectionHeader.fontSize}px;
+  font-size: 21px;
   font-weight: 700;
-  line-height: ${(props) => props.theme.typography.sectionHeader.lineHeight}px;
+  line-height: 30px;
+  letter-spacing: -0.4px;
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
 const UserCourse = styled.Text`
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 21px;
   color: ${(props) => props.theme.colors.textSecondary};
-  font-size: ${(props) => props.theme.typography.body.fontSize}px;
-  line-height: ${(props) => props.theme.typography.body.lineHeight}px;
-  margin-top: 2px;
+  margin-top: 6px;
+  font-family: ${(props) => props.theme.fonts.regular};
 `;
 
 const EnrollmentBadge = styled.View`
   flex-direction: row;
   align-items: center;
   align-self: flex-start;
-  background-color: ${(props) => props.theme.colors.successLight};
-  border-radius: ${(props) => props.theme.radii.full}px;
-  padding: 5px ${(props) => props.theme.spacing.sm}px;
-  margin-top: ${(props) => props.theme.spacing.sm}px;
+  margin-top: 10px;
 `;
 
 const EnrollmentText = styled.Text`
@@ -117,32 +115,38 @@ const EnrollmentText = styled.Text`
   font-size: ${(props) => props.theme.typography.micro.fontSize}px;
   font-weight: 700;
   margin-left: ${(props) => props.theme.spacing.xs}px;
+
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
-const EditButton = styled.TouchableOpacity`
-  min-height: ${(props) => props.theme.touchTarget.minHeight}px;
+const EditButton = styled(MotionPressable)`
+  min-height: 48px;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  border-radius: ${(props) => props.theme.radii.md}px;
-  background-color: ${(props) => props.theme.colors.primary};
-  padding: 0 ${(props) => props.theme.spacing.md}px;
-  margin-top: ${(props) => props.theme.spacing.md}px;
+  align-self: flex-start;
+  border-radius: 8px;
+  background-color: ${(props) => props.theme.colors.primaryLight};
+  padding: 0px 16px;
+  margin-top: 20px;
 `;
 
 const EditButtonText = styled.Text`
-  color: ${(props) => props.theme.colors.surface};
-  font-size: ${(props) => props.theme.typography.body.fontSize}px;
-  font-weight: 700;
-  margin-left: ${(props) => props.theme.spacing.sm}px;
+  color: ${(props) => props.theme.colors.text};
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 21px;
+  margin-left: 8px;
+  font-family: ${(props) => props.theme.fonts.semibold};
 `;
 
 const SectionTitle = styled.Text`
   color: ${(props) => props.theme.colors.text};
-  font-size: ${(props) => props.theme.typography.sectionHeader.fontSize}px;
-  font-weight: ${(props) => props.theme.typography.sectionHeader.fontWeight};
-  line-height: ${(props) => props.theme.typography.sectionHeader.lineHeight}px;
-  margin: ${(props) => props.theme.spacing.lg}px 0 ${(props) => props.theme.spacing.sm}px;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 28px;
+  margin: 32px 0px 12px;
+  font-family: ${(props) => props.theme.fonts.semibold};
 `;
 
 const MetricsGrid = styled.View`
@@ -152,11 +156,13 @@ const MetricsGrid = styled.View`
 `;
 
 const InfoCard = styled.View`
-  background-color: ${(props) => props.theme.colors.surface};
-  border-width: 1px;
-  border-color: ${(props) => props.theme.colors.border};
-  border-radius: ${(props) => props.theme.radii.md}px;
-  padding: ${(props) => props.theme.spacing.md}px;
+  background-color: transparent;
+  border-width: 0px;
+  border-bottom-width: 1px;
+  border-bottom-color: ${(props) => props.theme.colors.border};
+  border-radius: 0px;
+  padding: 24px 0px;
+  margin-bottom: 12px;
 `;
 
 const InfoHeader = styled.View`
@@ -166,13 +172,11 @@ const InfoHeader = styled.View`
 `;
 
 const InfoIcon = styled.View`
-  width: 40px;
-  height: 40px;
-  border-radius: ${(props) => props.theme.radii.full}px;
-  background-color: ${(props) => props.theme.colors.primaryLight};
+  width: 24px;
+  height: 24px;
   align-items: center;
   justify-content: center;
-  margin-right: ${(props) => props.theme.spacing.mdSm}px;
+  margin-right: 12px;
 `;
 
 const InfoTitle = styled.Text`
@@ -181,6 +185,8 @@ const InfoTitle = styled.Text`
   font-size: ${(props) => props.theme.typography.cardTitle.fontSize}px;
   font-weight: 700;
   line-height: ${(props) => props.theme.typography.cardTitle.lineHeight}px;
+
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
 const DetailRow = styled.View`
@@ -194,6 +200,8 @@ const DetailLabel = styled.Text`
   color: ${(props) => props.theme.colors.textSecondary};
   font-size: ${(props) => props.theme.typography.body.fontSize}px;
   line-height: ${(props) => props.theme.typography.body.lineHeight}px;
+
+  font-family: ${(props) => props.theme.fonts.regular};
 `;
 
 const DetailValue = styled.Text`
@@ -204,6 +212,8 @@ const DetailValue = styled.Text`
   line-height: ${(props) => props.theme.typography.body.lineHeight}px;
   text-align: right;
   margin-left: ${(props) => props.theme.spacing.md}px;
+
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
 const PixBox = styled.View`
@@ -222,10 +232,12 @@ const PixText = styled.Text`
   font-weight: 600;
   line-height: ${(props) => props.theme.typography.body.lineHeight}px;
   margin-left: ${(props) => props.theme.spacing.sm}px;
+
+  font-family: ${(props) => props.theme.fonts.semibold};
 `;
 
 const PreferenceCard = styled(InfoCard)`
-  margin-bottom: ${(props) => props.theme.spacing.md}px;
+  margin-bottom: 12px;
 `;
 
 const PreferenceHeader = styled.View`
@@ -240,6 +252,8 @@ const PreferenceTitle = styled.Text`
   font-weight: 700;
   line-height: ${(props) => props.theme.typography.cardTitle.lineHeight}px;
   margin-left: ${(props) => props.theme.spacing.sm}px;
+
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
 const TagsWrap = styled.View`
@@ -251,7 +265,7 @@ const FooterActions = styled.View`
   margin-top: ${(props) => props.theme.spacing.md}px;
 `;
 
-const LogoutButton = styled.TouchableOpacity`
+const LogoutButton = styled(MotionPressable)`
   min-height: ${(props) => props.theme.touchTarget.minHeight}px;
   flex-direction: row;
   align-items: center;
@@ -266,9 +280,11 @@ const LogoutText = styled.Text`
   font-size: ${(props) => props.theme.typography.body.fontSize}px;
   font-weight: 700;
   margin-left: ${(props) => props.theme.spacing.sm}px;
+
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
-const TermsButton = styled.TouchableOpacity`
+const TermsButton = styled(MotionPressable)`
   min-height: ${(props) => props.theme.touchTarget.minHeight}px;
   align-items: center;
   justify-content: center;
@@ -279,58 +295,75 @@ const TermsText = styled.Text`
   color: ${(props) => props.theme.colors.textSecondary};
   font-size: ${(props) => props.theme.typography.caption.fontSize}px;
   font-weight: 700;
+
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
 export default function TelaPerfilUniversitario() {
   const theme = useTheme();
-  const { usuarioLogado, caronasDisponiveis, reservas, historicoViagens } = useCaronas();
+  const { usuarioLogado, caronasDisponiveis, reservas, historicoViagens } =
+    useCaronas();
   const [preferenciasSelecionadas, setPreferenciasSelecionadas] = useState({
-    estiloMusical: 'Pop',
-    climatizacao: 'Ar-condicionado ligado',
-    conversa: 'Adora bater papo',
+    estiloMusical: "Pop",
+    climatizacao: "Ar-condicionado ligado",
+    conversa: "Adora bater papo",
   });
 
   const metricasPerfil = useMemo(() => {
-    const caronasAtivasDoUsuario = caronasDisponiveis.filter((carona) => carona.motorista === usuarioLogado.nome);
-    const caronasHistoricasDoUsuario = historicoViagens.filter((viagem) => viagem.papel === 'Motorista');
-    const viagensRealizadas = historicoViagens.length + reservas.length + caronasAtivasDoUsuario.length + 37;
-    const caronasOferecidas = caronasAtivasDoUsuario.length + caronasHistoricasDoUsuario.length + 16;
+    const caronasAtivasDoUsuario = caronasDisponiveis.filter(
+      (carona) => carona.motorista === usuarioLogado.nome,
+    );
+    const caronasHistoricasDoUsuario = historicoViagens.filter(
+      (viagem) => viagem.papel === "Motorista",
+    );
+    const viagensRealizadas =
+      historicoViagens.length +
+      reservas.length +
+      caronasAtivasDoUsuario.length +
+      37;
+    const caronasOferecidas =
+      caronasAtivasDoUsuario.length + caronasHistoricasDoUsuario.length + 16;
 
     return [
       {
-        titulo: 'Viagens Realizadas',
+        titulo: "Viagens realizadas",
         valor: viagensRealizadas,
-        descricao: 'Entre reservas e histórico',
-        icone: 'map',
-        cor: 'primary',
-        fundo: 'primaryLight',
+        descricao: "Entre reservas e histórico",
+        icone: "map",
+        cor: "primary",
+        fundo: "primaryLight",
       },
       {
-        titulo: 'Caronas Oferecidas',
+        titulo: "Caronas oferecidas",
         valor: caronasOferecidas,
-        descricao: 'Rotas compartilhadas',
-        icone: 'users',
-        cor: 'secondary',
-        fundo: 'secondaryLight',
+        descricao: "Rotas compartilhadas",
+        icone: "users",
+        cor: "secondary",
+        fundo: "secondaryLight",
       },
       {
-        titulo: 'Economia Estimada',
-        valor: 'R$ 340,00',
-        descricao: 'Em combustível dividido',
-        icone: 'trending-down',
-        cor: 'success',
-        fundo: 'successLight',
+        titulo: "Economia estimada",
+        valor: "R$ 340,00",
+        descricao: "Em combustível dividido",
+        icone: "trending-down",
+        cor: "success",
+        fundo: "successLight",
       },
       {
-        titulo: 'Horas Economizadas',
-        valor: '14h',
-        descricao: 'Menos tempo no trânsito',
-        icone: 'clock',
-        cor: 'warning',
-        fundo: 'warningLight',
+        titulo: "Horas economizadas",
+        valor: "14h",
+        descricao: "Menos tempo no trânsito",
+        icone: "clock",
+        cor: "warning",
+        fundo: "warningLight",
       },
     ];
-  }, [caronasDisponiveis, historicoViagens, reservas.length, usuarioLogado.nome]);
+  }, [
+    caronasDisponiveis,
+    historicoViagens,
+    reservas.length,
+    usuarioLogado.nome,
+  ]);
 
   const selecionarPreferencia = (grupoId, preferencia) => {
     setPreferenciasSelecionadas((preferenciasAtuais) => ({
@@ -340,15 +373,24 @@ export default function TelaPerfilUniversitario() {
   };
 
   const abrirEdicaoPerfil = () => {
-    Alert.alert('Editar Perfil', 'Edição de perfil disponível na próxima integração do UniRide.');
+    Alert.alert(
+      "Editar perfil",
+      "Edição de perfil disponível na próxima integração do UniRide.",
+    );
   };
 
   const abrirTermosUso = () => {
-    Alert.alert('Termos de Uso Acadêmico', 'O UniRide é restrito a alunos verificados da UniAcademia. Use caronas com respeito, pontualidade e responsabilidade.');
+    Alert.alert(
+      "Termos de uso",
+      "O UniRide é restrito a alunos verificados da UniAcademia. Use caronas com respeito, pontualidade e responsabilidade.",
+    );
   };
 
   const confirmarLogout = () => {
-    Alert.alert('Sair da Conta', `Sessão de ${usuarioLogado.nome} na UniAcademia.`);
+    Alert.alert(
+      "Sair da conta",
+      `Sessão de ${usuarioLogado.nome} na UniAcademia.`,
+    );
   };
 
   return (
@@ -363,16 +405,24 @@ export default function TelaPerfilUniversitario() {
           </AvatarRing>
           <ProfileInfo>
             <UserName>{usuarioLogado.nome}</UserName>
-            <UserCourse>{usuarioLogado.curso} • {usuarioLogado.periodo}</UserCourse>
+            <UserCourse>
+              {usuarioLogado.curso} • {usuarioLogado.periodo}
+            </UserCourse>
             <EnrollmentBadge>
-              <Feather name="check-circle" size={13} color={theme.colors.success} />
-              <EnrollmentText>Matrícula {usuarioLogado.matricula}</EnrollmentText>
+              <Feather
+                name="check-circle"
+                size={13}
+                color={theme.colors.success}
+              />
+              <EnrollmentText>
+                Matrícula {usuarioLogado.matricula}
+              </EnrollmentText>
             </EnrollmentBadge>
           </ProfileInfo>
         </ProfileHeader>
         <EditButton onPress={abrirEdicaoPerfil} activeOpacity={0.85}>
-          <Feather name="edit-2" size={18} color={theme.colors.surface} />
-          <EditButtonText>Editar Perfil</EditButtonText>
+          <Feather name="edit-2" size={16} color={theme.colors.primary} />
+          <EditButtonText>Editar perfil</EditButtonText>
         </EditButton>
       </ProfileCard>
 
@@ -401,7 +451,9 @@ export default function TelaPerfilUniversitario() {
         </InfoHeader>
         <DetailRow>
           <DetailLabel>Modelo</DetailLabel>
-          <DetailValue>{usuarioLogado.veiculo.marca} {usuarioLogado.veiculo.modelo}</DetailValue>
+          <DetailValue>
+            {usuarioLogado.veiculo.marca} {usuarioLogado.veiculo.modelo}
+          </DetailValue>
         </DetailRow>
         <DetailRow>
           <DetailLabel>Cor</DetailLabel>
@@ -421,7 +473,11 @@ export default function TelaPerfilUniversitario() {
       {gruposPreferencias.map((grupoPreferencia) => (
         <PreferenceCard key={grupoPreferencia.id}>
           <PreferenceHeader>
-            <Feather name={grupoPreferencia.icone} size={20} color={theme.colors.primary} />
+            <Feather
+              name={grupoPreferencia.icone}
+              size={20}
+              color={theme.colors.primary}
+            />
             <PreferenceTitle>{grupoPreferencia.titulo}</PreferenceTitle>
           </PreferenceHeader>
           <TagsWrap>
@@ -430,8 +486,12 @@ export default function TelaPerfilUniversitario() {
                 key={preferencia}
                 texto={preferencia}
                 icone={grupoPreferencia.icone}
-                ativa={preferenciasSelecionadas[grupoPreferencia.id] === preferencia}
-                onPress={() => selecionarPreferencia(grupoPreferencia.id, preferencia)}
+                ativa={
+                  preferenciasSelecionadas[grupoPreferencia.id] === preferencia
+                }
+                onPress={() =>
+                  selecionarPreferencia(grupoPreferencia.id, preferencia)
+                }
               />
             ))}
           </TagsWrap>
@@ -441,10 +501,10 @@ export default function TelaPerfilUniversitario() {
       <FooterActions>
         <LogoutButton onPress={confirmarLogout} activeOpacity={0.85}>
           <Feather name="log-out" size={18} color={theme.colors.danger} />
-          <LogoutText>Sair da Conta</LogoutText>
+          <LogoutText>Sair da conta</LogoutText>
         </LogoutButton>
         <TermsButton onPress={abrirTermosUso} activeOpacity={0.75}>
-          <TermsText>Termos de Uso Acadêmico</TermsText>
+          <TermsText>Termos de uso</TermsText>
         </TermsButton>
       </FooterActions>
     </Container>

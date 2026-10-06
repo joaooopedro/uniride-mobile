@@ -1,6 +1,6 @@
-import React from 'react';
-import styled, { useTheme } from 'styled-components/native';
-import { Feather } from '@expo/vector-icons';
+import React from "react";
+import styled, { useTheme } from "styled-components/native";
+import { Feather } from "@expo/vector-icons";
 
 const Card = styled.View`
   width: 50%;
@@ -8,29 +8,27 @@ const Card = styled.View`
 `;
 
 const CardInner = styled.View`
-  min-height: 136px;
-  background-color: ${(props) => props.theme.colors.surface};
-  border-width: 1px;
-  border-color: ${(props) => props.theme.colors.border};
-  border-radius: ${(props) => props.theme.radii.md}px;
-  padding: ${(props) => props.theme.spacing.md}px;
+  min-height: 142px;
+  border-top-width: 1px;
+  border-top-color: ${(props) => props.theme.colors.border};
+  padding: 16px 8px 12px 0px;
 `;
 
 const IconContainer = styled.View`
-  width: 40px;
-  height: 40px;
-  border-radius: ${(props) => props.theme.radii.full}px;
-  background-color: ${(props) => props.theme.colors[props.fundo]};
+  width: 24px;
+  height: 24px;
   align-items: center;
   justify-content: center;
-  margin-bottom: ${(props) => props.theme.spacing.mdSm}px;
+  margin-bottom: 12px;
 `;
 
 const Value = styled.Text`
   color: ${(props) => props.theme.colors.text};
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
-  line-height: 28px;
+  line-height: 33px;
+  letter-spacing: -0.5px;
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
 const Title = styled.Text`
@@ -39,6 +37,8 @@ const Title = styled.Text`
   font-weight: 700;
   line-height: ${(props) => props.theme.typography.caption.lineHeight}px;
   margin-top: ${(props) => props.theme.spacing.xs}px;
+
+  font-family: ${(props) => props.theme.fonts.bold};
 `;
 
 const Description = styled.Text`
@@ -46,9 +46,18 @@ const Description = styled.Text`
   font-size: ${(props) => props.theme.typography.micro.fontSize}px;
   line-height: ${(props) => props.theme.typography.micro.lineHeight}px;
   margin-top: 2px;
+
+  font-family: ${(props) => props.theme.fonts.regular};
 `;
 
-export default function CardEstatistica({ titulo, valor, descricao, icone, cor = 'primary', fundo = 'primaryLight' }) {
+export default function CardEstatistica({
+  titulo,
+  valor,
+  descricao,
+  icone,
+  cor = "primary",
+  fundo = "primaryLight",
+}) {
   const theme = useTheme();
 
   return (

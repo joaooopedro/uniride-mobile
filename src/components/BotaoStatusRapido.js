@@ -1,17 +1,16 @@
-import React from 'react';
-import styled, { useTheme } from 'styled-components/native';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import styled, { useTheme } from "styled-components/native";
+import MotionPressable from "./MotionPressable";
+import { Ionicons } from "@expo/vector-icons";
 
-const Botao = styled.TouchableOpacity`
+const Botao = styled(MotionPressable)`
   flex-direction: row;
   align-items: center;
-  min-height: ${(props) => props.theme.touchTarget.minHeight}px;
-  padding: 0 ${(props) => props.theme.spacing.md}px;
-  margin-right: ${(props) => props.theme.spacing.sm}px;
-  border-radius: ${(props) => props.theme.radii.full}px;
-  border-width: 1px;
-  border-color: ${(props) => props.theme.colors.border};
-  background-color: ${(props) => props.theme.colors.surface};
+  min-height: 48px;
+  padding: 0px 14px;
+  margin-right: 8px;
+  border-radius: 8px;
+  background-color: ${(props) => props.theme.colors.primaryLight};
 `;
 
 const TextoBotao = styled.Text`
@@ -20,6 +19,8 @@ const TextoBotao = styled.Text`
   font-weight: 600;
   line-height: ${(props) => props.theme.typography.caption.lineHeight}px;
   color: ${(props) => props.theme.colors.text};
+
+  font-family: ${(props) => props.theme.fonts.semibold};
 `;
 
 export default function BotaoStatusRapido({ texto, icone, onPress }) {

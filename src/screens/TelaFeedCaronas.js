@@ -1,89 +1,358 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList } from 'react-native';
-import styled from 'styled-components/native';
-import { Feather } from '@expo/vector-icons';
-import { useCaronas } from '../context/CaronasContext';
-import CardCarona from '../components/CardCarona';
-
-const Container = styled.View`flex: 1; background-color: ${(props) => props.theme.colors.background};`;
-const HeaderContent = styled.View`padding: ${(props) => props.theme.spacing.md}px ${(props) => props.theme.spacing.md}px ${(props) => props.theme.spacing.sm}px;`;
-const Greeting = styled.Text`color: ${(props) => props.theme.colors.textSecondary}; font-size: ${(props) => props.theme.typography.body.fontSize}px; line-height: 20px;`;
-const Title = styled.Text`color: ${(props) => props.theme.colors.text}; font-size: ${(props) => props.theme.typography.display.fontSize}px; font-weight: 700; line-height: ${(props) => props.theme.typography.display.lineHeight}px; margin-top: 2px;`;
-const SearchField = styled.View`min-height: ${(props) => props.theme.touchTarget.minHeight}px; flex-direction: row; align-items: center; background-color: ${(props) => props.theme.colors.surface}; border-width: 1px; border-color: ${(props) => props.theme.colors.border}; border-radius: ${(props) => props.theme.radii.sm}px; padding-left: ${(props) => props.theme.spacing.md}px; margin-top: ${(props) => props.theme.spacing.md}px;`;
-const SearchInput = styled.TextInput`flex: 1; min-height: 44px; color: ${(props) => props.theme.colors.text}; font-size: ${(props) => props.theme.typography.body.fontSize}px; padding: 0 ${(props) => props.theme.spacing.sm}px;`;
-const ClearButton = styled.TouchableOpacity`width: 44px; height: 44px; align-items: center; justify-content: center;`;
-const FiltersLabel = styled.Text`color: ${(props) => props.theme.colors.text}; font-size: ${(props) => props.theme.typography.cardTitle.fontSize}px; font-weight: 600; margin: ${(props) => props.theme.spacing.lg}px ${(props) => props.theme.spacing.md}px ${(props) => props.theme.spacing.sm}px;`;
-const FiltersScroll = styled.ScrollView.attrs({
-  contentContainerStyle: { paddingRight: 16, alignItems: 'center' },
-})`height: 52px; flex-grow: 0; flex-shrink: 0; padding-left: ${(props) => props.theme.spacing.md}px;`;
-const FilterChip = styled.TouchableOpacity`min-height: ${(props) => props.theme.touchTarget.minHeight}px; flex-shrink: 0; flex-direction: row; align-items: center; border-width: 1px; border-color: ${(props) => (props.active ? props.theme.colors.primary : props.theme.colors.border)}; background-color: ${(props) => (props.active ? props.theme.colors.primaryLight : props.theme.colors.surface)}; border-radius: ${(props) => props.theme.radii.full}px; padding: 0 ${(props) => props.theme.spacing.md}px; margin-right: ${(props) => props.theme.spacing.sm}px;`;
-const FilterChipText = styled.Text`color: ${(props) => (props.active ? props.theme.colors.primary : props.theme.colors.textSecondary)}; font-size: ${(props) => props.theme.typography.caption.fontSize}px; font-weight: 600; flex-shrink: 0; margin-left: ${(props) => (props.hasIcon ? props.theme.spacing.sm : 0)}px;`;
-const ResultsLabel = styled.Text`color: ${(props) => props.theme.colors.textSecondary}; font-size: ${(props) => props.theme.typography.caption.fontSize}px; margin: ${(props) => props.theme.spacing.lg}px ${(props) => props.theme.spacing.md}px ${(props) => props.theme.spacing.sm}px;`;
-const ResultsList = styled(FlatList).attrs({ contentContainerStyle: { paddingHorizontal: 16, paddingBottom: 24 }, showsVerticalScrollIndicator: false })``;
-const EmptyState = styled.View`align-items: center; padding: ${(props) => props.theme.spacing.xl}px ${(props) => props.theme.spacing.lg}px;`;
-const EmptyIcon = styled.View`width: 64px; height: 64px; border-radius: ${(props) => props.theme.radii.full}px; align-items: center; justify-content: center; background-color: ${(props) => props.theme.colors.primaryLight}; margin-bottom: ${(props) => props.theme.spacing.md}px;`;
-const EmptyTitle = styled.Text`color: ${(props) => props.theme.colors.text}; font-size: ${(props) => props.theme.typography.sectionHeader.fontSize}px; font-weight: 600; text-align: center;`;
-const EmptyDescription = styled.Text`color: ${(props) => props.theme.colors.textSecondary}; font-size: ${(props) => props.theme.typography.body.fontSize}px; line-height: 20px; text-align: center; margin-top: ${(props) => props.theme.spacing.sm}px;`;
-
-function textoPesquisavel(valor) {
-  return valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useCaronas } from "../context/CaronasContext";
+import CardCarona from "../components/CardCarona";
+import MotionPressable from "../components/MotionPressable";
+import theme from "../theme";
+const campi = [
+  { label: "Todos", value: "Todos" },
+  { label: "Academia", value: "Campus Academia (Centro)" },
+  { label: "Estrela Sul", value: "Campus Estrela Sul" },
+];
+function normalizar(valor) {
+  return valor
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
-
 export default function TelaFeedCaronas({ navigation }) {
   const { usuarioLogado, caronasDisponiveis } = useCaronas();
-  const [textoBusca, setTextoBusca] = useState('');
-  const [buscaAplicada, setBuscaAplicada] = useState('');
-  const [campusSelecionado, setCampusSelecionado] = useState('Todos');
+  const [textoBusca, setTextoBusca] = useState("");
+  const [buscaAplicada, setBuscaAplicada] = useState("");
+  const [campusSelecionado, setCampusSelecionado] = useState("Todos");
   const [turnoSelecionado, setTurnoSelecionado] = useState(null);
   const [somenteComVagas, setSomenteComVagas] = useState(false);
-
   useEffect(() => {
-    const debounceBusca = setTimeout(() => setBuscaAplicada(textoBusca.trim()), 300);
-    return () => clearTimeout(debounceBusca);
+    const timer = setTimeout(() => setBuscaAplicada(textoBusca.trim()), 300);
+    return () => clearTimeout(timer);
   }, [textoBusca]);
-
-  const caronasFiltradas = useMemo(() => {
-    const buscaNormalizada = textoPesquisavel(buscaAplicada);
-    return caronasDisponiveis.filter((carona) => {
-      const rotaPesquisavel = textoPesquisavel(`${carona.bairroOrigem} ${carona.campusDestino} ${carona.motorista}`);
-      const atendeBusca = !buscaNormalizada || rotaPesquisavel.includes(buscaNormalizada);
-      const atendeCampus = campusSelecionado === 'Todos' || carona.campusDestino === campusSelecionado;
-      const atendeTurno = !turnoSelecionado || carona.turno === turnoSelecionado;
-      const atendeVagas = !somenteComVagas || carona.vagasRestantes > 0;
-      return atendeBusca && atendeCampus && atendeTurno && atendeVagas;
-    });
-  }, [buscaAplicada, campusSelecionado, caronasDisponiveis, somenteComVagas, turnoSelecionado]);
-
-  const alternarTurno = (turno) => setTurnoSelecionado((turnoAtual) => (turnoAtual === turno ? null : turno));
-  const abrirDetalhes = (carona) => navigation.navigate('DetalhesCarona', { caronaId: carona.id });
-
+  const caronasFiltradas = useMemo(
+    () =>
+      caronasDisponiveis.filter((carona) => {
+        const rota = normalizar(
+          carona.bairroOrigem +
+            " " +
+            carona.campusDestino +
+            " " +
+            carona.motorista,
+        );
+        return (
+          (!buscaAplicada || rota.includes(normalizar(buscaAplicada))) &&
+          (campusSelecionado === "Todos" ||
+            carona.campusDestino === campusSelecionado) &&
+          (!turnoSelecionado || carona.turno === turnoSelecionado) &&
+          (!somenteComVagas || carona.vagasRestantes > 0)
+        );
+      }),
+    [
+      buscaAplicada,
+      campusSelecionado,
+      caronasDisponiveis,
+      somenteComVagas,
+      turnoSelecionado,
+    ],
+  );
+  const filtros = [
+    {
+      label: "Manhã",
+      icon: "sunny-outline",
+      selected: turnoSelecionado === "Manhã",
+      press: () =>
+        setTurnoSelecionado(turnoSelecionado === "Manhã" ? null : "Manhã"),
+    },
+    {
+      label: "Noite",
+      icon: "moon-outline",
+      selected: turnoSelecionado === "Noite",
+      press: () =>
+        setTurnoSelecionado(turnoSelecionado === "Noite" ? null : "Noite"),
+    },
+    {
+      label: "Com vagas",
+      icon: "people-outline",
+      selected: somenteComVagas,
+      press: () => setSomenteComVagas(!somenteComVagas),
+    },
+  ];
+  const limparFiltros = () => {
+    setTextoBusca("");
+    setBuscaAplicada("");
+    setCampusSelecionado("Todos");
+    setTurnoSelecionado(null);
+    setSomenteComVagas(false);
+  };
   return (
-    <Container>
-      <HeaderContent>
-        <Greeting>Olá, {usuarioLogado.nome.split(' ')[0]}</Greeting>
-        <Title>Encontre sua carona</Title>
-        <SearchField>
-          <Feather name="search" size={20} color="#64748B" />
-          <SearchInput value={textoBusca} onChangeText={setTextoBusca} placeholder="Busque por bairro ou campus" placeholderTextColor="#94A3B8" returnKeyType="search" />
-          {textoBusca.length > 0 && <ClearButton onPress={() => setTextoBusca('')} accessibilityLabel="Limpar busca"><Feather name="x-circle" size={20} color="#64748B" /></ClearButton>}
-        </SearchField>
-      </HeaderContent>
-      <FiltersLabel>Filtros rápidos</FiltersLabel>
-      <FiltersScroll horizontal showsHorizontalScrollIndicator={false}>
-        <FilterChip active={campusSelecionado === 'Todos'} onPress={() => setCampusSelecionado('Todos')}><FilterChipText active={campusSelecionado === 'Todos'}>Todos</FilterChipText></FilterChip>
-        <FilterChip active={campusSelecionado === 'Campus Academia (Centro)'} onPress={() => setCampusSelecionado('Campus Academia (Centro)')}><FilterChipText active={campusSelecionado === 'Campus Academia (Centro)'}>Campus Academia (Centro)</FilterChipText></FilterChip>
-        <FilterChip active={campusSelecionado === 'Campus Estrela Sul'} onPress={() => setCampusSelecionado('Campus Estrela Sul')}><FilterChipText active={campusSelecionado === 'Campus Estrela Sul'}>Campus Estrela Sul</FilterChipText></FilterChip>
-        <FilterChip active={turnoSelecionado === 'Manhã'} onPress={() => alternarTurno('Manhã')}><Feather name="sun" size={16} color={turnoSelecionado === 'Manhã' ? '#2563EB' : '#64748B'} /><FilterChipText active={turnoSelecionado === 'Manhã'} hasIcon>Manhã</FilterChipText></FilterChip>
-        <FilterChip active={turnoSelecionado === 'Noite'} onPress={() => alternarTurno('Noite')}><Feather name="moon" size={16} color={turnoSelecionado === 'Noite' ? '#2563EB' : '#64748B'} /><FilterChipText active={turnoSelecionado === 'Noite'} hasIcon>Noite</FilterChipText></FilterChip>
-        <FilterChip active={somenteComVagas} onPress={() => setSomenteComVagas((filtroAtivo) => !filtroAtivo)}><Feather name="users" size={16} color={somenteComVagas ? '#2563EB' : '#64748B'} /><FilterChipText active={somenteComVagas} hasIcon>Com vagas disponíveis</FilterChipText></FilterChip>
-      </FiltersScroll>
-      <ResultsLabel>{caronasFiltradas.length} {caronasFiltradas.length === 1 ? 'carona encontrada' : 'caronas encontradas'}</ResultsLabel>
-      <ResultsList
-        data={caronasFiltradas}
-        keyExtractor={(carona) => carona.id}
-        renderItem={({ item: carona }) => <CardCarona carona={carona} onVerDetalhes={abrirDetalhes} />}
-        ListEmptyComponent={<EmptyState><EmptyIcon><Feather name="search" size={28} color="#2563EB" /></EmptyIcon><EmptyTitle>Nenhuma carona encontrada</EmptyTitle><EmptyDescription>Altere a busca ou remova algum filtro para ver outras rotas.</EmptyDescription></EmptyState>}
-      />
-    </Container>
+    <FlatList
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      data={caronasFiltradas}
+      keyExtractor={(carona) => carona.id}
+      renderItem={({ item }) => (
+        <CardCarona
+          carona={item}
+          onVerDetalhes={(carona) =>
+            navigation.navigate("DetalhesCarona", { caronaId: carona.id })
+          }
+        />
+      )}
+      ListHeaderComponent={
+        <View>
+          <Text style={styles.greeting}>
+            Olá, {usuarioLogado.nome.split(" ")[0]}
+          </Text>
+          <Text style={styles.title}>Encontre sua{"\n"}próxima carona.</Text>
+          <View style={styles.search}>
+            <Ionicons
+              name="search-outline"
+              size={21}
+              color={theme.colors.accent}
+            />
+            <TextInput
+              style={styles.input}
+              value={textoBusca}
+              onChangeText={setTextoBusca}
+              placeholder="Bairro, campus ou motorista"
+              placeholderTextColor={theme.colors.textMuted}
+              accessibilityLabel="Buscar caronas"
+              returnKeyType="search"
+            />
+            {textoBusca.length > 0 && (
+              <MotionPressable
+                style={styles.clear}
+                accessibilityLabel="Limpar busca"
+                onPress={() => setTextoBusca("")}
+              >
+                <Ionicons
+                  name="close"
+                  size={20}
+                  color={theme.colors.textSecondary}
+                />
+              </MotionPressable>
+            )}
+          </View>
+          <View style={styles.campi}>
+            {campi.map((campus) => (
+              <MotionPressable
+                key={campus.value}
+                style={[
+                  styles.campus,
+                  campusSelecionado === campus.value && styles.campusSelected,
+                ]}
+                onPress={() => setCampusSelecionado(campus.value)}
+                accessibilityRole="tab"
+                accessibilityLabel={
+                  campus.value === "Todos" ? "Todos os campi" : campus.value
+                }
+                accessibilityState={{
+                  selected: campusSelecionado === campus.value,
+                }}
+              >
+                <Text
+                  style={[
+                    styles.campusText,
+                    campusSelecionado === campus.value &&
+                      styles.campusTextSelected,
+                  ]}
+                >
+                  {campus.label}
+                </Text>
+              </MotionPressable>
+            ))}
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filters}
+          >
+            {filtros.map((filtro) => (
+              <MotionPressable
+                key={filtro.label}
+                style={[
+                  styles.filter,
+                  filtro.selected && styles.filterSelected,
+                ]}
+                onPress={filtro.press}
+                accessibilityLabel={"Filtrar: " + filtro.label}
+                accessibilityState={{ selected: filtro.selected }}
+              >
+                <Ionicons
+                  name={filtro.icon}
+                  size={15}
+                  color={
+                    filtro.selected
+                      ? theme.colors.accent
+                      : theme.colors.textSecondary
+                  }
+                />
+                <Text
+                  style={[
+                    styles.filterText,
+                    filtro.selected && { color: theme.colors.accent },
+                  ]}
+                >
+                  {filtro.label}
+                </Text>
+              </MotionPressable>
+            ))}
+          </ScrollView>
+          <View style={styles.results}>
+            <Text style={styles.resultsTitle}>Rotas disponíveis</Text>
+            <Text style={styles.count}>
+              {caronasFiltradas.length}{" "}
+              {caronasFiltradas.length === 1 ? "carona" : "caronas"}
+            </Text>
+          </View>
+        </View>
+      }
+      ListEmptyComponent={
+        <View style={styles.empty}>
+          <Ionicons
+            name="search-outline"
+            size={32}
+            color={theme.colors.accent}
+          />
+          <Text style={styles.emptyTitle}>Nenhuma carona por aqui</Text>
+          <Text style={styles.emptyCopy}>
+            Tente outro bairro ou ajuste os filtros.
+          </Text>
+          <MotionPressable style={styles.emptyAction} onPress={limparFiltros}>
+            <Text style={styles.actionText}>Limpar filtros</Text>
+          </MotionPressable>
+        </View>
+      }
+    />
   );
 }
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.colors.background },
+  content: { paddingHorizontal: 24, paddingBottom: 32 },
+  greeting: {
+    fontFamily: theme.fonts.medium,
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+    marginTop: 12,
+  },
+  title: {
+    fontFamily: theme.fonts.bold,
+    fontSize: 31,
+    lineHeight: 38,
+    letterSpacing: -1,
+    color: theme.colors.text,
+    marginTop: 8,
+  },
+  search: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: theme.colors.borderLight,
+    borderRadius: 10,
+    paddingLeft: 16,
+    marginTop: 24,
+    minHeight: 54,
+  },
+  input: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: 54,
+    fontFamily: theme.fonts.regular,
+    fontSize: 12,
+    color: theme.colors.text,
+    paddingVertical: 12,
+    paddingRight: 12,
+  },
+  clear: {
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  campi: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    marginTop: 18,
+  },
+  campus: {
+    flex: 1,
+    minHeight: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
+  },
+  campusSelected: { borderBottomColor: theme.colors.primary },
+  campusText: {
+    fontFamily: theme.fonts.medium,
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+  },
+  campusTextSelected: {
+    fontFamily: theme.fonts.bold,
+    color: theme.colors.primary,
+  },
+  filters: { gap: 8, paddingVertical: 16 },
+  filter: {
+    minHeight: 48,
+    paddingHorizontal: 13,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    backgroundColor: theme.colors.borderLight,
+    borderRadius: 8,
+  },
+  filterSelected: { backgroundColor: theme.colors.secondaryLight },
+  filterText: {
+    fontFamily: theme.fonts.medium,
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+  },
+  results: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingTop: 14,
+    paddingBottom: 4,
+  },
+  resultsTitle: {
+    fontFamily: theme.fonts.semibold,
+    fontSize: 16,
+    color: theme.colors.text,
+  },
+  count: {
+    fontFamily: theme.fonts.regular,
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+  },
+  empty: { paddingVertical: 48, alignItems: "center", gap: 10 },
+  emptyTitle: {
+    fontFamily: theme.fonts.semibold,
+    fontSize: 18,
+    color: theme.colors.text,
+  },
+  emptyCopy: {
+    fontFamily: theme.fonts.regular,
+    fontSize: 13,
+    color: theme.colors.textSecondary,
+    textAlign: "center",
+  },
+  emptyAction: {
+    minHeight: 48,
+    justifyContent: "center",
+    paddingHorizontal: 16,
+  },
+  actionText: {
+    fontFamily: theme.fonts.bold,
+    fontSize: 13,
+    color: theme.colors.accent,
+  },
+});

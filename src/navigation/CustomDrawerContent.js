@@ -1,186 +1,224 @@
-import React from 'react';
-import { Alert, View } from 'react-native';
-import styled, { useTheme } from 'styled-components/native';
-import { Feather, Ionicons } from '@expo/vector-icons';
-import { useCaronas } from '../context/CaronasContext';
+import React from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useCaronas } from "../context/CaronasContext";
+import MotionPressable from "../components/MotionPressable";
+import Wordmark from "../components/Wordmark";
+import theme from "../theme";
 
-const DrawerContainer = styled.SafeAreaView`
-  flex: 1;
-  background-color: ${(props) => props.theme.colors.surface};
-`;
-
-const HeaderSection = styled.View`
-  padding: ${(props) => props.theme.spacing.lg}px ${(props) => props.theme.spacing.md}px;
-  background-color: ${(props) => props.theme.colors.primaryLight};
-  border-bottom-width: 1px;
-  border-bottom-color: ${(props) => props.theme.colors.border};
-`;
-
-const UserAvatarCircle = styled.View`
-  width: 52px;
-  height: 52px;
-  border-radius: ${(props) => props.theme.radii.full}px;
-  background-color: ${(props) => props.theme.colors.surface};
-  border-width: 2px;
-  border-color: ${(props) => props.theme.colors.primary};
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 8px;
-`;
-
-const UserName = styled.Text`
-  font-size: ${(props) => props.theme.typography.sectionHeader.fontSize}px;
-  font-weight: 700;
-  color: ${(props) => props.theme.colors.text};
-`;
-
-const UserCourse = styled.Text`
-  font-size: ${(props) => props.theme.typography.caption.fontSize}px;
-  color: ${(props) => props.theme.colors.textSecondary};
-  margin-top: 2px;
-`;
-
-const VerifiedBadge = styled.View`
-  flex-direction: row;
-  align-items: center;
-  background-color: ${(props) => props.theme.colors.successLight};
-  padding: 3px 8px;
-  border-radius: ${(props) => props.theme.radii.full}px;
-  align-self: flex-start;
-  margin-top: 6px;
-`;
-
-const VerifiedText = styled.Text`
-  font-size: ${(props) => props.theme.typography.micro.fontSize}px;
-  font-weight: 700;
-  color: ${(props) => props.theme.colors.success};
-  margin-left: 4px;
-`;
-
-const MenuList = styled.ScrollView`
-  flex: 1;
-  padding: ${(props) => props.theme.spacing.md}px 0;
-`;
-
-const MenuItem = styled.TouchableOpacity`
-  flex-direction: row;
-  align-items: center;
-  padding: 12px ${(props) => props.theme.spacing.md}px;
-  background-color: ${(props) => (props.active ? props.theme.colors.primaryLight : 'transparent')};
-  margin: 2px ${(props) => props.theme.spacing.sm}px;
-  border-radius: ${(props) => props.theme.radii.sm}px;
-`;
-
-const MenuLabel = styled.Text`
-  font-size: ${(props) => props.theme.typography.body.fontSize}px;
-  font-weight: ${(props) => (props.active ? '700' : '500')};
-  color: ${(props) => (props.active ? props.theme.colors.primary : props.theme.colors.text)};
-  margin-left: ${(props) => props.theme.spacing.md}px;
-  flex: 1;
-`;
-
-const FooterSection = styled.View`
-  padding: ${(props) => props.theme.spacing.md}px;
-  border-top-width: 1px;
-  border-top-color: ${(props) => props.theme.colors.border};
-`;
-
-const AppVersion = styled.Text`
-  font-size: ${(props) => props.theme.typography.micro.fontSize}px;
-  color: ${(props) => props.theme.colors.textMuted};
-  text-align: center;
-  margin-top: 8px;
-`;
-
-const LogoutButton = styled.TouchableOpacity`
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  border-radius: ${(props) => props.theme.radii.sm}px;
-  background-color: ${(props) => props.theme.colors.dangerLight};
-`;
-
-const LogoutText = styled.Text`
-  font-size: ${(props) => props.theme.typography.caption.fontSize}px;
-  font-weight: 600;
-  color: ${(props) => props.theme.colors.danger};
-  margin-left: 6px;
-`;
+const sections = [
+  {
+    title: "Comunidade",
+    items: [
+      {
+        label: "Avaliações e segurança",
+        description: "Reputação e confiança entre alunos",
+        icon: "shield-checkmark-outline",
+        route: "AvaliacoesSeguranca",
+      },
+      {
+        label: "Ajuda e orientações",
+        description: "Como aproveitar sua carona",
+        icon: "help-circle-outline",
+        route: "Ajuda",
+      },
+    ],
+  },
+  {
+    title: "Aplicativo",
+    items: [
+      {
+        label: "Configurações",
+        description: "Ajustes da sua experiência",
+        icon: "options-outline",
+        route: "Configuracoes",
+      },
+      {
+        label: "Sobre o UniRide",
+        description: "O projeto e a comunidade",
+        icon: "information-circle-outline",
+        route: "Sobre",
+      },
+    ],
+  },
+];
 
 export default function CustomDrawerContent({ navigation, state }) {
-  const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const { usuarioLogado } = useCaronas();
-
-  const handleLogout = () => {
-    Alert.alert('UniRide', 'Sessão do estudante João Pedro Silva (UniAcademia).');
-  };
-
+  const currentRoute = state.routes[state.index].name;
   return (
-    <DrawerContainer>
-      <HeaderSection>
-        <UserAvatarCircle>
-          <Feather name="user" size={26} color={theme.colors.primary} />
-        </UserAvatarCircle>
-        <UserName>{usuarioLogado.nome}</UserName>
-        <UserCourse>{usuarioLogado.curso} • UniAcademia</UserCourse>
-        <VerifiedBadge>
-          <Ionicons name="shield-checkmark" size={12} color={theme.colors.success} />
-          <VerifiedText>Aluno Verificado</VerifiedText>
-        </VerifiedBadge>
-      </HeaderSection>
-
-      <MenuList showsVerticalScrollIndicator={false}>
-        <MenuItem
-          onPress={() => navigation.navigate('MainTabs', { screen: 'Explorar' })}
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[
+        styles.content,
+        { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 },
+      ]}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.brandRow}>
+        <Wordmark width={150} />
+        <MotionPressable
+          style={styles.close}
+          accessibilityLabel="Fechar menu"
+          onPress={() => navigation.closeDrawer()}
         >
-          <Feather name="compass" size={20} color={theme.colors.primary} />
-          <MenuLabel>Explorar Caronas</MenuLabel>
-        </MenuItem>
-
-        <MenuItem
-          onPress={() => navigation.navigate('MainTabs', { screen: 'Oferecer' })}
-        >
-          <Feather name="plus-circle" size={20} color={theme.colors.primary} />
-          <MenuLabel>Oferecer Carona</MenuLabel>
-        </MenuItem>
-
-        <MenuItem
-          onPress={() => navigation.navigate('MainTabs', { screen: 'Viagens' })}
-        >
-          <Feather name="calendar" size={20} color={theme.colors.primary} />
-          <MenuLabel>Minhas Viagens</MenuLabel>
-        </MenuItem>
-
-        <MenuItem
-          onPress={() => navigation.navigate('MainTabs', { screen: 'Avisos' })}
-        >
-          <Feather name="message-square" size={20} color={theme.colors.primary} />
-          <MenuLabel>Central de Avisos / Chat</MenuLabel>
-        </MenuItem>
-
-        <MenuItem
-          onPress={() => navigation.navigate('AvaliacoesSeguranca')}
-        >
-          <Feather name="shield" size={20} color={theme.colors.primary} />
-          <MenuLabel>Avaliações e Segurança</MenuLabel>
-        </MenuItem>
-
-        <MenuItem
-          onPress={() => navigation.navigate('MainTabs', { screen: 'Perfil' })}
-        >
-          <Feather name="user" size={20} color={theme.colors.primary} />
-          <MenuLabel>Perfil Universitário</MenuLabel>
-        </MenuItem>
-      </MenuList>
-
-      <FooterSection>
-        <LogoutButton onPress={handleLogout}>
-          <Feather name="log-out" size={16} color={theme.colors.danger} />
-          <LogoutText>Sair da Conta</LogoutText>
-        </LogoutButton>
-        <AppVersion>UniRide v1.0.0 • Desenvolvimento Móvel 2026-2</AppVersion>
-      </FooterSection>
-    </DrawerContainer>
+          <Ionicons
+            name="close-outline"
+            size={25}
+            color={theme.colors.textSecondary}
+          />
+        </MotionPressable>
+      </View>
+      <View style={styles.identity}>
+        <Text style={styles.name}>{usuarioLogado.nome}</Text>
+        <Text style={styles.course}>{usuarioLogado.curso}</Text>
+        <View style={styles.verified}>
+          <Ionicons name="checkmark" size={14} color={theme.colors.success} />
+          <Text style={styles.verifiedText}>Aluno verificado</Text>
+        </View>
+      </View>
+      {sections.map((section) => (
+        <View key={section.title} style={styles.section}>
+          <Text style={styles.sectionTitle}>{section.title}</Text>
+          {section.items.map((item) => {
+            const selected = currentRoute === item.route;
+            return (
+              <MotionPressable
+                key={item.route}
+                style={styles.item}
+                accessibilityLabel={item.label}
+                accessibilityState={{ selected }}
+                onPress={() => {
+                  navigation.navigate(item.route);
+                  navigation.closeDrawer();
+                }}
+              >
+                {selected && <View style={styles.activeLine} />}
+                <Ionicons
+                  name={item.icon}
+                  size={21}
+                  color={
+                    selected ? theme.colors.accent : theme.colors.textSecondary
+                  }
+                />
+                <View style={styles.copy}>
+                  <Text style={[styles.label, selected && styles.selected]}>
+                    {item.label}
+                  </Text>
+                  <Text style={styles.description}>{item.description}</Text>
+                </View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={15}
+                  color={theme.colors.textMuted}
+                />
+              </MotionPressable>
+            );
+          })}
+        </View>
+      ))}
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>UniAcademia · Juiz de Fora</Text>
+        <Text style={styles.version}>Versão 1.0.0</Text>
+      </View>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.colors.surface },
+  content: { flexGrow: 1, paddingHorizontal: 28 },
+  brandRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  close: {
+    width: 48,
+    height: 48,
+    marginRight: -12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  identity: {
+    paddingTop: 32,
+    paddingBottom: 28,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  name: {
+    fontFamily: theme.fonts.semibold,
+    fontSize: 19,
+    lineHeight: 27,
+    letterSpacing: -0.4,
+    color: theme.colors.text,
+  },
+  course: {
+    fontFamily: theme.fonts.regular,
+    fontSize: 12,
+    lineHeight: 19,
+    color: theme.colors.textSecondary,
+    marginTop: 6,
+  },
+  verified: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 12,
+  },
+  verifiedText: {
+    fontFamily: theme.fonts.medium,
+    fontSize: 11,
+    color: theme.colors.success,
+  },
+  section: { paddingTop: 28 },
+  sectionTitle: {
+    fontFamily: theme.fonts.medium,
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    marginBottom: 8,
+  },
+  item: {
+    minHeight: 76,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 14,
+  },
+  copy: { flex: 1 },
+  label: {
+    fontFamily: theme.fonts.semibold,
+    fontSize: 13,
+    lineHeight: 20,
+    color: theme.colors.text,
+  },
+  selected: { color: theme.colors.accent },
+  description: {
+    fontFamily: theme.fonts.regular,
+    fontSize: 11,
+    lineHeight: 17,
+    color: theme.colors.textSecondary,
+    marginTop: 4,
+  },
+  activeLine: {
+    position: "absolute",
+    width: 2,
+    height: 28,
+    left: -14,
+    backgroundColor: theme.colors.accent,
+  },
+  footer: { marginTop: "auto", paddingTop: 40 },
+  footerText: {
+    fontFamily: theme.fonts.medium,
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+  },
+  version: {
+    fontFamily: theme.fonts.regular,
+    fontSize: 10,
+    color: theme.colors.textMuted,
+    marginTop: 8,
+  },
+});
