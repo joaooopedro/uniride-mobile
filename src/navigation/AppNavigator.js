@@ -1,56 +1,57 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import { useTheme } from 'styled-components/native';
-
-import TabNavigator from './TabNavigator';
-import CustomDrawerContent from './CustomDrawerContent';
-import TelaDetalhesCarona from '../screens/TelaDetalhesCarona';
-import TelaAvaliacoesSeguranca from '../screens/TelaAvaliacoesSeguranca';
-
+import React from "react";
+import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
+import { createDrawerNavigator } from "@react-navigation/drawer";
+import { useWindowDimensions } from "react-native";
+import theme from "../theme";
+import AppHeader from "../components/AppHeader";
+import TabNavigator from "./TabNavigator";
+import CustomDrawerContent from "./CustomDrawerContent";
+import TelaDetalhesCarona from "../screens/TelaDetalhesCarona";
+import TelaAvaliacoesSeguranca from "../screens/TelaAvaliacoesSeguranca";
+import TelaConfiguracoes from "../screens/TelaConfiguracoes";
+import TelaAjuda from "../screens/TelaAjuda";
+import TelaSobre from "../screens/TelaSobre";
 const Drawer = createDrawerNavigator();
-
+const navigationTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: theme.colors.background,
+    card: theme.colors.surface,
+    primary: theme.colors.accent,
+    text: theme.colors.text,
+    border: theme.colors.border,
+  },
+};
 export default function AppNavigator() {
-  const theme = useTheme();
-
+  const { width } = useWindowDimensions();
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navigationTheme}>
       <Drawer.Navigator
         drawerContent={(props) => <CustomDrawerContent {...props} />}
         screenOptions={{
           headerShown: false,
+          drawerType: "front",
           drawerStyle: {
             backgroundColor: theme.colors.surface,
-            width: 280,
+            width: Math.min(320, width * 0.86),
           },
-          drawerActiveTintColor: theme.colors.primary,
-          drawerInactiveTintColor: theme.colors.textSecondary,
+          overlayColor: "rgba(23,46,70,0.24)",
         }}
       >
         <Drawer.Screen
           name="MainTabs"
           component={TabNavigator}
-          options={{ title: 'Início' }}
+          options={{ title: "Início" }}
         />
         <Drawer.Screen
           name="DetalhesCarona"
           component={TelaDetalhesCarona}
           options={{
             headerShown: true,
-            title: 'Detalhes da Carona',
-            headerStyle: {
-              backgroundColor: theme.colors.surface,
-              elevation: 0,
-              shadowOpacity: 0,
-              borderBottomWidth: 1,
-              borderBottomColor: theme.colors.border,
-            },
-            headerTitleStyle: {
-              fontSize: theme.typography.sectionHeader.fontSize,
-              fontWeight: '700',
-              color: theme.colors.text,
-            },
-            headerTintColor: theme.colors.primary,
+            header: ({ navigation }) => (
+              <AppHeader navigation={navigation} title="Detalhes" back />
+            ),
           }}
         />
         <Drawer.Screen
@@ -58,20 +59,39 @@ export default function AppNavigator() {
           component={TelaAvaliacoesSeguranca}
           options={{
             headerShown: true,
-            title: 'Segurança e Avaliações',
-            headerStyle: {
-              backgroundColor: theme.colors.surface,
-              elevation: 0,
-              shadowOpacity: 0,
-              borderBottomWidth: 1,
-              borderBottomColor: theme.colors.border,
-            },
-            headerTitleStyle: {
-              fontSize: theme.typography.sectionHeader.fontSize,
-              fontWeight: '700',
-              color: theme.colors.text,
-            },
-            headerTintColor: theme.colors.primary,
+            header: ({ navigation }) => (
+              <AppHeader navigation={navigation} title="Comunidade" back />
+            ),
+          }}
+        />
+        <Drawer.Screen
+          name="Configuracoes"
+          component={TelaConfiguracoes}
+          options={{
+            headerShown: true,
+            header: ({ navigation }) => (
+              <AppHeader navigation={navigation} title="Preferências" back />
+            ),
+          }}
+        />
+        <Drawer.Screen
+          name="Ajuda"
+          component={TelaAjuda}
+          options={{
+            headerShown: true,
+            header: ({ navigation }) => (
+              <AppHeader navigation={navigation} title="Ajuda" back />
+            ),
+          }}
+        />
+        <Drawer.Screen
+          name="Sobre"
+          component={TelaSobre}
+          options={{
+            headerShown: true,
+            header: ({ navigation }) => (
+              <AppHeader navigation={navigation} title="Sobre" back />
+            ),
           }}
         />
       </Drawer.Navigator>
