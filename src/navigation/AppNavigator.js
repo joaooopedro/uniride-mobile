@@ -8,9 +8,6 @@ import TabNavigator from "./TabNavigator";
 import CustomDrawerContent from "./CustomDrawerContent";
 import TelaDetalhesCarona from "../screens/TelaDetalhesCarona";
 import TelaAvaliacoesSeguranca from "../screens/TelaAvaliacoesSeguranca";
-import TelaConfiguracoes from "../screens/TelaConfiguracoes";
-import TelaAjuda from "../screens/TelaAjuda";
-import TelaSobre from "../screens/TelaSobre";
 const Drawer = createDrawerNavigator();
 const navigationTheme = {
   ...DefaultTheme,
@@ -61,36 +58,6 @@ export default function AppNavigator() {
             headerShown: true,
             header: ({ navigation }) => (
               <AppHeader navigation={navigation} title="Comunidade" back />
-            ),
-          }}
-        />
-        <Drawer.Screen
-          name="Configuracoes"
-          component={TelaConfiguracoes}
-          options={{
-            headerShown: true,
-            header: ({ navigation }) => (
-              <AppHeader navigation={navigation} title="Preferências" back />
-            ),
-          }}
-        />
-        <Drawer.Screen
-          name="Ajuda"
-          component={TelaAjuda}
-          options={{
-            headerShown: true,
-            header: ({ navigation }) => (
-              <AppHeader navigation={navigation} title="Ajuda" back />
-            ),
-          }}
-        />
-        <Drawer.Screen
-          name="Sobre"
-          component={TelaSobre}
-          options={{
-            headerShown: true,
-            header: ({ navigation }) => (
-              <AppHeader navigation={navigation} title="Sobre" back />
             ),
           }}
         />

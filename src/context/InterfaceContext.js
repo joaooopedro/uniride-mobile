@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { AccessibilityInfo } from "react-native";
 const InterfaceContext = createContext(null);
 export function InterfaceProvider({ children }) {
-  const [animacoesAtivas, setAnimacoesAtivas] = useState(true);
   const [movimentoReduzido, setMovimentoReduzido] = useState(true);
   useEffect(() => {
     let ativo = true;
@@ -25,10 +24,8 @@ export function InterfaceProvider({ children }) {
   return (
     <InterfaceContext.Provider
       value={{
-        animacoesAtivas,
-        setAnimacoesAtivas,
         movimentoReduzido,
-        podeAnimar: animacoesAtivas && !movimentoReduzido,
+        podeAnimar: !movimentoReduzido,
       }}
     >
       {children}
