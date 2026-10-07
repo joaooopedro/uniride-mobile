@@ -56,7 +56,6 @@ const avaliacoesRecentes = [
     dataCarona: "02/10",
     rota: "Alto dos Passos para Campus Estrela Sul",
     nota: "5.0",
-    fotoUrl: "https://i.pravatar.cc/96?img=32",
     comentario:
       "Saída no horário combinado, direção tranquila e conversa respeitosa durante o trajeto.",
   },
@@ -68,7 +67,6 @@ const avaliacoesRecentes = [
     dataCarona: "30/09",
     rota: "Centro para Campus Academia",
     nota: "4.9",
-    fotoUrl: "https://i.pravatar.cc/96?img=12",
     comentario:
       "Confirmou a rota antes da saída e manteve todos informados pelo chat da carona.",
   },
@@ -80,7 +78,6 @@ const avaliacoesRecentes = [
     dataCarona: "27/09",
     rota: "Manoel Honório para Campus Academia",
     nota: "5.0",
-    fotoUrl: "https://i.pravatar.cc/96?img=47",
     comentario:
       "Ponto de encontro fácil de achar, carro limpo e chegada com tempo para a primeira aula.",
   },
@@ -324,11 +321,6 @@ const AvatarWrap = styled.View`
   overflow: hidden;
 `;
 
-const AvatarImage = styled.Image`
-  width: 48px;
-  height: 48px;
-`;
-
 const AvatarFallback = styled.Text`
   color: ${(props) => props.theme.colors.primary};
   font-size: ${(props) => props.theme.typography.caption.fontSize}px;
@@ -492,7 +484,7 @@ export default function TelaAvaliacoesSeguranca() {
         <DistributionList>
           {distribuicaoNotas.map((faixaNota) => (
             <DistributionRow key={faixaNota.estrelas}>
-              <StarsLabel>{faixaNota.estrelas} ★</StarsLabel>
+              <StarsLabel>{faixaNota.estrelas} estrelas</StarsLabel>
               <ProgressTrack>
                 <ProgressFill percentual={faixaNota.percentual} />
               </ProgressTrack>
@@ -527,7 +519,6 @@ export default function TelaAvaliacoesSeguranca() {
           <ReviewHeader>
             <AvatarWrap>
               <AvatarFallback>{avaliacaoRecente.iniciais}</AvatarFallback>
-              <AvatarImage source={{ uri: avaliacaoRecente.fotoUrl }} />
             </AvatarWrap>
             <ReviewInfo>
               <ReviewerName>{avaliacaoRecente.nome}</ReviewerName>

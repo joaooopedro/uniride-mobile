@@ -7,7 +7,6 @@ import { useCaronas } from "../context/CaronasContext";
 import CardEstatistica from "../components/CardEstatistica";
 import TagPreferencia from "../components/TagPreferencia";
 
-const fotoPerfilUrl = "https://i.pravatar.cc/160?img=11";
 
 const gruposPreferencias = [
   {
@@ -65,11 +64,6 @@ const AvatarClip = styled.View`
   align-items: center;
   justify-content: center;
   background-color: ${(props) => props.theme.colors.primaryLight};
-`;
-
-const AvatarImage = styled.Image`
-  width: 72px;
-  height: 72px;
 `;
 
 const AvatarFallback = styled.Text`
@@ -400,7 +394,6 @@ export default function TelaPerfilUniversitario() {
           <AvatarRing>
             <AvatarClip>
               <AvatarFallback>{usuarioLogado.iniciais}</AvatarFallback>
-              <AvatarImage source={{ uri: fotoPerfilUrl }} />
             </AvatarClip>
           </AvatarRing>
           <ProfileInfo>
