@@ -17,29 +17,6 @@ const sections = [
         icon: "shield-checkmark-outline",
         route: "AvaliacoesSeguranca",
       },
-      {
-        label: "Ajuda e orientações",
-        description: "Como aproveitar sua carona",
-        icon: "help-circle-outline",
-        route: "Ajuda",
-      },
-    ],
-  },
-  {
-    title: "Aplicativo",
-    items: [
-      {
-        label: "Configurações",
-        description: "Ajustes da sua experiência",
-        icon: "options-outline",
-        route: "Configuracoes",
-      },
-      {
-        label: "Sobre o UniRide",
-        description: "O projeto e a comunidade",
-        icon: "information-circle-outline",
-        route: "Sobre",
-      },
     ],
   },
 ];

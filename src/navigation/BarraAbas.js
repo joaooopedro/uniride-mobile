@@ -21,7 +21,7 @@ const icons = {
   Avisos: ["chatbubble-ellipses-outline", "chatbubble-ellipses"],
   Perfil: ["person-outline", "person"],
 };
-export default function PremiumTabBar({ state, descriptors, navigation }) {
+export default function BarraAbas({ state, descriptors, navigation }) {
   const insets = useSafeAreaInsets();
   const { mensagensNaoLidas, avisosNaoLidos } = useAvisos();
   const { podeAnimar } = useInterface();

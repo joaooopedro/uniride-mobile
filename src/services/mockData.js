@@ -19,25 +19,21 @@ export const AVISOS_RAPIDOS = [
     id: 'cheguei-ponto',
     texto: 'Cheguei no ponto de encontro',
     icone: 'location-outline',
-    resposta: 'Beleza, chego em 3 minutos.',
   },
   {
     id: 'atraso',
     texto: 'Atraso de 5 minutos, aguardem',
     icone: 'time-outline',
-    resposta: 'Sem problema, te espero no ponto.',
   },
   {
     id: 'semaforo',
     texto: 'Carro parado no semáforo',
     icone: 'car-outline',
-    resposta: 'Tranquilo, obrigado por avisar.',
   },
   {
     id: 'cheguei-portaria',
     texto: 'Já cheguei na portaria da faculdade',
     icone: 'school-outline',
-    resposta: 'Boa aula! Na volta a gente combina por aqui.',
   },
 ];
 

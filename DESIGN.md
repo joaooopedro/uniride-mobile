@@ -19,11 +19,11 @@ A fonte Manrope usa quatro pesos locais: regular, médio, semibold e bold. Títu
 - Rotas apresentam primeiro horário e preço, depois trajeto, disponibilidade e motorista.
 - Seções de formulário, perfil e avaliações usam espaço e divisórias em vez de cartões aninhados.
 - Os filtros mantêm rótulos visíveis e estados selecionados.
-- A navegação inferior conserva as cinco abas. O menu lateral reúne Avaliações e segurança, Ajuda e orientações, Configurações e Sobre o UniRide. Não repete as abas.
+- A navegação inferior conserva as cinco abas. O menu lateral reúne Avaliações e segurança. Não repete as abas.
 - Estados de viagem aparecem como ícone e texto, sem cápsulas ou fundo preenchido.
 - A área mínima dos controles principais é de 48 pontos. As barras respeitam as áreas seguras do Android.
 - Transição das abas: 160 ms. Indicador da navegação: 180 ms. Resposta ao toque: 90 a 150 ms.
-- Animações respeitam movimento reduzido do sistema. Configurações permite desativar os movimentos adicionais durante a sessão.
+- Animações respeitam movimento reduzido do sistema.
 
 ## Referências
 
@@ -31,6 +31,6 @@ A fonte Manrope usa quatro pesos locais: regular, médio, semibold e bold. Títu
 
 [BlaBlaCar](https://www.blablacar.com.br/) foi uma referência de organização para busca, preço, perfil e confiança. As escolhas de marca e layout foram adaptadas ao contexto universitário do UniRide.
 
-## Escopo preservado
+## Escopo da Etapa 1
 
-A base inclui os merges #19 e #20 do Nicolas. Reservas, publicação, cancelamento, chat, avisos e preferências continuam com as integrações existentes. Os contextos de caronas e avisos não foram alterados.
+O app entrega só as sete telas e a navegação. Os dados são fixos, em memória, sem backend e sem recurso externo. Não há resposta automática no chat nem aviso gerado por ação do usuário.

@@ -15,7 +15,7 @@ const REGRAS_CARRO = [
   "Música",
   "Porta-malas livre",
 ];
-// ponytail: distâncias fixas aproximadas por bairro, trocar por API de rotas quando houver backend
+// Distâncias fixas aproximadas por bairro, sem consulta de rota.
 const DISTANCIA_KM = {
   Cascatinha: { "Campus Academia (Centro)": 3.8, "Campus Estrela Sul": 3.0 },
   "São Mateus": { "Campus Academia (Centro)": 2.6, "Campus Estrela Sul": 3.4 },

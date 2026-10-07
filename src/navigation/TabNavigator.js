@@ -2,7 +2,7 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useInterface } from "../context/InterfaceContext";
 import AppHeader from "../components/AppHeader";
-import PremiumTabBar from "./PremiumTabBar";
+import BarraAbas from "./BarraAbas";
 import TelaFeedCaronas from "../screens/TelaFeedCaronas";
 import TelaOferecerCarona from "../screens/TelaOferecerCarona";
 import TelaMinhasViagens from "../screens/TelaMinhasViagens";
@@ -13,7 +13,7 @@ export default function TabNavigator({ navigation }) {
   const { podeAnimar } = useInterface();
   return (
     <Tab.Navigator
-      tabBar={(props) => <PremiumTabBar {...props} />}
+      tabBar={(props) => <BarraAbas {...props} />}
       screenOptions={{
         header: () => <AppHeader navigation={navigation} />,
         animation: podeAnimar ? "fade" : "none",
