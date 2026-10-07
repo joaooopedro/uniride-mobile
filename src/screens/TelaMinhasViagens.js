@@ -384,7 +384,7 @@ export default function TelaMinhasViagens({ navigation }) {
     ],
   };
 
-  // ponytail: sem backend, o refresh só simula a busca; os dados já vêm atualizados do contexto
+  // Sem backend: o refresh só reexibe os dados que já estão no contexto.
   const atualizarViagens = () => {
     setAtualizando(true);
     setTimeout(() => setAtualizando(false), 800);
