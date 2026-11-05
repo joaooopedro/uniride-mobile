@@ -1,81 +1,187 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
-const CaronasContext = createContext({});
+import { repo } from "../services";
+import { useAuth } from "./AuthContext";
 
-const caronasMockadas = [
-  { id: 'carona-001', motorista: 'Mariana Costa', iniciaisMotorista: 'MC', notaMotorista: '4.9', bairroOrigem: 'Cascatinha', campusDestino: 'Campus Academia (Centro)', turno: 'Manhã', horarioSaida: '07:10', modeloCarro: 'Onix Prata', placaCarro: 'ABC-1234', vagasRestantes: 2, valorRateio: 'R$ 6,00', pontoEncontro: 'Rua José Lourenço Kelmer, em frente ao posto', destinoDetalhado: 'UniAcademia, Portaria Principal Campus Academia', motoristaCurso: 'Administração, 5º período', telefoneEmergencia: '(32) 9****-4821', marcaCarro: 'Chevrolet', corCarro: 'Prata', comodidades: ['Ar-condicionado', 'Música', 'Porta-malas livre'], passageirosConfirmados: [{ nome: 'Ana Clara', iniciais: 'AC' }, { nome: 'Pedro Henrique', iniciais: 'PH' }], chavePix: 'mariana.costa@uniride.edu.br', alunoVerificado: true },
-  { id: 'carona-002', motorista: 'Rafael Mendes', iniciaisMotorista: 'RM', notaMotorista: '4.8', bairroOrigem: 'São Mateus', campusDestino: 'Campus Estrela Sul', turno: 'Noite', horarioSaida: '18:20', modeloCarro: 'HB20 Azul', placaCarro: 'JFO-4821', vagasRestantes: 1, valorRateio: 'R$ 7,00', pontoEncontro: 'Praça do São Mateus, em frente à Igreja', destinoDetalhado: 'UniAcademia, Portaria Principal Campus Estrela Sul', motoristaCurso: 'Engenharia de Software, 6º período', telefoneEmergencia: '(32) 9****-1098', marcaCarro: 'Hyundai', corCarro: 'Azul', comodidades: ['Ar-condicionado', 'Música'], passageirosConfirmados: [{ nome: 'Lucas Alves', iniciais: 'LA' }, { nome: 'Bianca Reis', iniciais: 'BR' }], chavePix: 'rafael.mendes@uniride.edu.br', alunoVerificado: true },
-  { id: 'carona-003', motorista: 'Beatriz Almeida', iniciaisMotorista: 'BA', notaMotorista: '5.0', bairroOrigem: 'Alto dos Passos', campusDestino: 'Campus Academia (Centro)', turno: 'Manhã', horarioSaida: '06:50', modeloCarro: 'Fit Branco', placaCarro: 'DEF-9062', vagasRestantes: 3, valorRateio: 'R$ 5,50', pontoEncontro: 'Avenida Rio Branco, próximo ao Carrefour', destinoDetalhado: 'UniAcademia, Portaria Principal Campus Academia', motoristaCurso: 'Direito, 7º período', telefoneEmergencia: '(32) 9****-7360', marcaCarro: 'Honda', corCarro: 'Branco', comodidades: ['Ar-condicionado', 'Porta-malas livre'], passageirosConfirmados: [{ nome: 'Julia Souza', iniciais: 'JS' }], chavePix: 'beatriz.almeida@uniride.edu.br', alunoVerificado: true },
-  { id: 'carona-004', motorista: 'Lucas Ferreira', iniciaisMotorista: 'LF', notaMotorista: '4.7', bairroOrigem: 'Santa Luzia', campusDestino: 'Campus Estrela Sul', turno: 'Noite', horarioSaida: '18:40', modeloCarro: 'Argo Cinza', placaCarro: 'GHI-7710', vagasRestantes: 0, valorRateio: 'R$ 6,50', pontoEncontro: 'Avenida Santa Luzia, em frente à praça', destinoDetalhado: 'UniAcademia, Portaria Principal Campus Estrela Sul', motoristaCurso: 'Psicologia, 4º período', telefoneEmergencia: '(32) 9****-5512', marcaCarro: 'Fiat', corCarro: 'Cinza', comodidades: ['Música'], passageirosConfirmados: [{ nome: 'Rafaela Lima', iniciais: 'RL' }, { nome: 'Igor Dias', iniciais: 'ID' }], chavePix: 'lucas.ferreira@uniride.edu.br', alunoVerificado: true },
-  { id: 'carona-005', motorista: 'Camila Rocha', iniciaisMotorista: 'CR', notaMotorista: '4.9', bairroOrigem: 'Granbery', campusDestino: 'Campus Academia (Centro)', turno: 'Noite', horarioSaida: '18:00', modeloCarro: 'Kwid Vermelho', placaCarro: 'JKL-3158', vagasRestantes: 2, valorRateio: 'R$ 5,00', pontoEncontro: 'Rua Batista de Oliveira, próximo ao Granbery', destinoDetalhado: 'UniAcademia, Portaria Principal Campus Academia', motoristaCurso: 'Arquitetura, 8º período', telefoneEmergencia: '(32) 9****-8843', marcaCarro: 'Renault', corCarro: 'Vermelho', comodidades: ['Ar-condicionado', 'Porta-malas livre'], passageirosConfirmados: [{ nome: 'Luana Castro', iniciais: 'LC' }], chavePix: 'camila.rocha@uniride.edu.br', alunoVerificado: true },
-  { id: 'carona-006', motorista: 'Thiago Martins', iniciaisMotorista: 'TM', notaMotorista: '4.6', bairroOrigem: 'Benfica', campusDestino: 'Campus Academia (Centro)', turno: 'Manhã', horarioSaida: '06:20', modeloCarro: 'Sandero Preto', placaCarro: 'MNO-2246', vagasRestantes: 1, valorRateio: 'R$ 8,00', pontoEncontro: 'Terminal de Benfica, entrada principal', destinoDetalhado: 'UniAcademia, Portaria Principal Campus Academia', motoristaCurso: 'Sistemas de Informação, 6º período', telefoneEmergencia: '(32) 9****-4401', marcaCarro: 'Renault', corCarro: 'Preto', comodidades: ['Música'], passageirosConfirmados: [{ nome: 'Enzo Ribeiro', iniciais: 'ER' }], chavePix: 'thiago.martins@uniride.edu.br', alunoVerificado: true },
-  { id: 'carona-007', motorista: 'Juliana Nunes', iniciaisMotorista: 'JN', notaMotorista: '4.8', bairroOrigem: 'Centro', campusDestino: 'Campus Estrela Sul', turno: 'Manhã', horarioSaida: '07:30', modeloCarro: 'C3 Branco', placaCarro: 'PQR-6403', vagasRestantes: 2, valorRateio: 'R$ 6,00', pontoEncontro: 'Parque Halfeld, em frente ao ponto de ônibus', destinoDetalhado: 'UniAcademia, Portaria Principal Campus Estrela Sul', motoristaCurso: 'Engenharia Civil, 5º período', telefoneEmergencia: '(32) 9****-2674', marcaCarro: 'Citroën', corCarro: 'Branco', comodidades: ['Ar-condicionado', 'Música', 'Porta-malas livre'], passageirosConfirmados: [{ nome: 'Diego Martins', iniciais: 'DM' }], chavePix: 'juliana.nunes@uniride.edu.br', alunoVerificado: true },
-  { id: 'carona-008', motorista: 'Eduardo Lopes', iniciaisMotorista: 'EL', notaMotorista: '4.9', bairroOrigem: 'Manoel Honório', campusDestino: 'Campus Academia (Centro)', turno: 'Noite', horarioSaida: '18:15', modeloCarro: 'Corolla Prata', placaCarro: 'STU-1987', vagasRestantes: 0, valorRateio: 'R$ 7,50', pontoEncontro: 'Praça de Manoel Honório, próximo à banca', destinoDetalhado: 'UniAcademia, Portaria Principal Campus Academia', motoristaCurso: 'Engenharia de Software, 6º período', telefoneEmergencia: '(32) 9****-9135', marcaCarro: 'Toyota', corCarro: 'Prata', comodidades: ['Ar-condicionado', 'Porta-malas livre'], passageirosConfirmados: [{ nome: 'Nathalia Reis', iniciais: 'NR' }, { nome: 'Otávio Lima', iniciais: 'OL' }], chavePix: 'eduardo.lopes@uniride.edu.br', alunoVerificado: true },
-  { id: 'carona-009', motorista: 'João Pedro Silva', iniciaisMotorista: 'JP', notaMotorista: '4.8', bairroOrigem: 'Alto dos Passos', campusDestino: 'Campus Estrela Sul', turno: 'Noite', horarioSaida: '18:30', modeloCarro: 'Gol Branco', placaCarro: 'RTA-4F32', vagasRestantes: 1, valorRateio: 'R$ 4,50', pontoEncontro: 'Rua Oscar Vidal, em frente à padaria', destinoDetalhado: 'UniAcademia, Portaria Principal Campus Estrela Sul', motoristaCurso: 'Ciência da Computação, 5º período', telefoneEmergencia: '(32) 9****-3317', marcaCarro: 'Volkswagen', corCarro: 'Branco', comodidades: ['Sem fumo', 'Música'], passageirosConfirmados: [{ nome: 'Larissa Prado', iniciais: 'LP' }, { nome: 'Gustavo Neves', iniciais: 'GN' }], chavePix: 'joao.silva@uniride.edu.br', alunoVerificado: true, statusViagem: 'Confirmada' },
-];
+const CaronasContext = createContext(null);
 
-const reservasMockadas = [
-  { caronaId: 'carona-002', status: 'Em Andamento' },
-  { caronaId: 'carona-003', status: 'Aguardando Saída' },
-  { caronaId: 'carona-007', status: 'Confirmada' },
-];
+// Mantém uma inscrição por carona e devolve o mapa { caronaId: carona }.
+function useCaronasPorId(ids) {
+  const [mapa, setMapa] = useState({});
+  const inscricoes = useRef({});
+  const chave = [...new Set(ids)].sort().join("|");
 
-const historicoMockado = [
-  { id: 'viagem-101', papel: 'Passageiro', motorista: 'Mariana Costa', bairroOrigem: 'Cascatinha', campusDestino: 'Campus Academia (Centro)', horarioSaida: '07:10', data: '29/09', valorRateio: 'R$ 6,00' },
-  { id: 'viagem-102', papel: 'Motorista', motorista: 'João Pedro Silva', bairroOrigem: 'Alto dos Passos', campusDestino: 'Campus Estrela Sul', horarioSaida: '18:30', data: '01/10', valorRateio: 'R$ 4,50', totalPassageiros: 3 },
-];
+  useEffect(() => {
+    const desejados = new Set(chave ? chave.split("|") : []);
+    Object.keys(inscricoes.current).forEach((id) => {
+      if (!desejados.has(id)) {
+        inscricoes.current[id]();
+        delete inscricoes.current[id];
+        setMapa((atual) => {
+          const { [id]: _removida, ...resto } = atual;
+          return resto;
+        });
+      }
+    });
+    desejados.forEach((id) => {
+      if (inscricoes.current[id]) return;
+      inscricoes.current[id] = repo.caronas.observarCarona(id, (carona) =>
+        setMapa((atual) => ({ ...atual, [id]: carona })),
+      );
+    });
+  }, [chave]);
+
+  useEffect(
+    () => () => {
+      Object.values(inscricoes.current).forEach((cancelar) => cancelar());
+      inscricoes.current = {};
+    },
+    [],
+  );
+
+  return mapa;
+}
 
 export function CaronasProvider({ children }) {
-  const [usuarioLogado] = useState({ nome: 'João Pedro Silva', iniciais: 'JP', curso: 'Ciência da Computação', periodo: '5º período', matricula: '202301842', nota: '4.8', telefoneEmergencia: '(32) 9****-3317', chavePix: 'joao.silva@uniride.edu.br', veiculo: { marca: 'Volkswagen', modelo: 'Gol', cor: 'Branco', placa: 'RTA-4F32' } });
-  const [caronasDisponiveis, setCaronasDisponiveis] = useState(caronasMockadas);
-  const [reservas, setReservas] = useState(reservasMockadas);
-  const [historicoViagens] = useState(historicoMockado);
+  const { usuario, perfil } = useAuth();
+  const uid = usuario?.uid;
 
-  const adicionarCarona = (oferta) => {
-    const { veiculo } = usuarioLogado;
-    const novaCarona = {
-      ...oferta,
-      id: `carona-${Date.now()}`,
-      motorista: usuarioLogado.nome,
-      iniciaisMotorista: usuarioLogado.iniciais,
-      notaMotorista: usuarioLogado.nota,
-      motoristaCurso: `${usuarioLogado.curso}, ${usuarioLogado.periodo}`,
-      telefoneEmergencia: usuarioLogado.telefoneEmergencia,
-      chavePix: usuarioLogado.chavePix,
-      marcaCarro: veiculo.marca,
-      modeloCarro: `${veiculo.modelo} ${veiculo.cor}`,
-      corCarro: veiculo.cor,
-      placaCarro: veiculo.placa,
-      destinoDetalhado: `UniAcademia, Portaria Principal ${oferta.campusDestino.replace(' (Centro)', '')}`,
-      passageirosConfirmados: [],
-      alunoVerificado: true,
+  const [abertas, setAbertas] = useState([]);
+  const [carregandoCaronas, setCarregandoCaronas] = useState(true);
+  const [erroCaronas, setErroCaronas] = useState(null);
+  const [tentativa, setTentativa] = useState(0);
+  const [reservasPassageiro, setReservasPassageiro] = useState([]);
+  const [reservasMotorista, setReservasMotorista] = useState([]);
+  const [minhasRotas, setMinhasRotas] = useState([]);
+
+  useEffect(() => {
+    if (!uid) return undefined;
+    setCarregandoCaronas(true);
+    setErroCaronas(null);
+    return repo.caronas.observarAbertas(
+      (lista) => {
+        setAbertas(lista);
+        setCarregandoCaronas(false);
+      },
+      (falha) => {
+        setErroCaronas(falha.message || "Não foi possível carregar as caronas.");
+        setCarregandoCaronas(false);
+      },
+    );
+  }, [uid, tentativa]);
+
+  useEffect(() => {
+    if (!uid) return undefined;
+    const cancelar = [
+      repo.reservas.observarDoPassageiro(uid, setReservasPassageiro, () => {}),
+      repo.reservas.observarDoMotorista(uid, setReservasMotorista, () => {}),
+      repo.caronas.observarDoMotorista(uid, setMinhasRotas, () => {}),
+    ];
+    return () => cancelar.forEach((fn) => fn());
+  }, [uid, tentativa]);
+
+  useEffect(() => {
+    if (uid) return;
+    setAbertas([]);
+    setReservasPassageiro([]);
+    setReservasMotorista([]);
+    setMinhasRotas([]);
+  }, [uid]);
+
+  const caronasDasReservas = useCaronasPorId(reservasPassageiro.map((r) => r.caronaId));
+
+  const valor = useMemo(() => {
+    const rotasPorId = Object.fromEntries(minhasRotas.map((rota) => [rota.id, rota]));
+    const exigirPerfil = () => {
+      if (!perfil) throw new Error("Perfil ainda carregando. Tente de novo.");
+      return perfil;
     };
-    setCaronasDisponiveis((caronasAtuais) => [novaCarona, ...caronasAtuais]);
-    return novaCarona;
-  };
+    return {
+      caronasAbertas: abertas.filter((carona) => carona.motoristaId !== uid),
+      carregandoCaronas,
+      erroCaronas,
+      recarregar: () => setTentativa((n) => n + 1),
+      minhasReservas: reservasPassageiro
+        .map((reserva) => ({ reserva, carona: caronasDasReservas[reserva.caronaId] }))
+        .filter((item) => item.carona)
+        .sort((a, b) => a.carona.saidaEm - b.carona.saidaEm),
+      minhasRotas,
+      solicitacoesPendentes: reservasMotorista
+        .filter((reserva) => reserva.status === "solicitada" && rotasPorId[reserva.caronaId])
+        .map((reserva) => ({ reserva, carona: rotasPorId[reserva.caronaId], passageiro: reserva.passageiro }))
+        .sort((a, b) => a.reserva.criadoEm - b.reserva.criadoEm),
+      oferecerCarona: (dados) => repo.caronas.criar(exigirPerfil(), dados),
+      cancelarCarona: (caronaId) => repo.caronas.cancelar(caronaId),
+      iniciarViagem: (caronaId) => repo.caronas.iniciar(caronaId),
+      concluirViagem: (caronaId) => repo.caronas.concluir(caronaId),
+      solicitarReserva: (caronaId) => {
+        const carona = abertas.find((c) => c.id === caronaId) || caronasDasReservas[caronaId];
+        if (!carona) throw new Error("Carona não encontrada.");
+        return repo.reservas.solicitar(carona, exigirPerfil());
+      },
+      cancelarReserva: (caronaId) => repo.reservas.cancelar(`${caronaId}_${uid}`),
+      aceitarReserva: (reservaId) => repo.reservas.aceitar(reservaId),
+      recusarReserva: (reservaId) => repo.reservas.recusar(reservaId),
+      avaliar: ({ reservaId, avaliadoId, nota, comentario }) =>
+        repo.avaliacoes.avaliar({ reservaId, avaliador: exigirPerfil(), avaliadoId, nota, comentario }),
+    };
+  }, [abertas, carregandoCaronas, erroCaronas, reservasPassageiro, reservasMotorista, minhasRotas, caronasDasReservas, perfil, uid]);
 
-  const solicitarReserva = (caronaId) => {
-    const caronaSelecionada = caronasDisponiveis.find((carona) => carona.id === caronaId);
-    const reservaExistente = reservas.some((reserva) => reserva.caronaId === caronaId);
-    if (!caronaSelecionada || caronaSelecionada.vagasRestantes < 1 || reservaExistente || caronaSelecionada.motorista === usuarioLogado.nome) return false;
-    setReservas((reservasAtuais) => [...reservasAtuais, { caronaId, status: 'Confirmada' }]);
-    setCaronasDisponiveis((caronasAtuais) => caronasAtuais.map((carona) => carona.id === caronaId ? { ...carona, vagasRestantes: carona.vagasRestantes - 1 } : carona));
-    return true;
-  };
-
-  const cancelarReserva = (caronaId) => {
-    setReservas((reservasAtuais) => reservasAtuais.filter((reserva) => reserva.caronaId !== caronaId));
-    setCaronasDisponiveis((caronasAtuais) => caronasAtuais.map((carona) => carona.id === caronaId ? { ...carona, vagasRestantes: carona.vagasRestantes + 1 } : carona));
-  };
-
-  const cancelarRota = (caronaId) => {
-    setCaronasDisponiveis((caronasAtuais) => caronasAtuais.filter((carona) => carona.id !== caronaId));
-    setReservas((reservasAtuais) => reservasAtuais.filter((reserva) => reserva.caronaId !== caronaId));
-  };
-
-  return <CaronasContext.Provider value={{ usuarioLogado, caronasDisponiveis, reservas, historicoViagens, solicitarReserva, cancelarReserva, cancelarRota, adicionarCarona }}>{children}</CaronasContext.Provider>;
+  return <CaronasContext.Provider value={valor}>{children}</CaronasContext.Provider>;
 }
 
 export function useCaronas() {
-  return useContext(CaronasContext);
+  const contexto = useContext(CaronasContext);
+  if (!contexto) throw new Error("useCaronas precisa do CaronasProvider.");
+  return contexto;
+}
+
+// Detalhe de uma carona: dados, reservas visíveis ao usuário e contato liberado.
+export function useCarona(caronaId) {
+  const { usuario } = useAuth();
+  const uid = usuario?.uid;
+  const [carona, setCarona] = useState(undefined);
+  const [reservas, setReservas] = useState([]);
+  const [contato, setContato] = useState(null);
+  const [erro, setErro] = useState(null);
+
+  useEffect(() => {
+    if (!caronaId) return undefined;
+    setCarona(undefined);
+    setErro(null);
+    return repo.caronas.observarCarona(caronaId, setCarona, (falha) => setErro(falha.message));
+  }, [caronaId]);
+
+  const souMotorista = !!carona && carona.motoristaId === uid;
+
+  useEffect(() => {
+    if (!carona || !uid) return undefined;
+    if (souMotorista)
+      return repo.reservas.observarDaCaronaComoMotorista(caronaId, uid, setReservas, () => setReservas([]));
+    return repo.reservas.observarReserva(
+      `${caronaId}_${uid}`,
+      (reserva) => setReservas(reserva ? [reserva] : []),
+      () => setReservas([]),
+    );
+  }, [caronaId, uid, souMotorista, !!carona]);
+
+  const participa = !!carona && !!uid && carona.participantes?.includes(uid);
+
+  useEffect(() => {
+    if (!participa) {
+      setContato(null);
+      return undefined;
+    }
+    return repo.caronas.observarContato(caronaId, setContato, () => setContato(null));
+  }, [caronaId, participa]);
+
+  return {
+    carona: carona || null,
+    reservas,
+    minhaReserva: souMotorista ? null : reservas[0] || null,
+    souMotorista,
+    contato,
+    carregando: carona === undefined && !erro,
+    erro: erro || (carona === null ? "Esta carona não existe mais." : null),
+  };
 }
