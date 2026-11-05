@@ -13,10 +13,25 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemeProvider } from "styled-components/native";
 
 import theme from "./src/theme";
+import { AuthProvider } from "./src/context/AuthContext";
 import { CaronasProvider } from "./src/context/CaronasContext";
 import { AvisosProvider } from "./src/context/AvisosContext";
-import AppNavigator from "./src/navigation/AppNavigator";
 import { InterfaceProvider } from "./src/context/InterfaceContext";
+import RootNavigator from "./src/navigation/RootNavigator";
+import FaixaSemConexao from "./src/components/FaixaSemConexao";
+import { useConexao } from "./src/services/conexao";
+
+function Conteudo() {
+  const online = useConexao();
+  return (
+    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <RootNavigator />
+      <View pointerEvents="none" style={{ position: "absolute", left: 0, right: 0, top: 0 }}>
+        <FaixaSemConexao visivel={!online} />
+      </View>
+    </View>
+  );
+}
 
 export default function App() {
   const [fontesCarregadas, erroFonte] = useFonts({
@@ -54,12 +69,14 @@ export default function App() {
     <SafeAreaProvider>
       <ThemeProvider theme={temaAtivo}>
         <InterfaceProvider>
-          <CaronasProvider>
-            <AvisosProvider>
-              <StatusBar style="dark" />
-              <AppNavigator />
-            </AvisosProvider>
-          </CaronasProvider>
+          <AuthProvider>
+            <CaronasProvider>
+              <AvisosProvider>
+                <StatusBar style="dark" />
+                <Conteudo />
+              </AvisosProvider>
+            </CaronasProvider>
+          </AuthProvider>
         </InterfaceProvider>
       </ThemeProvider>
     </SafeAreaProvider>
