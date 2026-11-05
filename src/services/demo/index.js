@@ -54,6 +54,11 @@ export const auth = {
     avisar();
     return sessao;
   },
+  async completarPerfil(dados) {
+    await espera();
+    banco.usuarios[sessao.uid] = { ...banco.usuarios[sessao.uid], ...dados };
+    avisar();
+  },
   async sair() {
     sessao = null;
     banco = criarDadosIniciais();
