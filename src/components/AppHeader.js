@@ -17,7 +17,7 @@ export default function AppHeader({ navigation, title, back = false }) {
             back
               ? navigation.canGoBack()
                 ? navigation.goBack()
-                : navigation.navigate("MainTabs")
+                : navigation.navigate("Principal")
               : navigation.openDrawer()
           }
         >

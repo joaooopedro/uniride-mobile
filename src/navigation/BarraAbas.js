@@ -10,25 +10,16 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAvisos } from "../context/AvisosContext";
 import { useInterface } from "../context/InterfaceContext";
 import MotionPressable from "../components/MotionPressable";
 import theme from "../theme";
-const icons = {
-  Explorar: ["compass-outline", "compass"],
-  Oferecer: ["add-circle-outline", "add-circle"],
-  Viagens: ["car-outline", "car"],
-  Avisos: ["chatbubble-ellipses-outline", "chatbubble-ellipses"],
-  Perfil: ["person-outline", "person"],
-};
-export default function BarraAbas({ state, descriptors, navigation }) {
+export default function BarraAbas({ state, descriptors, navigation, abas = [], contadores = {} }) {
   const insets = useSafeAreaInsets();
-  const { mensagensNaoLidas, avisosNaoLidos } = useAvisos();
   const { podeAnimar } = useInterface();
   const [largura, setLargura] = useState(0);
   const [tecladoAberto, setTecladoAberto] = useState(false);
   const posicao = useRef(new Animated.Value(0)).current;
-  const total = mensagensNaoLidas + avisosNaoLidos;
+  const porNome = Object.fromEntries(abas.map((aba) => [aba.nome, aba]));
   useEffect(() => {
     const mostrar = Keyboard.addListener(
       Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
@@ -67,13 +58,19 @@ export default function BarraAbas({ state, descriptors, navigation }) {
         {state.routes.map((route, index) => {
           const focused = state.index === index;
           const options = descriptors[route.key].options;
+          const aba = porNome[route.name] || { icones: ["ellipse-outline", "ellipse"] };
+          const total = aba.badge ? contadores[aba.badge] || 0 : 0;
           return (
             <MotionPressable
               key={route.key}
               style={styles.item}
               accessibilityRole="tab"
               accessibilityState={{ selected: focused }}
-              accessibilityLabel={options.tabBarLabel || route.name}
+              accessibilityLabel={
+                total > 0
+                  ? `${options.tabBarLabel || route.name}, ${total} novos`
+                  : options.tabBarLabel || route.name
+              }
               onPress={() => {
                 const event = navigation.emit({
                   type: "tabPress",
@@ -89,13 +86,13 @@ export default function BarraAbas({ state, descriptors, navigation }) {
             >
               <View>
                 <Ionicons
-                  name={icons[route.name][focused ? 1 : 0]}
+                  name={aba.icones[focused ? 1 : 0]}
                   size={23}
                   color={
                     focused ? theme.colors.accent : theme.colors.textSecondary
                   }
                 />
-                {route.name === "Avisos" && total > 0 && (
+                {total > 0 && (
                   <View style={styles.badge}>
                     <Text style={styles.badgeText}>
                       {total > 9 ? "9+" : total}

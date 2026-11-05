@@ -1,30 +1,55 @@
 import React from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useCaronas } from "../context/CaronasContext";
+import { useAuth } from "../context/AuthContext";
 import MotionPressable from "../components/MotionPressable";
 import Wordmark from "../components/Wordmark";
 import theme from "../theme";
 
-const sections = [
-  {
-    title: "Comunidade",
-    items: [
-      {
-        label: "Avaliações e segurança",
-        description: "Reputação e confiança entre alunos",
-        icon: "shield-checkmark-outline",
-        route: "AvaliacoesSeguranca",
-      },
-    ],
-  },
-];
-
-export default function CustomDrawerContent({ navigation, state }) {
+export default function CustomDrawerContent({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { usuarioLogado } = useCaronas();
-  const currentRoute = state.routes[state.index].name;
+  const { perfil, modo, emailVerificado, definirModo, sair } = useAuth();
+  const outroModo = modo === "motorista" ? "passageiro" : "motorista";
+  const fechar = (acao) => () => {
+    navigation.closeDrawer();
+    acao();
+  };
+  const sections = [
+    {
+      title: "Comunidade",
+      items: [
+        {
+          label: "Avaliações e segurança",
+          description: "Reputação e confiança entre alunos",
+          icon: "shield-checkmark-outline",
+          onPress: fechar(() => navigation.navigate("Avaliacoes")),
+        },
+      ],
+    },
+    {
+      title: "Conta",
+      items: [
+        {
+          label: outroModo === "motorista" ? "Entrar como motorista" : "Entrar como passageiro",
+          description:
+            outroModo === "motorista" ? "Oferecer caronas e aceitar passageiros" : "Buscar e reservar caronas",
+          icon: outroModo === "motorista" ? "car-outline" : "person-outline",
+          onPress: fechar(() => definirModo(outroModo)),
+        },
+        {
+          label: "Sair",
+          description: "Encerrar a sessão neste aparelho",
+          icon: "log-out-outline",
+          onPress: () =>
+            Alert.alert("Sair da conta?", "Você vai precisar entrar de novo com e-mail e senha.", [
+              { text: "Cancelar", style: "cancel" },
+              { text: "Sair", style: "destructive", onPress: fechar(sair) },
+            ]),
+        },
+      ],
+    },
+  ];
   return (
     <ScrollView
       style={styles.container}
@@ -49,56 +74,45 @@ export default function CustomDrawerContent({ navigation, state }) {
         </MotionPressable>
       </View>
       <View style={styles.identity}>
-        <Text style={styles.name}>{usuarioLogado.nome}</Text>
-        <Text style={styles.course}>{usuarioLogado.curso}</Text>
-        <View style={styles.verified}>
-          <Ionicons name="checkmark" size={14} color={theme.colors.success} />
-          <Text style={styles.verifiedText}>Aluno verificado</Text>
-        </View>
+        <Text style={styles.name}>{perfil?.nome || "Aluno UniAcademia"}</Text>
+        {!!perfil?.curso && (
+          <Text style={styles.course}>
+            {perfil.curso}, {perfil.periodo}º período
+          </Text>
+        )}
+        <Text style={styles.course}>
+          {modo === "motorista" ? "Usando como motorista" : "Usando como passageiro"}
+        </Text>
+        {emailVerificado && (
+          <View style={styles.verified}>
+            <Ionicons name="checkmark" size={14} color={theme.colors.success} />
+            <Text style={styles.verifiedText}>E-mail verificado</Text>
+          </View>
+        )}
       </View>
       {sections.map((section) => (
         <View key={section.title} style={styles.section}>
           <Text style={styles.sectionTitle}>{section.title}</Text>
-          {section.items.map((item) => {
-            const selected = currentRoute === item.route;
-            return (
-              <MotionPressable
-                key={item.route}
-                style={styles.item}
-                accessibilityLabel={item.label}
-                accessibilityState={{ selected }}
-                onPress={() => {
-                  navigation.navigate(item.route);
-                  navigation.closeDrawer();
-                }}
-              >
-                {selected && <View style={styles.activeLine} />}
-                <Ionicons
-                  name={item.icon}
-                  size={21}
-                  color={
-                    selected ? theme.colors.accent : theme.colors.textSecondary
-                  }
-                />
-                <View style={styles.copy}>
-                  <Text style={[styles.label, selected && styles.selected]}>
-                    {item.label}
-                  </Text>
-                  <Text style={styles.description}>{item.description}</Text>
-                </View>
-                <Ionicons
-                  name="chevron-forward"
-                  size={15}
-                  color={theme.colors.textMuted}
-                />
-              </MotionPressable>
-            );
-          })}
+          {section.items.map((item) => (
+            <MotionPressable
+              key={item.label}
+              style={styles.item}
+              accessibilityLabel={item.label}
+              onPress={item.onPress}
+            >
+              <Ionicons name={item.icon} size={21} color={theme.colors.textSecondary} />
+              <View style={styles.copy}>
+                <Text style={styles.label}>{item.label}</Text>
+                <Text style={styles.description}>{item.description}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={15} color={theme.colors.textMuted} />
+            </MotionPressable>
+          ))}
         </View>
       ))}
       <View style={styles.footer}>
         <Text style={styles.footerText}>UniAcademia · Juiz de Fora</Text>
-        <Text style={styles.version}>Versão 1.0.0</Text>
+        <Text style={styles.version}>Versão 2.0.0</Text>
       </View>
     </ScrollView>
   );
