@@ -73,8 +73,9 @@ export function TelaLoginProvisoria({ navigation, route }) {
 
 export function TelaCadastroProvisoria({ route }) {
   const modo = route.params?.modo || "passageiro";
-  const { cadastrar, definirModo } = useAuth();
-  const [dados, setDados] = useState({ nome: "", email: "", matricula: "", curso: "", periodo: "1", telefone: "", senha: "" });
+  const completar = !!route.params?.completar;
+  const { usuario, cadastrar, completarPerfil, definirModo, sair } = useAuth();
+  const [dados, setDados] = useState({ nome: "", email: usuario?.email || "", matricula: "", curso: "", periodo: "1", telefone: "", senha: "" });
   const [erros, setErros] = useState({});
   const [erro, setErro] = useState(null);
   const [enviando, setEnviando] = useState(false);
@@ -83,19 +84,21 @@ export function TelaCadastroProvisoria({ route }) {
   async function enviar() {
     const novos = {
       nome: validarNome(dados.nome),
-      email: validarEmail(dados.email),
+      email: completar ? null : validarEmail(dados.email),
       matricula: validarMatricula(dados.matricula),
       curso: validarTextoObrigatorio(dados.curso, "Curso", 60),
       telefone: validarTelefone(dados.telefone),
-      senha: validarSenha(dados.senha),
+      senha: completar ? null : validarSenha(dados.senha),
     };
     setErros(novos);
     if (Object.values(novos).some(Boolean)) return;
     setErro(null);
     setEnviando(true);
     try {
-      await definirModo(modo);
-      await cadastrar({ ...dados, email: dados.email.trim(), periodo: Number(dados.periodo) || 1 });
+      await definirModo(modo || "passageiro");
+      const periodo = Number(dados.periodo) || 1;
+      if (completar) await completarPerfil({ ...dados, periodo });
+      else await cadastrar({ ...dados, email: dados.email.trim(), periodo });
     } catch (falha) {
       setErro(falha.message);
       setEnviando(false);
@@ -103,16 +106,21 @@ export function TelaCadastroProvisoria({ route }) {
   }
 
   return (
-    <Pagina titulo="Criar conta" aviso={AVISO}>
+    <Pagina titulo={completar ? "Complete seu cadastro" : "Criar conta"} aviso={AVISO}>
       <Campo rotulo="Nome completo" value={dados.nome} onChangeText={mudar("nome")} erro={erros.nome} textContentType="name" />
-      <Campo rotulo="E-mail" value={dados.email} onChangeText={mudar("email")} erro={erros.email} autoCapitalize="none" keyboardType="email-address" textContentType="emailAddress" />
+      {!completar && (
+        <Campo rotulo="E-mail" value={dados.email} onChangeText={mudar("email")} erro={erros.email} autoCapitalize="none" keyboardType="email-address" textContentType="emailAddress" />
+      )}
       <Campo rotulo="Matrícula" value={dados.matricula} onChangeText={mudar("matricula")} erro={erros.matricula} keyboardType="number-pad" />
       <Campo rotulo="Curso" value={dados.curso} onChangeText={mudar("curso")} erro={erros.curso} />
       <Campo rotulo="Período" value={dados.periodo} onChangeText={mudar("periodo")} keyboardType="number-pad" />
       <Campo rotulo="Celular" value={dados.telefone} onChangeText={(v) => mudar("telefone")(mascararTelefone(v))} erro={erros.telefone} keyboardType="phone-pad" />
-      <Campo rotulo="Senha" value={dados.senha} onChangeText={mudar("senha")} erro={erros.senha} secureTextEntry textContentType="newPassword" />
+      {!completar && (
+        <Campo rotulo="Senha" value={dados.senha} onChangeText={mudar("senha")} erro={erros.senha} secureTextEntry textContentType="newPassword" />
+      )}
       <Mensagem texto={erro} />
-      <Botao titulo="Criar conta" carregando={enviando} onPress={enviar} />
+      <Botao titulo={completar ? "Salvar e continuar" : "Criar conta"} carregando={enviando} onPress={enviar} />
+      {completar && <Botao titulo="Sair" secundario onPress={sair} />}
     </Pagina>
   );
 }

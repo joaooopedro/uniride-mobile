@@ -1,12 +1,14 @@
 import { MODO_DEMO } from "../config/modo";
 import * as demo from "./demo";
+import { auth } from "./firebase/auth";
+import { usuarios } from "./firebase/usuarios";
 
 // Ponto único de acesso aos dados. Contextos usam `repo`; telas nunca importam daqui.
 export const repo = MODO_DEMO
   ? demo
   : {
-      auth: demo.auth,
-      usuarios: demo.usuarios,
+      auth,
+      usuarios,
       caronas: demo.caronas,
       reservas: demo.reservas,
       mensagens: demo.mensagens,

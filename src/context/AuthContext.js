@@ -65,6 +65,7 @@ export function AuthProvider({ children }) {
       entrar: repo.auth.entrar,
       entrarComGoogle: repo.auth.entrarComGoogle,
       cadastrar: repo.auth.cadastrar,
+      completarPerfil: repo.auth.completarPerfil,
       redefinirSenha: repo.auth.redefinirSenha,
       reenviarVerificacao: repo.auth.reenviarVerificacao,
       atualizarVerificacao,
