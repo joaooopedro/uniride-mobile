@@ -3,7 +3,7 @@
 const { initializeApp } = require("firebase/app");
 const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } = require("firebase/auth");
 const { getFirestore, doc, collection, writeBatch, serverTimestamp, Timestamp, terminate } = require("firebase/firestore");
-const { CONFIG, IDENTIDADE, SENHA, MOTORISTAS, admin, uidPorEmail } = require("./admin");
+const { CONFIG, IDENTIDADE, SENHA, MOTORISTAS, PASSAGEIROS, admin, uidPorEmail } = require("./admin");
 
 const CAMPI = {
   academia: { nome: "Campus Academia (Centro)", lat: -21.7612, lng: -43.3496 },
@@ -89,6 +89,24 @@ async function main() {
       await lote.commit();
     }
     console.log(`${m.nome} (${m.email}): perfil de motorista e 2 caronas`);
+    await terminate(db);
+  }
+  for (const [i, p] of PASSAGEIROS.entries()) {
+    const app = initializeApp(CONFIG, `seed-p${i}`);
+    const db = getFirestore(app);
+    const uid = await contaVerificada(getAuth(app), p);
+    const perfil = writeBatch(db);
+    perfil.set(doc(db, "usuarios", uid), {
+      nome: p.nome, curso: p.curso, periodo: p.periodo, fotoBase64: null, ehMotorista: false, motorista: null,
+      notaMotorista: { soma: 0, total: 0 }, notaPassageiro: { soma: 0, total: 0 }, viagens: 0,
+      criadoEm: serverTimestamp(), atualizadoEm: serverTimestamp(),
+    });
+    perfil.set(doc(db, "usuarios", uid, "privado", "dados"), {
+      email: p.email, matricula: `2025${String(i + 1).padStart(4, "0")}`, telefone: `(32) 9977${i}-34${i}${i}`,
+      chavePix: null, atualizadoEm: serverTimestamp(),
+    });
+    await perfil.commit().catch(() => {}); // perfil já existe: segue
+    console.log(`${p.nome} (${p.email}): passageiro`);
     await terminate(db);
   }
   console.log(`\nSenha das contas de exemplo: ${SENHA}`);

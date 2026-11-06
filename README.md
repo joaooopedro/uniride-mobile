@@ -89,10 +89,10 @@ Precisa do login do Firebase no computador (`npx firebase-tools login`, conta co
 
 ```bash
 node scripts/limpar.js   # apaga as contas de exemplo e tudo que elas criaram
-node scripts/seed.js     # cria 3 motoristas verificados e 6 caronas nos próximos dias em Juiz de Fora
+node scripts/seed.js     # cria 3 motoristas, 2 passageiros e 6 caronas nos próximos dias em Juiz de Fora
 ```
 
-Contas criadas: `ana.seed@uniride.app`, `bruno.seed@uniride.app`, `carla.seed@uniride.app`, senha `uniride2026` (troque com `SEED_SENHA=... node scripts/seed.js`). As caronas vencem em poucos dias: rode os dois comandos de novo no dia da apresentação.
+Contas criadas: motoristas `ana.seed@uniride.app`, `bruno.seed@uniride.app`, `carla.seed@uniride.app` e passageiros `paulo.seed@uniride.app`, `julia.seed@uniride.app`, todas com e-mail verificado e senha `uniride2026` (troque com `SEED_SENHA=... node scripts/seed.js`). As caronas vencem em poucos dias: rode os dois comandos de novo no dia da apresentação.
 
 ### Regras do banco
 
