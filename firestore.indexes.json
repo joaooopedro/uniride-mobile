@@ -1,1 +1,38 @@
-{ "indexes": [], "fieldOverrides": [] }
+{
+  "indexes": [
+    {
+      "collectionGroup": "caronas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "saidaEm", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "caronas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "motoristaId", "order": "ASCENDING" },
+        { "fieldPath": "saidaEm", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reservas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "caronaId", "order": "ASCENDING" },
+        { "fieldPath": "motoristaId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "avaliacoes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "avaliadoId", "order": "ASCENDING" },
+        { "fieldPath": "criadoEm", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

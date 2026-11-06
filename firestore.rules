@@ -15,6 +15,10 @@ service cloud.firestore {
       return logado() && request.auth.uid == uid;
     }
 
+    function novo() {
+      return request.resource.data;
+    }
+
     function soMudou(campos) {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos);
     }
@@ -23,31 +27,256 @@ service cloud.firestore {
       return valor is string && valor.size() > 0 && valor.size() <= maximo;
     }
 
+    function caminho(colecao, id) {
+      return /databases/$(database)/documents/$(colecao)/$(id);
+    }
+
+    function carona(id) {
+      return get(caminho('caronas', id)).data;
+    }
+
+    function caronaDepois(id) {
+      return getAfter(caminho('caronas', id)).data;
+    }
+
+    function reservaDepois(id) {
+      return getAfter(caminho('reservas', id)).data;
+    }
+
     // Perfil visível para alunos verificados: nome, curso, notas e veículo.
     match /usuarios/{uid} {
       allow read: if verificado() || dono(uid);
 
       allow create: if dono(uid)
-        && request.resource.data.keys().hasOnly(['nome', 'curso', 'periodo', 'fotoBase64', 'ehMotorista', 'motorista', 'notaMotorista', 'notaPassageiro', 'viagens', 'criadoEm', 'atualizadoEm'])
-        && textoValido(request.resource.data.nome, 80)
-        && textoValido(request.resource.data.curso, 60)
-        && request.resource.data.periodo is int
-        && request.resource.data.ehMotorista == false
-        && request.resource.data.notaMotorista == { 'soma': 0, 'total': 0 }
-        && request.resource.data.notaPassageiro == { 'soma': 0, 'total': 0 }
-        && request.resource.data.viagens == 0;
+        && novo().keys().hasOnly(['nome', 'curso', 'periodo', 'fotoBase64', 'ehMotorista', 'motorista', 'notaMotorista', 'notaPassageiro', 'viagens', 'criadoEm', 'atualizadoEm'])
+        && textoValido(novo().nome, 80)
+        && textoValido(novo().curso, 60)
+        && novo().periodo is int
+        && novo().ehMotorista == false
+        && novo().notaMotorista == { 'soma': 0, 'total': 0 }
+        && novo().notaPassageiro == { 'soma': 0, 'total': 0 }
+        && novo().viagens == 0;
 
       // O dono edita os próprios dados, mas nunca as notas nem o contador de viagens.
       allow update: if dono(uid)
         && soMudou(['nome', 'curso', 'periodo', 'fotoBase64', 'ehMotorista', 'motorista', 'atualizadoEm'])
-        && textoValido(request.resource.data.nome, 80)
-        && (request.resource.data.fotoBase64 == null || request.resource.data.fotoBase64.size() < 300000);
+        && textoValido(novo().nome, 80)
+        && (novo().fotoBase64 == null || novo().fotoBase64.size() < 300000);
+
+      // Nota de outro aluno só muda junto com a criação da avaliação que a justifica.
+      allow update: if verificado() && !dono(uid) && notaJustificada(uid);
 
       allow delete: if false;
 
       // Matrícula, e-mail, telefone e PIX: só o dono.
       match /privado/dados {
         allow read, write: if dono(uid);
+      }
+    }
+
+    function notaJustificada(uid) {
+      let avaliacaoId = novo().ultimaAvaliacao;
+      let alvo = caminho('avaliacoes', avaliacaoId);
+      let avaliacao = getAfter(alvo).data;
+      let campo = avaliacao.papelAvaliado == 'motorista' ? 'notaMotorista' : 'notaPassageiro';
+      return avaliacaoId is string
+        && !exists(alvo)
+        && existsAfter(alvo)
+        && avaliacao.avaliadorId == request.auth.uid
+        && avaliacao.avaliadoId == uid
+        && soMudou([campo, 'ultimaAvaliacao'])
+        && novo()[campo].keys().hasOnly(['soma', 'total'])
+        && novo()[campo].soma == resource.data[campo].soma + avaliacao.nota
+        && novo()[campo].total == resource.data[campo].total + 1;
+    }
+
+    // Caronas: qualquer aluno verificado vê; só o motorista mexe, com uma exceção para o passageiro sair.
+    match /caronas/{caronaId} {
+      allow read: if verificado();
+
+      allow create: if verificado()
+        && novo().motoristaId == request.auth.uid
+        && get(caminho('usuarios', request.auth.uid)).data.ehMotorista == true
+        && novo().keys().hasOnly(['motoristaId', 'motorista', 'origem', 'campusDestino', 'destino', 'saidaEm', 'vagasTotais', 'vagasRestantes', 'valorCentavos', 'rota', 'participantes', 'passageirosAceitos', 'status', 'criadoEm', 'atualizadoEm'])
+        && novo().status == 'aberta'
+        && novo().saidaEm is timestamp && novo().saidaEm > request.time
+        && novo().vagasTotais is int && novo().vagasTotais >= 1 && novo().vagasTotais <= 6
+        && novo().vagasRestantes == novo().vagasTotais
+        && novo().valorCentavos is int && novo().valorCentavos >= 0 && novo().valorCentavos <= 5000
+        && novo().participantes == [request.auth.uid]
+        && novo().passageirosAceitos == []
+        && textoValido(novo().campusDestino, 60);
+
+      allow update: if verificado() && (mudancaDoMotorista() || aceiteDoMotorista() || saidaDoPassageiro());
+
+      allow delete: if false;
+
+      function souMotoristaDaCarona() {
+        return resource.data.motoristaId == request.auth.uid;
+      }
+
+      // Troca de status: aberta -> em_andamento | cancelada, em_andamento -> concluida.
+      function mudancaDoMotorista() {
+        let de = resource.data.status;
+        let para = novo().status;
+        return souMotoristaDaCarona()
+          && soMudou(['status', 'atualizadoEm'])
+          && ((de == 'aberta' && para in ['em_andamento', 'cancelada'])
+            || (de == 'em_andamento' && para == 'concluida'));
+      }
+
+      // Aceite: entra um passageiro, sai uma vaga, e a reserva dele vira aceita na mesma transação.
+      function aceiteDoMotorista() {
+        let lista = novo().participantes;
+        let passageiro = lista[lista.size() - 1];
+        let reservaId = caronaId + '_' + passageiro;
+        return souMotoristaDaCarona()
+          && resource.data.status == 'aberta'
+          && soMudou(['vagasRestantes', 'participantes', 'passageirosAceitos', 'atualizadoEm'])
+          && novo().vagasRestantes == resource.data.vagasRestantes - 1
+          && novo().vagasRestantes >= 0
+          && lista.size() == resource.data.participantes.size() + 1
+          && !resource.data.participantes.hasAny([passageiro])
+          && novo().passageirosAceitos.size() == resource.data.passageirosAceitos.size() + 1
+          && get(caminho('reservas', reservaId)).data.status == 'solicitada'
+          && reservaDepois(reservaId).status == 'aceita';
+      }
+
+      // Passageiro aceito cancelando: tira só ele mesmo e devolve a vaga.
+      function saidaDoPassageiro() {
+        let uid = request.auth.uid;
+        return !souMotoristaDaCarona()
+          && resource.data.status == 'aberta'
+          && resource.data.participantes.hasAny([uid])
+          && soMudou(['vagasRestantes', 'participantes', 'passageirosAceitos', 'atualizadoEm'])
+          && novo().participantes == resource.data.participantes.removeAll([uid])
+          && novo().vagasRestantes == resource.data.vagasRestantes + 1
+          && novo().passageirosAceitos.size() == resource.data.passageirosAceitos.size() - 1
+          && reservaDepois(caronaId + '_' + uid).status == 'cancelada';
+      }
+
+      // Telefone e PIX do motorista: só quem está na carona.
+      match /privado/contato {
+        allow read: if verificado() && carona(caronaId).participantes.hasAny([request.auth.uid]);
+        allow create: if verificado()
+          && caronaDepois(caronaId).motoristaId == request.auth.uid
+          && novo().motoristaId == request.auth.uid
+          && novo().keys().hasOnly(['motoristaId', 'telefone', 'chavePix']);
+        allow update: if verificado()
+          && resource.data.motoristaId == request.auth.uid
+          && soMudou(['telefone', 'chavePix']);
+        allow delete: if false;
+      }
+
+      match /mensagens/{mensagemId} {
+        allow read: if verificado() && carona(caronaId).participantes.hasAny([request.auth.uid]);
+        allow create: if verificado()
+          && carona(caronaId).participantes.hasAny([request.auth.uid])
+          && novo().keys().hasOnly(['autorId', 'autorNome', 'texto', 'tipo', 'criadoEm'])
+          && novo().autorId == request.auth.uid
+          && textoValido(novo().autorNome, 80)
+          && textoValido(novo().texto, 500)
+          && novo().tipo in ['texto', 'aviso_rapido']
+          && novo().criadoEm == request.time;
+        allow update, delete: if false;
+      }
+    }
+
+    // Reservas: id fixo caronaId_passageiroId impede pedir duas vezes a mesma carona.
+    match /reservas/{reservaId} {
+      allow read: if verificado()
+        && (reservaId.split('_')[1] == request.auth.uid
+          || resource.data.passageiroId == request.auth.uid
+          || resource.data.motoristaId == request.auth.uid);
+
+      allow create: if verificado() && pedidoValido()
+        && novo().keys().hasOnly(['caronaId', 'passageiroId', 'motoristaId', 'passageiro', 'status', 'avaliadaPeloPassageiro', 'avaliadaPeloMotorista', 'criadoEm', 'atualizadoEm'])
+        && novo().avaliadaPeloPassageiro == false
+        && novo().avaliadaPeloMotorista == false;
+
+      allow update: if verificado()
+        && (novoPedidoAposCancelar() || cancelamentoDoPassageiro() || respostaDoMotorista() || marcaDeAvaliacao());
+
+      allow delete: if false;
+
+      function pedidoValido() {
+        let alvo = carona(novo().caronaId);
+        return reservaId == novo().caronaId + '_' + request.auth.uid
+          && novo().passageiroId == request.auth.uid
+          && novo().status == 'solicitada'
+          && novo().motoristaId == alvo.motoristaId
+          && alvo.motoristaId != request.auth.uid
+          && alvo.status == 'aberta'
+          && alvo.vagasRestantes > 0;
+      }
+
+      function souPassageiro() {
+        return resource.data.passageiroId == request.auth.uid;
+      }
+
+      function souMotorista() {
+        return resource.data.motoristaId == request.auth.uid;
+      }
+
+      function novoPedidoAposCancelar() {
+        return souPassageiro()
+          && resource.data.status == 'cancelada'
+          && novo().status == 'solicitada'
+          && soMudou(['status', 'passageiro', 'atualizadoEm'])
+          && carona(resource.data.caronaId).status == 'aberta';
+      }
+
+      // Se estava aceita, a carona precisa liberar a vaga na mesma transação.
+      function cancelamentoDoPassageiro() {
+        return souPassageiro()
+          && resource.data.status in ['solicitada', 'aceita']
+          && novo().status == 'cancelada'
+          && soMudou(['status', 'canceladaPor', 'atualizadoEm'])
+          && !caronaDepois(resource.data.caronaId).participantes.hasAny([request.auth.uid]);
+      }
+
+      function respostaDoMotorista() {
+        let de = resource.data.status;
+        let para = novo().status;
+        let depois = caronaDepois(resource.data.caronaId);
+        return souMotorista()
+          && soMudou(['status', 'canceladaPor', 'atualizadoEm'])
+          && ((de == 'solicitada' && para == 'aceita' && depois.participantes.hasAny([resource.data.passageiroId]))
+            || (de == 'solicitada' && para == 'recusada')
+            || (de in ['solicitada', 'aceita'] && para == 'cancelada' && depois.status == 'cancelada')
+            || (de == 'aceita' && para == 'concluida' && depois.status == 'concluida'));
+      }
+
+      function marcaDeAvaliacao() {
+        let campo = souPassageiro() ? 'avaliadaPeloPassageiro' : 'avaliadaPeloMotorista';
+        return (souPassageiro() || souMotorista())
+          && resource.data.status == 'concluida'
+          && resource.data[campo] == false
+          && novo()[campo] == true
+          && soMudou([campo, 'atualizadoEm'])
+          && existsAfter(caminho('avaliacoes', reservaId + '_' + request.auth.uid));
+      }
+    }
+
+    // Avaliação: uma por pessoa por viagem concluída, sempre do outro lado da reserva.
+    match /avaliacoes/{avaliacaoId} {
+      allow read: if verificado();
+
+      allow create: if verificado()
+        && avaliacaoId == novo().reservaId + '_' + request.auth.uid
+        && avaliacaoValida(get(caminho('reservas', novo().reservaId)).data)
+        && novo().keys().hasOnly(['reservaId', 'caronaId', 'avaliadorId', 'avaliadorNome', 'avaliadoId', 'papelAvaliado', 'nota', 'comentario', 'criadoEm'])
+        && novo().avaliadorId == request.auth.uid
+        && novo().nota is int && novo().nota >= 1 && novo().nota <= 5
+        && novo().comentario is string && novo().comentario.size() <= 280;
+
+      allow update, delete: if false;
+
+      function avaliacaoValida(reserva) {
+        return reserva.status == 'concluida'
+          && novo().caronaId == reserva.caronaId
+          && ((reserva.passageiroId == request.auth.uid && novo().avaliadoId == reserva.motoristaId && novo().papelAvaliado == 'motorista')
+            || (reserva.motoristaId == request.auth.uid && novo().avaliadoId == reserva.passageiroId && novo().papelAvaliado == 'passageiro'));
       }
     }
 
