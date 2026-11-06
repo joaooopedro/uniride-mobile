@@ -15,11 +15,18 @@ import {
   validarTextoObrigatorio,
 } from "../../utils";
 import { Botao, Campo, Mensagem, Pagina, styles } from "./comum";
+import { TelaCadastro, TelaEntrada, TelaEsqueciSenha, TelaLogin, TelaVerificarEmail } from "../acesso/TelasAcesso";
+
+export const TelaEntradaProvisoria = TelaEntrada;
+export const TelaLoginProvisoria = TelaLogin;
+export const TelaCadastroProvisoria = TelaCadastro;
+export const TelaEsqueciSenhaProvisoria = TelaEsqueciSenha;
+export const TelaVerificarEmailProvisoria = TelaVerificarEmail;
 
 // Telas provisórias e funcionais de acesso. As definitivas são da issue #29 (Caio) e #30 (Gabriel).
 const AVISO = "Tela provisória para testes. A versão final é da issue #29.";
 
-export function TelaEntradaProvisoria({ navigation }) {
+function TelaEntradaLegada({ navigation }) {
   return (
     <Pagina titulo="UniRide" aviso={AVISO}>
       <Text style={styles.texto}>Carona entre alunos da UniAcademia.</Text>
@@ -29,7 +36,7 @@ export function TelaEntradaProvisoria({ navigation }) {
   );
 }
 
-export function TelaLoginProvisoria({ navigation, route }) {
+function TelaLoginLegada({ navigation, route }) {
   const modo = route.params?.modo || "passageiro";
   const { entrar, definirModo, entrarComGoogle, googleDisponivel } = useAuth();
   const [email, setEmail] = useState("");
@@ -71,7 +78,7 @@ export function TelaLoginProvisoria({ navigation, route }) {
   );
 }
 
-export function TelaCadastroProvisoria({ route }) {
+function TelaCadastroLegada({ route }) {
   const modo = route.params?.modo || "passageiro";
   const completar = !!route.params?.completar;
   const { usuario, cadastrar, completarPerfil, definirModo, sair } = useAuth();
@@ -125,7 +132,7 @@ export function TelaCadastroProvisoria({ route }) {
   );
 }
 
-export function TelaEsqueciSenhaProvisoria() {
+function TelaEsqueciSenhaLegada() {
   const { redefinirSenha } = useAuth();
   const [email, setEmail] = useState("");
   const [estado, setEstado] = useState({});
@@ -154,7 +161,7 @@ export function TelaEsqueciSenhaProvisoria() {
   );
 }
 
-export function TelaVerificarEmailProvisoria() {
+function TelaVerificarEmailLegada() {
   const { usuario, reenviarVerificacao, atualizarVerificacao, sair } = useAuth();
   const [estado, setEstado] = useState({});
   const [espera, setEspera] = useState(0);

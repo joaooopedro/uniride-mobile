@@ -81,6 +81,7 @@ export default function RootNavigator({ onReady }) {
             <Stack.Screen name="Login" component={TELAS.Login} />
             <Stack.Screen name="Cadastro" component={TELAS.Cadastro} />
             <Stack.Screen name="EsqueciSenha" component={TELAS.EsqueciSenha} />
+            <Stack.Screen name="Avaliacoes" component={TELAS.Avaliacoes} options={cabecalho("Segurança")} />
           </Stack.Group>
         )}
         {grupo === "verificacao" && <Stack.Screen name="VerificarEmail" component={TELAS.VerificarEmail} />}
