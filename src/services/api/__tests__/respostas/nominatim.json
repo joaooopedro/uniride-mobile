@@ -1,0 +1,23 @@
+[
+ {
+  "place_id": 9799137,
+  "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+  "osm_type": "way",
+  "osm_id": 119037295,
+  "lat": "-21.7609124",
+  "lon": "-43.3478139",
+  "category": "highway",
+  "type": "pedestrian",
+  "place_rank": 26,
+  "importance": 0.05339890974288545,
+  "addresstype": "pedestrian",
+  "name": "Rua Halfeld",
+  "display_name": "Rua Halfeld, Santos Anjos, Centro, Juiz de Fora, Minas Gerais, Região Sudeste, 36010-902, Brasil",
+  "boundingbox": [
+   "-21.7613326",
+   "-21.7605187",
+   "-43.3495399",
+   "-43.3460814"
+  ]
+ }
+]

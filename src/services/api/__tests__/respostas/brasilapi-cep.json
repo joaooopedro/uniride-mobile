@@ -1,0 +1,20 @@
+{
+ "cep": "36036000",
+ "state": "MG",
+ "city": "Juiz de Fora",
+ "neighborhood": "Centro",
+ "street": "Avenida dos Andradas",
+ "service": "open-cep",
+ "ibge": {
+  "city": "3136702",
+  "state": "31"
+ },
+ "timezoneName": "America/Sao_Paulo",
+ "location": {
+  "type": "Point",
+  "coordinates": {
+   "longitude": "-43.35028",
+   "latitude": "-21.76417"
+  }
+ }
+}
