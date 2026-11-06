@@ -7,7 +7,9 @@
     "start:tunnel": "expo start --tunnel",
     "start:clean": "expo start -c",
     "android": "expo start --android",
-    "ios": "expo start --ios"
+    "ios": "expo start --ios",
+    "test": "jest",
+    "test:apis": "API_AO_VIVO=1 jest -c jest.apis.config.js"
   },
   "dependencies": {
     "@expo-google-fonts/manrope": "^0.4.2",
@@ -28,6 +30,8 @@
     "expo-notifications": "~58.1.8",
     "expo-status-bar": "~58.0.4",
     "firebase": "^13.2.0",
+    "jest": "~30.5.2",
+    "jest-expo": "~58.0.14",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-native": "0.88.1",
@@ -44,5 +48,18 @@
     "@babel/core": "^7.25.2",
     "@expo/ngrok": "^4.1.3"
   },
-  "private": true
+  "private": true,
+  "jest": {
+    "preset": "jest-expo",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/ios/",
+      "/android/",
+      "ao-vivo"
+    ],
+    "moduleNameMapper": {
+      "^expo-modules-core$": "<rootDir>/node_modules/expo/node_modules/expo-modules-core",
+      "^expo-modules-core/(.*)$": "<rootDir>/node_modules/expo/node_modules/expo-modules-core/$1"
+    }
+  }
 }
