@@ -22,6 +22,12 @@
       "expo-font",
       "expo-status-bar",
       [
+        "expo-notifications",
+        {
+          "color": "#087E79"
+        }
+      ],
+      [
         "@react-native-google-signin/google-signin",
         {
           "iosUrlScheme": "com.googleusercontent.apps.769246594269-gh55gq5obbf39v85mtgugqj2o6gnmdqa"
