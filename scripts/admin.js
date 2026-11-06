@@ -15,15 +15,12 @@ const IDENTIDADE = `https://identitytoolkit.googleapis.com/v1/projects/${PROJETO
 // Contas de exemplo. Senha comum para a apresentação.
 const SENHA = process.env.SEED_SENHA || "uniride2026";
 const MOTORISTAS = [
-  { email: "ana.seed@uniride.app", nome: "Ana Ribeiro", curso: "Engenharia Civil", periodo: 7, veiculo: { marca: "Fiat", modelo: "Argo", cor: "Prata", placa: "QPX4F21" }, lugares: 4 },
+  { email: "motorista@uniride.app", nome: "Ana Ribeiro", curso: "Engenharia Civil", periodo: 7, veiculo: { marca: "Fiat", modelo: "Argo", cor: "Prata", placa: "QPX4F21" }, lugares: 4 },
   { email: "bruno.seed@uniride.app", nome: "Bruno Almeida", curso: "Direito", periodo: 5, veiculo: { marca: "Volkswagen", modelo: "Gol", cor: "Branco", placa: "HMT2389" }, lugares: 3 },
   { email: "carla.seed@uniride.app", nome: "Carla Menezes", curso: "Psicologia", periodo: 3, veiculo: { marca: "Hyundai", modelo: "HB20", cor: "Azul", placa: "RVB7C04" }, lugares: 4 },
 ];
 // Passageiros para testar o outro lado: pedir vaga, chat e avaliação.
-const PASSAGEIROS = [
-  { email: "paulo.seed@uniride.app", nome: "Paulo Teixeira", curso: "Ciência da Computação", periodo: 4 },
-  { email: "julia.seed@uniride.app", nome: "Júlia Campos", curso: "Medicina", periodo: 2 },
-];
+const PASSAGEIROS = [{ email: "passageiro@uniride.app", nome: "Paulo Teixeira", curso: "Ciência da Computação", periodo: 4 }];
 
 let token;
 function tokenAdmin() {
