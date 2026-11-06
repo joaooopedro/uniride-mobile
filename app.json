@@ -7,10 +7,16 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.joaooopedro.uniride"
+      "bundleIdentifier": "com.joaooopedro.uniride",
+      "infoPlist": {
+        "CFBundleDevelopmentRegion": "pt-BR",
+        "CFBundleAllowMixedLocalizations": true,
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FAFBFA"
       },
       "package": "com.joaooopedro.uniride"
@@ -32,8 +38,18 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.769246594269-gh55gq5obbf39v85mtgugqj2o6gnmdqa"
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "imageWidth": 240,
+          "resizeMode": "contain",
+          "backgroundColor": "#FAFBFA"
+        }
       ]
     ],
-    "scheme": "uniride"
+    "scheme": "uniride",
+    "icon": "./assets/icon.png"
   }
 }
