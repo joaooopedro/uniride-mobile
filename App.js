@@ -20,9 +20,11 @@ import { InterfaceProvider } from "./src/context/InterfaceContext";
 import RootNavigator from "./src/navigation/RootNavigator";
 import FaixaSemConexao from "./src/components/FaixaSemConexao";
 import { useConexao } from "./src/services/conexao";
+import { useNotificacoes } from "./src/services/notificacoes";
 
 function Conteudo() {
   const online = useConexao();
+  useNotificacoes();
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <RootNavigator />
