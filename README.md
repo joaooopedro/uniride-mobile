@@ -20,3 +20,14 @@ Estudantes universitários enfrentam dificuldades diárias de locomoção em Jui
 ### Solução
 O **UniRide** conecta universitários que fazem rotas semelhantes até os campi da UniAcademia (Campus Academia / Centro e Campus Estrela Sul), permitindo combinar caronas solidárias, dividir custos de combustível de maneira justa e criar uma rede segura entre alunos verificados da mesma instituição.
 
+
+## Dados de exemplo (seed)
+
+Precisa do login do Firebase no computador (`npx firebase-tools login`, conta com acesso ao projeto `uniride-uniacademia`).
+
+```bash
+node scripts/limpar.js   # apaga as contas de exemplo e tudo que elas criaram
+node scripts/seed.js     # cria 3 motoristas verificados e 6 caronas nos próximos dias em Juiz de Fora
+```
+
+Contas criadas: `ana.seed@uniride.app`, `bruno.seed@uniride.app`, `carla.seed@uniride.app`, senha `uniride2026` (troque com `SEED_SENHA=... node scripts/seed.js`). As caronas vencem em poucos dias: rode os dois comandos de novo no dia da apresentação.
