@@ -1,6 +1,6 @@
 // Apaga as contas de exemplo do seed e tudo que elas criaram (caronas, reservas, mensagens, avaliações).
 // Uso: node scripts/limpar.js
-const { IDENTIDADE, PROJETO, MOTORISTAS, admin, uidPorEmail } = require("./admin");
+const { IDENTIDADE, PROJETO, MOTORISTAS, PASSAGEIROS, admin, uidPorEmail } = require("./admin");
 
 const RAIZ = `https://firestore.googleapis.com/v1/projects/${PROJETO}/databases/(default)/documents`;
 
@@ -25,12 +25,12 @@ async function apagarComSubcolecoes(nome) {
 }
 
 async function main() {
-  for (const m of MOTORISTAS) {
+  for (const m of [...MOTORISTAS, ...PASSAGEIROS]) {
     const uid = await uidPorEmail(m.email);
     if (!uid) continue;
     const caronas = await consultar("caronas", "motoristaId", uid);
     for (const carona of caronas) await apagarComSubcolecoes(carona);
-    const reservas = await consultar("reservas", "motoristaId", uid);
+    const reservas = [...(await consultar("reservas", "motoristaId", uid)), ...(await consultar("reservas", "passageiroId", uid))];
     for (const reserva of reservas) await apagar(reserva);
     const avaliacoes = [...(await consultar("avaliacoes", "avaliadoId", uid)), ...(await consultar("avaliacoes", "avaliadorId", uid))];
     for (const avaliacao of avaliacoes) await apagar(avaliacao);
