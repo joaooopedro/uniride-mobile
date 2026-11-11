@@ -1,6 +1,5 @@
 import { criarTelaPendente } from "../screens/provisorias/TelaPendente";
 import {
-  TelaCadastroMotoristaProvisoria,
   TelaCadastroProvisoria,
   TelaEntradaProvisoria,
   TelaEsqueciSenhaProvisoria,
@@ -9,6 +8,10 @@ import {
 } from "../screens/provisorias/TelasAcesso";
 import TelaBuscarCaronas from "../screens/TelaBuscarCaronas";
 import TelaAvaliacoesSeguranca from "../screens/TelaAvaliacoesSeguranca";
+import TelaCadastroMotorista from "../screens/motorista/TelaCadastroMotorista";
+import TelaOferecerCarona from "../screens/motorista/TelaOferecerCarona";
+import TelaMinhasRotas from "../screens/motorista/TelaMinhasRotas";
+import TelaSolicitacoes from "../screens/motorista/TelaSolicitacoes";
 
 // Mapa rota -> tela. Cada integrante troca a linha da sua tela quando ela ficar pronta.
 const pendente = (titulo, issue, responsavel, descricao) =>
@@ -22,10 +25,10 @@ export const TELAS = {
   EsqueciSenha: TelaEsqueciSenhaProvisoria,
   VerificarEmail: TelaVerificarEmailProvisoria,
   // Motorista (issue #30, Gabriel)
-  CadastroMotorista: TelaCadastroMotoristaProvisoria,
-  Oferecer: pendente("Oferecer carona", 30, "Gabriel", "Formulário com CEP, mapa, feriado, rota e valor sugerido."),
-  Rotas: pendente("Minhas rotas", 30, "Gabriel", "Próximas e anteriores, com iniciar, concluir e cancelar."),
-  Solicitacoes: pendente("Solicitações", 30, "Gabriel", "Pedidos de vaga para aceitar ou recusar."),
+  CadastroMotorista: TelaCadastroMotorista,
+  Oferecer: TelaOferecerCarona,
+  Rotas: TelaMinhasRotas,
+  Solicitacoes: TelaSolicitacoes,
   // Passageiro (issue #29, Caio)
   Buscar: TelaBuscarCaronas,
   // Detalhes, avaliação e perfil (issue #31, Nicolas)
