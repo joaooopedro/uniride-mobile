@@ -1,505 +1,377 @@
-import React, { useMemo, useState } from "react";
-import { Alert } from "react-native";
-import styled, { useTheme } from "styled-components/native";
-import MotionPressable from "../components/MotionPressable";
+import React, { useState } from "react";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { useCaronas } from "../context/CaronasContext";
-import CardEstatistica from "../components/CardEstatistica";
-import TagPreferencia from "../components/TagPreferencia";
+import Animated from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import EstadoTela from "../components/EstadoTela";
+import MotionPressable from "../components/MotionPressable";
+import { useAuth } from "../context/AuthContext";
+import theme from "../theme";
+import { mascararPlaca, mascararTelefone, validarNome, validarTelefone, validarTextoObrigatorio } from "../utils";
+import { Acao, Campo, Mensagem, s } from "./acesso/ComponentesAcesso";
+import { Avatar, Secao, useEntrada } from "./motorista/comum";
+import { dataParaIso, isoParaBr, lerDataBr, mascararData, validarVeiculo } from "./motorista/logica";
+import { calcularSelos, contarViagens } from "./detalhes/logica";
 
-const gruposPreferencias = [
-  {
-    id: "estiloMusical",
-    titulo: "Música",
-    icone: "music",
-    opcoes: ["Sertanejo", "Rock", "Pop", "Silêncio"],
-  },
-  {
-    id: "climatizacao",
-    titulo: "Climatização",
-    icone: "wind",
-    opcoes: ["Ar-condicionado ligado", "Vidro aberto"],
-  },
-  {
-    id: "conversa",
-    titulo: "Conversa",
-    icone: "message-circle",
-    opcoes: ["Adora bater papo", "Prefere focar nos estudos"],
-  },
-];
+const LUGARES = [1, 2, 3, 4, 5, 6];
 
-const Container = styled.ScrollView.attrs({
-  contentContainerStyle: { padding: 24, paddingBottom: 40 },
-  showsVerticalScrollIndicator: false,
-})`
-  flex: 1;
-  background-color: ${(props) => props.theme.colors.background};
-`;
+function validarPeriodo(valor) {
+  const n = Number(valor);
+  return Number.isInteger(n) && n >= 1 && n <= 12 ? null : "Informe o período de 1 a 12.";
+}
 
-const ProfileCard = styled.View`
-  padding: 12px 0px 24px;
-  border-bottom-width: 1px;
-  border-bottom-color: ${(props) => props.theme.colors.border};
-`;
-
-const ProfileHeader = styled.View`
-  flex-direction: row;
-  align-items: center;
-`;
-
-const AvatarRing = styled.View`
-  width: 72px;
-  height: 72px;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16px;
-`;
-
-const AvatarClip = styled.View`
-  width: 72px;
-  height: 72px;
-  border-radius: ${(props) => props.theme.radii.full}px;
-  overflow: hidden;
-  align-items: center;
-  justify-content: center;
-  background-color: ${(props) => props.theme.colors.primaryLight};
-`;
-
-const AvatarFallback = styled.Text`
-  position: absolute;
-  color: ${(props) => props.theme.colors.primary};
-  font-size: 18px;
-  font-weight: 700;
-
-  font-family: ${(props) => props.theme.fonts.bold};
-`;
-
-const ProfileInfo = styled.View`
-  flex: 1;
-`;
-
-const UserName = styled.Text`
-  color: ${(props) => props.theme.colors.text};
-  font-size: 21px;
-  font-weight: 700;
-  line-height: 30px;
-  letter-spacing: -0.4px;
-  font-family: ${(props) => props.theme.fonts.bold};
-`;
-
-const UserCourse = styled.Text`
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 21px;
-  color: ${(props) => props.theme.colors.textSecondary};
-  margin-top: 6px;
-  font-family: ${(props) => props.theme.fonts.regular};
-`;
-
-const EnrollmentBadge = styled.View`
-  flex-direction: row;
-  align-items: center;
-  align-self: flex-start;
-  margin-top: 10px;
-`;
-
-const EnrollmentText = styled.Text`
-  color: ${(props) => props.theme.colors.success};
-  font-size: ${(props) => props.theme.typography.micro.fontSize}px;
-  font-weight: 700;
-  margin-left: ${(props) => props.theme.spacing.xs}px;
-
-  font-family: ${(props) => props.theme.fonts.bold};
-`;
-
-const EditButton = styled(MotionPressable)`
-  min-height: 48px;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  align-self: flex-start;
-  border-radius: 8px;
-  background-color: ${(props) => props.theme.colors.primaryLight};
-  padding: 0px 16px;
-  margin-top: 20px;
-`;
-
-const EditButtonText = styled.Text`
-  color: ${(props) => props.theme.colors.text};
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 21px;
-  margin-left: 8px;
-  font-family: ${(props) => props.theme.fonts.semibold};
-`;
-
-const SectionTitle = styled.Text`
-  color: ${(props) => props.theme.colors.text};
-  font-size: 19px;
-  font-weight: 600;
-  line-height: 28px;
-  margin: 32px 0px 12px;
-  font-family: ${(props) => props.theme.fonts.semibold};
-`;
-
-const MetricsGrid = styled.View`
-  flex-direction: row;
-  flex-wrap: wrap;
-  margin: 0 -4px;
-`;
-
-const InfoCard = styled.View`
-  background-color: transparent;
-  border-width: 0px;
-  border-bottom-width: 1px;
-  border-bottom-color: ${(props) => props.theme.colors.border};
-  border-radius: 0px;
-  padding: 24px 0px;
-  margin-bottom: 12px;
-`;
-
-const InfoHeader = styled.View`
-  flex-direction: row;
-  align-items: center;
-  margin-bottom: ${(props) => props.theme.spacing.md}px;
-`;
-
-const InfoIcon = styled.View`
-  width: 24px;
-  height: 24px;
-  align-items: center;
-  justify-content: center;
-  margin-right: 12px;
-`;
-
-const InfoTitle = styled.Text`
-  flex: 1;
-  color: ${(props) => props.theme.colors.text};
-  font-size: ${(props) => props.theme.typography.cardTitle.fontSize}px;
-  font-weight: 700;
-  line-height: ${(props) => props.theme.typography.cardTitle.lineHeight}px;
-
-  font-family: ${(props) => props.theme.fonts.bold};
-`;
-
-const DetailRow = styled.View`
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: ${(props) => props.theme.spacing.sm}px;
-`;
-
-const DetailLabel = styled.Text`
-  color: ${(props) => props.theme.colors.textSecondary};
-  font-size: ${(props) => props.theme.typography.body.fontSize}px;
-  line-height: ${(props) => props.theme.typography.body.lineHeight}px;
-
-  font-family: ${(props) => props.theme.fonts.regular};
-`;
-
-const DetailValue = styled.Text`
-  flex: 1;
-  color: ${(props) => props.theme.colors.text};
-  font-size: ${(props) => props.theme.typography.body.fontSize}px;
-  font-weight: 700;
-  line-height: ${(props) => props.theme.typography.body.lineHeight}px;
-  text-align: right;
-  margin-left: ${(props) => props.theme.spacing.md}px;
-
-  font-family: ${(props) => props.theme.fonts.bold};
-`;
-
-const PixBox = styled.View`
-  flex-direction: row;
-  align-items: center;
-  background-color: ${(props) => props.theme.colors.background};
-  border-radius: ${(props) => props.theme.radii.sm}px;
-  padding: ${(props) => props.theme.spacing.mdSm}px;
-  margin-top: ${(props) => props.theme.spacing.md}px;
-`;
-
-const PixText = styled.Text`
-  flex: 1;
-  color: ${(props) => props.theme.colors.text};
-  font-size: ${(props) => props.theme.typography.body.fontSize}px;
-  font-weight: 600;
-  line-height: ${(props) => props.theme.typography.body.lineHeight}px;
-  margin-left: ${(props) => props.theme.spacing.sm}px;
-
-  font-family: ${(props) => props.theme.fonts.semibold};
-`;
-
-const PreferenceCard = styled(InfoCard)`
-  margin-bottom: 12px;
-`;
-
-const PreferenceHeader = styled.View`
-  flex-direction: row;
-  align-items: center;
-  margin-bottom: ${(props) => props.theme.spacing.sm}px;
-`;
-
-const PreferenceTitle = styled.Text`
-  color: ${(props) => props.theme.colors.text};
-  font-size: ${(props) => props.theme.typography.cardTitle.fontSize}px;
-  font-weight: 700;
-  line-height: ${(props) => props.theme.typography.cardTitle.lineHeight}px;
-  margin-left: ${(props) => props.theme.spacing.sm}px;
-
-  font-family: ${(props) => props.theme.fonts.bold};
-`;
-
-const TagsWrap = styled.View`
-  flex-direction: row;
-  flex-wrap: wrap;
-`;
-
-const FooterActions = styled.View`
-  margin-top: ${(props) => props.theme.spacing.md}px;
-`;
-
-const LogoutButton = styled(MotionPressable)`
-  min-height: ${(props) => props.theme.touchTarget.minHeight}px;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  border-radius: ${(props) => props.theme.radii.md}px;
-  background-color: ${(props) => props.theme.colors.dangerLight};
-  padding: 0 ${(props) => props.theme.spacing.md}px;
-`;
-
-const LogoutText = styled.Text`
-  color: ${(props) => props.theme.colors.danger};
-  font-size: ${(props) => props.theme.typography.body.fontSize}px;
-  font-weight: 700;
-  margin-left: ${(props) => props.theme.spacing.sm}px;
-
-  font-family: ${(props) => props.theme.fonts.bold};
-`;
-
-const TermsButton = styled(MotionPressable)`
-  min-height: ${(props) => props.theme.touchTarget.minHeight}px;
-  align-items: center;
-  justify-content: center;
-  margin-top: ${(props) => props.theme.spacing.sm}px;
-`;
-
-const TermsText = styled.Text`
-  color: ${(props) => props.theme.colors.textSecondary};
-  font-size: ${(props) => props.theme.typography.caption.fontSize}px;
-  font-weight: 700;
-
-  font-family: ${(props) => props.theme.fonts.bold};
-`;
-
-export default function TelaPerfilUniversitario() {
-  const theme = useTheme();
-  const { usuarioLogado, caronasDisponiveis, reservas, historicoViagens } =
-    useCaronas();
-  const [preferenciasSelecionadas, setPreferenciasSelecionadas] = useState({
-    estiloMusical: "Pop",
-    climatizacao: "Ar-condicionado ligado",
-    conversa: "Adora bater papo",
-  });
-
-  const metricasPerfil = useMemo(() => {
-    const caronasAtivasDoUsuario = caronasDisponiveis.filter(
-      (carona) => carona.motorista === usuarioLogado.nome,
-    );
-    const caronasHistoricasDoUsuario = historicoViagens.filter(
-      (viagem) => viagem.papel === "Motorista",
-    );
-    const viagensRealizadas =
-      historicoViagens.length +
-      reservas.length +
-      caronasAtivasDoUsuario.length +
-      37;
-    const caronasOferecidas =
-      caronasAtivasDoUsuario.length + caronasHistoricasDoUsuario.length + 16;
-
-    return [
-      {
-        titulo: "Viagens realizadas",
-        valor: viagensRealizadas,
-        descricao: "Entre reservas e histórico",
-        icone: "map",
-        cor: "primary",
-        fundo: "primaryLight",
-      },
-      {
-        titulo: "Caronas oferecidas",
-        valor: caronasOferecidas,
-        descricao: "Rotas compartilhadas",
-        icone: "users",
-        cor: "secondary",
-        fundo: "secondaryLight",
-      },
-      {
-        titulo: "Economia estimada",
-        valor: "R$ 340,00",
-        descricao: "Em combustível dividido",
-        icone: "trending-down",
-        cor: "success",
-        fundo: "successLight",
-      },
-      {
-        titulo: "Horas economizadas",
-        valor: "14h",
-        descricao: "Menos tempo no trânsito",
-        icone: "clock",
-        cor: "warning",
-        fundo: "warningLight",
-      },
-    ];
-  }, [
-    caronasDisponiveis,
-    historicoViagens,
-    reservas.length,
-    usuarioLogado.nome,
-  ]);
-
-  const selecionarPreferencia = (grupoId, preferencia) => {
-    setPreferenciasSelecionadas((preferenciasAtuais) => ({
-      ...preferenciasAtuais,
-      [grupoId]: preferencia,
-    }));
-  };
-
-  const abrirEdicaoPerfil = () => {
-    Alert.alert(
-      "Editar perfil",
-      "Edição de perfil disponível na próxima integração do UniRide.",
-    );
-  };
-
-  const abrirTermosUso = () => {
-    Alert.alert(
-      "Termos de uso",
-      "O UniRide é restrito a alunos verificados da UniAcademia. Use caronas com respeito, pontualidade e responsabilidade.",
-    );
-  };
-
-  const confirmarLogout = () => {
-    Alert.alert(
-      "Sair da conta",
-      `Sessão de ${usuarioLogado.nome} na UniAcademia.`,
-    );
-  };
-
+function Linha({ icone, rotulo, valor }) {
   return (
-    <Container>
-      <ProfileCard>
-        <ProfileHeader>
-          <AvatarRing>
-            <AvatarClip>
-              <AvatarFallback>{usuarioLogado.iniciais}</AvatarFallback>
-            </AvatarClip>
-          </AvatarRing>
-          <ProfileInfo>
-            <UserName>{usuarioLogado.nome}</UserName>
-            <UserCourse>
-              {usuarioLogado.curso} • {usuarioLogado.periodo}
-            </UserCourse>
-            <EnrollmentBadge>
-              <Feather
-                name="check-circle"
-                size={13}
-                color={theme.colors.success}
-              />
-              <EnrollmentText>
-                Matrícula {usuarioLogado.matricula}
-              </EnrollmentText>
-            </EnrollmentBadge>
-          </ProfileInfo>
-        </ProfileHeader>
-        <EditButton onPress={abrirEdicaoPerfil} activeOpacity={0.85}>
-          <Feather name="edit-2" size={16} color={theme.colors.primary} />
-          <EditButtonText>Editar perfil</EditButtonText>
-        </EditButton>
-      </ProfileCard>
-
-      <SectionTitle>Métricas e impacto</SectionTitle>
-      <MetricsGrid>
-        {metricasPerfil.map((metricaPerfil) => (
-          <CardEstatistica
-            key={metricaPerfil.titulo}
-            titulo={metricaPerfil.titulo}
-            valor={metricaPerfil.valor}
-            descricao={metricaPerfil.descricao}
-            icone={metricaPerfil.icone}
-            cor={metricaPerfil.cor}
-            fundo={metricaPerfil.fundo}
-          />
-        ))}
-      </MetricsGrid>
-
-      <SectionTitle>Veículo e recebimento</SectionTitle>
-      <InfoCard>
-        <InfoHeader>
-          <InfoIcon>
-            <Feather name="truck" size={20} color={theme.colors.primary} />
-          </InfoIcon>
-          <InfoTitle>Carro cadastrado</InfoTitle>
-        </InfoHeader>
-        <DetailRow>
-          <DetailLabel>Modelo</DetailLabel>
-          <DetailValue>
-            {usuarioLogado.veiculo.marca} {usuarioLogado.veiculo.modelo}
-          </DetailValue>
-        </DetailRow>
-        <DetailRow>
-          <DetailLabel>Cor</DetailLabel>
-          <DetailValue>{usuarioLogado.veiculo.cor}</DetailValue>
-        </DetailRow>
-        <DetailRow>
-          <DetailLabel>Placa</DetailLabel>
-          <DetailValue>{usuarioLogado.veiculo.placa}</DetailValue>
-        </DetailRow>
-        <PixBox>
-          <Feather name="credit-card" size={18} color={theme.colors.success} />
-          <PixText>PIX: {usuarioLogado.chavePix}</PixText>
-        </PixBox>
-      </InfoCard>
-
-      <SectionTitle>Preferências de convivência</SectionTitle>
-      {gruposPreferencias.map((grupoPreferencia) => (
-        <PreferenceCard key={grupoPreferencia.id}>
-          <PreferenceHeader>
-            <Feather
-              name={grupoPreferencia.icone}
-              size={20}
-              color={theme.colors.primary}
-            />
-            <PreferenceTitle>{grupoPreferencia.titulo}</PreferenceTitle>
-          </PreferenceHeader>
-          <TagsWrap>
-            {grupoPreferencia.opcoes.map((preferencia) => (
-              <TagPreferencia
-                key={preferencia}
-                texto={preferencia}
-                icone={grupoPreferencia.icone}
-                ativa={
-                  preferenciasSelecionadas[grupoPreferencia.id] === preferencia
-                }
-                onPress={() =>
-                  selecionarPreferencia(grupoPreferencia.id, preferencia)
-                }
-              />
-            ))}
-          </TagsWrap>
-        </PreferenceCard>
-      ))}
-
-      <FooterActions>
-        <LogoutButton onPress={confirmarLogout} activeOpacity={0.85}>
-          <Feather name="log-out" size={18} color={theme.colors.danger} />
-          <LogoutText>Sair da conta</LogoutText>
-        </LogoutButton>
-        <TermsButton onPress={abrirTermosUso} activeOpacity={0.75}>
-          <TermsText>Termos de uso</TermsText>
-        </TermsButton>
-      </FooterActions>
-    </Container>
+    <View style={estilos.linha} accessibilityLabel={`${rotulo}: ${valor || "não informado"}`}>
+      <Feather name={icone} size={18} color={theme.colors.textSecondary} />
+      <View style={estilos.flex}>
+        <Text style={estilos.linhaRotulo}>{rotulo}</Text>
+        <Text style={estilos.linhaValor}>{valor || "Não informado"}</Text>
+      </View>
+    </View>
   );
 }
+
+function Atalho({ icone, texto, onPress, perigo, carregando, detalhe }) {
+  const cor = perigo ? theme.colors.danger : theme.colors.primary;
+  return (
+    <MotionPressable onPress={onPress} disabled={carregando} accessibilityLabel={texto} style={estilos.atalho}>
+      <Feather name={icone} size={20} color={cor} />
+      <View style={estilos.flex}>
+        <Text style={[estilos.atalhoTexto, { color: cor }]}>{texto}</Text>
+        {detalhe ? <Text style={s.secundario}>{detalhe}</Text> : null}
+      </View>
+      {!perigo ? <Feather name="chevron-right" size={20} color={theme.colors.textMuted} /> : null}
+    </MotionPressable>
+  );
+}
+
+function BotaoEditar({ onPress, rotulo }) {
+  return (
+    <MotionPressable onPress={onPress} accessibilityLabel={rotulo} style={estilos.editar}>
+      <Feather name="edit-2" size={16} color={theme.colors.secondary} />
+      <Text style={estilos.editarTexto}>Editar</Text>
+    </MotionPressable>
+  );
+}
+
+function DadosPessoais({ perfil, salvarPerfil }) {
+  const [editando, setEditando] = useState(false);
+  const [form, setForm] = useState({});
+  const [erros, setErros] = useState({});
+  const [falha, setFalha] = useState("");
+  const [aviso, setAviso] = useState("");
+  const [salvando, setSalvando] = useState(false);
+
+  function abrir() {
+    setForm({
+      nome: perfil.nome || "",
+      curso: perfil.curso || "",
+      periodo: perfil.periodo ? String(perfil.periodo) : "",
+      telefone: mascararTelefone(perfil.telefone || ""),
+    });
+    setErros({});
+    setFalha("");
+    setAviso("");
+    setEditando(true);
+  }
+
+  const mudar = (campo, mascara) => (valor) => {
+    setForm((f) => ({ ...f, [campo]: mascara ? mascara(valor) : valor }));
+    setErros((e) => ({ ...e, [campo]: null }));
+  };
+
+  async function salvar() {
+    const encontrados = {
+      nome: validarNome(form.nome),
+      curso: validarTextoObrigatorio(form.curso, "Curso", 60),
+      periodo: validarPeriodo(form.periodo),
+      telefone: validarTelefone(form.telefone),
+    };
+    setErros(encontrados);
+    if (Object.values(encontrados).some(Boolean)) return;
+    setSalvando(true);
+    setFalha("");
+    try {
+      await salvarPerfil({
+        nome: form.nome.trim(),
+        curso: form.curso.trim(),
+        periodo: Number(form.periodo),
+        telefone: form.telefone,
+      });
+      setEditando(false);
+      setAviso("Dados salvos.");
+    } catch (e) {
+      setFalha(e?.message || "Não foi possível salvar seus dados.");
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  return (
+    <Secao icone="user" titulo="Dados pessoais">
+      {editando ? (
+        <>
+          <Campo label="Nome" icon="user" value={form.nome} onChangeText={mudar("nome")} autoCapitalize="words" error={erros.nome} />
+          <Campo label="Curso" icon="book-open" value={form.curso} onChangeText={mudar("curso")} error={erros.curso} />
+          <Campo label="Período" icon="layers" value={form.periodo} onChangeText={mudar("periodo", (v) => v.replace(/\D/g, "").slice(0, 2))} keyboardType="number-pad" error={erros.periodo} />
+          <Campo label="Telefone" icon="phone" value={form.telefone} onChangeText={mudar("telefone", mascararTelefone)} keyboardType="phone-pad" placeholder="(32) 99999-9999" error={erros.telefone} />
+          <Mensagem>{falha}</Mensagem>
+          <View style={estilos.botoes}>
+            <Acao secundario disabled={salvando} onPress={() => setEditando(false)} style={estilos.flex}>
+              Cancelar
+            </Acao>
+            <Acao icone="check" carregando={salvando} onPress={salvar} style={estilos.flex}>
+              Salvar
+            </Acao>
+          </View>
+        </>
+      ) : (
+        <>
+          <Linha icone="mail" rotulo="E-mail" valor={perfil.email} />
+          <Linha icone="hash" rotulo="Matrícula" valor={perfil.matricula} />
+          <Linha icone="book-open" rotulo="Curso" valor={perfil.curso} />
+          <Linha icone="layers" rotulo="Período" valor={perfil.periodo ? `${perfil.periodo}º período` : ""} />
+          <Linha icone="phone" rotulo="Telefone" valor={perfil.telefone} />
+          {aviso ? <Mensagem sucesso>{aviso}</Mensagem> : null}
+          <BotaoEditar onPress={abrir} rotulo="Editar dados pessoais" />
+        </>
+      )}
+    </Secao>
+  );
+}
+
+function Veiculo({ perfil, salvarMotorista }) {
+  const atual = perfil.motorista || {};
+  const [editando, setEditando] = useState(false);
+  const [form, setForm] = useState({});
+  const [erros, setErros] = useState({});
+  const [falha, setFalha] = useState("");
+  const [aviso, setAviso] = useState("");
+  const [salvando, setSalvando] = useState(false);
+
+  function abrir() {
+    setForm({
+      marca: atual.veiculo?.marca || "",
+      modelo: atual.veiculo?.modelo || "",
+      cor: atual.veiculo?.cor || "",
+      placa: mascararPlaca(atual.veiculo?.placa || ""),
+      lugares: atual.lugares || 3,
+      cnhValidade: isoParaBr(atual.cnhValidade),
+      chavePix: atual.chavePix || "",
+    });
+    setErros({});
+    setFalha("");
+    setAviso("");
+    setEditando(true);
+  }
+
+  const mudar = (campo, mascara) => (valor) => {
+    setForm((f) => ({ ...f, [campo]: mascara ? mascara(valor) : valor }));
+    setErros((e) => ({ ...e, [campo]: null }));
+  };
+
+  async function salvar() {
+    const encontrados = validarVeiculo(form);
+    setErros(encontrados);
+    if (Object.keys(encontrados).length) return;
+    setSalvando(true);
+    setFalha("");
+    try {
+      await salvarMotorista({
+        veiculo: {
+          marca: form.marca.trim(),
+          modelo: form.modelo.trim(),
+          cor: form.cor.trim(),
+          placa: form.placa.replace("-", ""),
+        },
+        lugares: form.lugares,
+        cnhValidade: dataParaIso(lerDataBr(form.cnhValidade)),
+        chavePix: form.chavePix.trim(),
+      });
+      setEditando(false);
+      setAviso("Veículo salvo.");
+    } catch (e) {
+      setFalha(e?.message || "Não foi possível salvar o veículo.");
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  const v = atual.veiculo || {};
+  return (
+    <Secao icone="truck" titulo="Veículo">
+      {editando ? (
+        <>
+          <Campo label="Placa" icon="hash" value={form.placa} onChangeText={mudar("placa", mascararPlaca)} autoCapitalize="characters" autoCorrect={false} placeholder="ABC1D23" error={erros.placa} />
+          <Campo label="Marca" icon="truck" value={form.marca} onChangeText={mudar("marca")} error={erros.marca} />
+          <Campo label="Modelo" icon="tag" value={form.modelo} onChangeText={mudar("modelo")} error={erros.modelo} />
+          <Campo label="Cor" icon="droplet" value={form.cor} onChangeText={mudar("cor")} error={erros.cor} />
+          <View style={{ gap: 5 }}>
+            <Text style={s.label}>Lugares para passageiros</Text>
+            <View style={estilos.lugares}>
+              {LUGARES.map((n) => {
+                const ativo = form.lugares === n;
+                return (
+                  <MotionPressable
+                    key={n}
+                    onPress={() => mudar("lugares")(n)}
+                    accessibilityLabel={`${n} ${n === 1 ? "lugar" : "lugares"}`}
+                    accessibilityState={{ selected: ativo }}
+                    style={[estilos.lugar, ativo && estilos.lugarAtivo]}
+                  >
+                    <Text style={[estilos.lugarTexto, ativo && { color: theme.colors.surface }]}>{n}</Text>
+                  </MotionPressable>
+                );
+              })}
+            </View>
+            {erros.lugares ? <Text style={s.error}>{erros.lugares}</Text> : null}
+          </View>
+          <Campo label="Validade da CNH" icon="calendar" value={form.cnhValidade} onChangeText={mudar("cnhValidade", mascararData)} keyboardType="number-pad" placeholder="dd/mm/aaaa" maxLength={10} error={erros.cnhValidade} />
+          <Campo label="Chave PIX" icon="key" value={form.chavePix} onChangeText={mudar("chavePix")} autoCapitalize="none" autoCorrect={false} placeholder="E-mail, celular ou CPF" error={erros.chavePix} />
+          <Mensagem>{falha}</Mensagem>
+          <View style={estilos.botoes}>
+            <Acao secundario disabled={salvando} onPress={() => setEditando(false)} style={estilos.flex}>
+              Cancelar
+            </Acao>
+            <Acao icone="check" carregando={salvando} onPress={salvar} style={estilos.flex}>
+              Salvar
+            </Acao>
+          </View>
+        </>
+      ) : (
+        <>
+          <Linha icone="truck" rotulo="Carro" valor={[v.marca, v.modelo].filter(Boolean).join(" ")} />
+          <Linha icone="droplet" rotulo="Cor" valor={v.cor} />
+          <Linha icone="hash" rotulo="Placa" valor={v.placa ? mascararPlaca(v.placa) : ""} />
+          <Linha icone="users" rotulo="Lugares" valor={atual.lugares ? String(atual.lugares) : ""} />
+          <Linha icone="calendar" rotulo="Validade da CNH" valor={isoParaBr(atual.cnhValidade)} />
+          <Linha icone="key" rotulo="Chave PIX" valor={atual.chavePix} />
+          {aviso ? <Mensagem sucesso>{aviso}</Mensagem> : null}
+          <BotaoEditar onPress={abrir} rotulo="Editar veículo" />
+        </>
+      )}
+    </Secao>
+  );
+}
+
+export default function TelaPerfilUniversitario({ navigation }) {
+  const insets = useSafeAreaInsets();
+  const entrada = useEntrada();
+  const { perfil, modo, emailVerificado, salvarPerfil, salvarMotorista, definirModo, sair } = useAuth();
+  const [saindo, setSaindo] = useState(false);
+  const [trocando, setTrocando] = useState(false);
+  const [falha, setFalha] = useState("");
+
+  if (!perfil) return <EstadoTela tipo="carregando" titulo="Carregando perfil" />;
+
+  const selos = calcularSelos({ emailVerificado, nota: perfil.notaMotorista, viagens: contarViagens(perfil) }).filter((x) => x.conquistado);
+  const destino = modo === "motorista" ? "passageiro" : "motorista";
+
+  async function trocar() {
+    setTrocando(true);
+    setFalha("");
+    try {
+      await definirModo(destino);
+    } catch (e) {
+      setFalha(e?.message || "Não foi possível trocar de modo.");
+      setTrocando(false);
+    }
+  }
+
+  function confirmarSaida() {
+    Alert.alert("Sair da conta", "Você precisará entrar de novo para usar o UniRide.", [
+      { text: "Ficar", style: "cancel" },
+      {
+        text: "Sair",
+        style: "destructive",
+        onPress: async () => {
+          setSaindo(true);
+          setFalha("");
+          try {
+            await sair();
+          } catch (e) {
+            setFalha(e?.message || "Não foi possível sair agora.");
+            setSaindo(false);
+          }
+        },
+      },
+    ]);
+  }
+
+  return (
+    <KeyboardAvoidingView style={s.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[estilos.pagina, { paddingBottom: insets.bottom + theme.spacing.lg }]}
+      >
+        <Animated.View entering={entrada(0)} style={estilos.cabecalho}>
+          <Avatar nome={perfil.nome} fotoBase64={perfil.fotoBase64} tamanho={96} />
+          <Text style={estilos.nome}>{perfil.nome}</Text>
+          <Text style={s.secundario}>
+            {[perfil.curso, perfil.periodo ? `${perfil.periodo}º período` : null].filter(Boolean).join(", ")}
+          </Text>
+          {selos.length ? (
+            <View style={estilos.selos}>
+              {selos.map((selo) => (
+                <View key={selo.id} style={estilos.selo} accessibilityLabel={selo.titulo}>
+                  <Feather name={selo.icone} size={14} color={theme.colors.secondary} />
+                  <Text style={estilos.seloTexto}>{selo.titulo}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </Animated.View>
+
+        <Animated.View entering={entrada(1)}>
+          <DadosPessoais perfil={perfil} salvarPerfil={salvarPerfil} />
+        </Animated.View>
+
+        {perfil.ehMotorista ? (
+          <Animated.View entering={entrada(2)}>
+            <Veiculo perfil={perfil} salvarMotorista={salvarMotorista} />
+          </Animated.View>
+        ) : null}
+
+        <Animated.View entering={entrada(3)}>
+          <Secao icone="compass" titulo="Atalhos">
+            <Atalho icone="shield" texto="Avaliações e segurança" onPress={() => navigation.navigate("Avaliacoes")} />
+            <Atalho
+              icone="repeat"
+              texto={destino === "motorista" ? "Trocar para modo motorista" : "Trocar para modo passageiro"}
+              detalhe={destino === "motorista" && !perfil.ehMotorista ? "Você cadastra o veículo no próximo passo" : undefined}
+              carregando={trocando}
+              onPress={trocar}
+            />
+            <Atalho icone="log-out" texto="Sair" perigo carregando={saindo} onPress={confirmarSaida} />
+            <Mensagem>{falha}</Mensagem>
+          </Secao>
+        </Animated.View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const estilos = StyleSheet.create({
+  flex: { flex: 1 },
+  pagina: { padding: theme.spacing.md, gap: theme.spacing.lg },
+  cabecalho: { alignItems: "center", gap: theme.spacing.sm },
+  nome: { fontFamily: theme.fonts.bold, fontSize: 26, lineHeight: 32, color: theme.colors.primary, textAlign: "center", marginTop: theme.spacing.xs },
+  selos: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: theme.spacing.sm, marginTop: theme.spacing.xs },
+  selo: { flexDirection: "row", alignItems: "center", gap: theme.spacing.xs, minHeight: 32, paddingHorizontal: theme.spacing.mdSm, borderRadius: theme.radii.sm, backgroundColor: theme.colors.secondaryLight },
+  seloTexto: { fontFamily: theme.fonts.semibold, fontSize: 12, color: theme.colors.primary },
+  linha: { flexDirection: "row", alignItems: "center", gap: theme.spacing.mdSm, minHeight: 48 },
+  linhaRotulo: { fontFamily: theme.fonts.medium, fontSize: 12, color: theme.colors.textSecondary },
+  linhaValor: { fontFamily: theme.fonts.semibold, fontSize: 15, color: theme.colors.primary },
+  editar: { minHeight: 48, flexDirection: "row", alignItems: "center", gap: theme.spacing.sm, alignSelf: "flex-start" },
+  editarTexto: { fontFamily: theme.fonts.semibold, fontSize: 14, color: theme.colors.secondary },
+  botoes: { flexDirection: "row", gap: theme.spacing.sm },
+  atalho: { minHeight: 56, flexDirection: "row", alignItems: "center", gap: theme.spacing.mdSm },
+  atalhoTexto: { fontFamily: theme.fonts.semibold, fontSize: 15 },
+  lugares: { flexDirection: "row", gap: theme.spacing.sm, flexWrap: "wrap" },
+  lugar: { minWidth: 48, minHeight: 48, borderRadius: theme.radii.md, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, alignItems: "center", justifyContent: "center" },
+  lugarAtivo: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+  lugarTexto: { fontFamily: theme.fonts.bold, fontSize: 16, color: theme.colors.primary },
+});

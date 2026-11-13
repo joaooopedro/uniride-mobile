@@ -8,6 +8,9 @@ import {
 } from "../screens/provisorias/TelasAcesso";
 import TelaBuscarCaronas from "../screens/TelaBuscarCaronas";
 import TelaAvaliacoesSeguranca from "../screens/TelaAvaliacoesSeguranca";
+import TelaAvaliarViagem from "../screens/TelaAvaliarViagem";
+import TelaDetalhesCarona from "../screens/TelaDetalhesCarona";
+import TelaPerfilUniversitario from "../screens/TelaPerfilUniversitario";
 import TelaCadastroMotorista from "../screens/motorista/TelaCadastroMotorista";
 import TelaOferecerCarona from "../screens/motorista/TelaOferecerCarona";
 import TelaMinhasRotas from "../screens/motorista/TelaMinhasRotas";
@@ -32,10 +35,10 @@ export const TELAS = {
   // Passageiro (issue #29, Caio)
   Buscar: TelaBuscarCaronas,
   // Detalhes, avaliação e perfil (issue #31, Nicolas)
-  DetalhesCarona: pendente("Detalhes da carona", 31, "Nicolas", "Mapa, rota, clima, motorista e ações da reserva."),
-  AvaliarViagem: pendente("Avaliar viagem", 31, "Nicolas", "Estrelas e comentário depois da viagem concluída."),
+  DetalhesCarona: TelaDetalhesCarona,
+  AvaliarViagem: TelaAvaliarViagem,
   Avaliacoes: TelaAvaliacoesSeguranca,
-  Perfil: pendente("Perfil", 31, "Nicolas", "Dados pessoais e veículo editáveis."),
+  Perfil: TelaPerfilUniversitario,
   // Comunicação (issue #32, Jonathan)
   Reservas: pendente("Minhas reservas", 32, "Jonathan", "Próximas e histórico, com status e ações."),
   Conversas: pendente("Conversas", 32, "Jonathan", "Uma conversa por carona, com mensagens não lidas."),
