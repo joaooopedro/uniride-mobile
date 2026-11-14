@@ -1,23 +1,47 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import styled, { useTheme } from "styled-components/native";
 
-import theme from "../theme";
+const MENSAGEM = "Sem conexão. Mostrando os últimos dados.";
 
-// Versão provisória. Acabamento visual na issue #32.
 export default function FaixaSemConexao({ visivel }) {
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
+
   if (!visivel) return null;
+
   return (
-    <View style={[styles.faixa, { paddingTop: insets.top + 4 }]} accessibilityRole="alert">
-      <Feather name="wifi-off" size={14} color={theme.colors.warning} />
-      <Text style={styles.texto}>Sem conexão. Mostrando os últimos dados.</Text>
-    </View>
+    <Faixa
+      style={{
+        paddingTop: insets.top + theme.spacing.xs,
+        paddingLeft: insets.left + theme.spacing.md,
+        paddingRight: insets.right + theme.spacing.md,
+      }}
+      accessible
+      accessibilityRole="alert"
+      accessibilityLiveRegion="polite"
+      accessibilityLabel={MENSAGEM}
+    >
+      <Feather name="wifi-off" size={16} color={theme.colors.warning} accessible={false} />
+      <Texto>{MENSAGEM}</Texto>
+    </Faixa>
   );
 }
 
-const styles = StyleSheet.create({
-  faixa: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 6, paddingHorizontal: 16, backgroundColor: theme.colors.warningLight },
-  texto: { fontFamily: theme.fonts.medium, fontSize: 12, color: theme.colors.warning },
-});
+const Faixa = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.sm}px;
+  padding-bottom: ${({ theme }) => theme.spacing.sm}px;
+  background-color: ${({ theme }) => theme.colors.warningLight};
+`;
+
+const Texto = styled.Text`
+  flex-shrink: 1;
+  font-family: ${({ theme }) => theme.fonts.medium};
+  font-size: ${({ theme }) => theme.typography.caption.fontSize}px;
+  line-height: ${({ theme }) => theme.typography.caption.lineHeight}px;
+  color: ${({ theme }) => theme.colors.warning};
+`;
