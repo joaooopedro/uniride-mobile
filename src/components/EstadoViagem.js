@@ -4,10 +4,16 @@ import { Feather } from "@expo/vector-icons";
 import { useTheme } from "styled-components/native";
 
 const states = {
-  Confirmada: { color: "success", icon: "check" },
+  Solicitada: { color: "warning", icon: "clock" },
+  Aceita: { color: "success", icon: "check" },
+  Recusada: { color: "danger", icon: "x" },
+  Cancelada: { color: "danger", icon: "x" },
+  "Em andamento": { color: "secondary", icon: "navigation" },
+  Concluída: { color: "textSecondary", icon: "flag" },
+  // Rótulos ainda usados pelas telas do motorista.
   "Aguardando Saída": { color: "warning", icon: "clock" },
   "Em Andamento": { color: "secondary", icon: "navigation" },
-  Concluída: { color: "textSecondary", icon: "check-circle" },
+  Confirmada: { color: "success", icon: "check" },
 };
 
 export default function EstadoViagem({ status }) {
