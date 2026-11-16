@@ -20,7 +20,7 @@ export function Secao({ numero, icone, titulo, ok, children }) {
     <View style={estilos.secao}>
       <View style={estilos.divisoria} />
       <View style={estilos.secaoTopo}>
-        <View style={[estilos.marcador, ok && { backgroundColor: theme.colors.secondaryLight }]}>
+        <View style={[estilos.marcador, numero && !ok && estilos.marcadorNumero]}>
           {numero && !ok ? (
             <Text style={[estilos.numero, { color: cor }]}>{numero}</Text>
           ) : (
@@ -47,12 +47,11 @@ export function Avatar({ nome, fotoBase64, tamanho = 44, sobreposto }) {
   );
 }
 
-// Estado vazio com ícone em círculo exigido pela #30; trocar por EstadoTela quando o definitivo da #32 aceitar ícone.
 export function Vazio({ icone, titulo, frase, acao, onAcao, iconeAcao }) {
   return (
     <View style={estilos.vazio}>
       <View style={estilos.vazioIcone}>
-        <Feather name={icone} size={34} color={theme.colors.primary} />
+        <Feather name={icone} size={34} color={theme.colors.textSecondary} />
       </View>
       <Text style={estilos.vazioTitulo}>{titulo}</Text>
       <Text style={[s.secundario, { textAlign: "center" }]}>{frase}</Text>
@@ -71,10 +70,11 @@ export const estilos = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: theme.radii.full,
-    backgroundColor: theme.colors.primaryLight,
     alignItems: "center",
     justifyContent: "center",
   },
+  // Etapa numerada do formulário: o círculo marca a ordem.
+  marcadorNumero: { backgroundColor: theme.colors.primaryLight },
   numero: { fontFamily: theme.fonts.bold, fontSize: 15 },
   secaoTitulo: { fontFamily: theme.fonts.semibold, fontSize: 19, lineHeight: 27, color: theme.colors.primary },
   avatar: { backgroundColor: theme.colors.primaryLight, alignItems: "center", justifyContent: "center", overflow: "hidden" },
@@ -84,8 +84,6 @@ export const estilos = StyleSheet.create({
   vazioIcone: {
     width: 84,
     height: 84,
-    borderRadius: theme.radii.full,
-    backgroundColor: theme.colors.primaryLight,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: theme.spacing.xs,

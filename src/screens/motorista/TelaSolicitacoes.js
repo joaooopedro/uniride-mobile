@@ -10,7 +10,7 @@ import theme from "../../theme";
 import { formatarDataHora, formatarNota } from "../../utils";
 import { Acao, Mensagem, s, Titulo } from "../acesso/ComponentesAcesso";
 import { Avatar, Vazio, useEntrada } from "./comum";
-import { primeiroNome, resultadoResposta, saudacao } from "./logica";
+import { primeiroNome, resultadoResposta } from "./logica";
 
 function CartaoPedido({ pedido, ocupado, emAndamento, erro, onAceitar, onRecusar }) {
   const { passageiro = {}, carona } = pedido;
@@ -101,7 +101,7 @@ export default function TelaSolicitacoes({ navigation }) {
     ]);
   }
 
-  const resumo = `${saudacao()}, ${primeiroNome(perfil?.nome)}. ${pedidos.length} ${pedidos.length === 1 ? "pedido aguardando" : "pedidos aguardando"}.`;
+  const resumo = pedidos.length === 0 ? "Nenhum pedido aguardando." : `${pedidos.length} ${pedidos.length === 1 ? "pedido aguardando" : "pedidos aguardando"}.`;
 
   return (
     <ScrollView

@@ -261,6 +261,6 @@ const estilos = StyleSheet.create({
   input: { minHeight: 96, fontFamily: theme.fonts.regular, fontSize: 15, lineHeight: 22, color: theme.colors.primary },
   contador: { alignSelf: "flex-end", fontFamily: theme.fonts.medium, fontSize: 12, color: theme.colors.textSecondary },
   obrigado: { flex: 1, alignItems: "center", justifyContent: "center", gap: theme.spacing.mdSm, padding: theme.spacing.md, backgroundColor: theme.colors.background },
-  obrigadoIcone: { width: 84, height: 84, borderRadius: theme.radii.full, backgroundColor: theme.colors.successLight, alignItems: "center", justifyContent: "center" },
+  obrigadoIcone: { width: 84, height: 84, alignItems: "center", justifyContent: "center" },
   obrigadoTitulo: { fontFamily: theme.fonts.bold, fontSize: 22, color: theme.colors.primary },
 });

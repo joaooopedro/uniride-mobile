@@ -149,7 +149,6 @@ const CirculoIcone = styled.View`
   width: ${({ theme }) => theme.spacing.xl * 2}px;
   height: ${({ theme }) => theme.spacing.xl * 2}px;
   border-radius: ${({ theme }) => theme.radii.full}px;
-  background-color: ${({ theme }) => theme.colors.primaryLight};
   align-items: center;
   justify-content: center;
 `;
