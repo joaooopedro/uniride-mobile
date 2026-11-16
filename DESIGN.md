@@ -10,7 +10,7 @@ A proposta usa a identidade da logo como ponto de partida. A assinatura original
 | Navegação ativa e detalhe da marca | Verde-petróleo, #087E79        |
 | Fundo                              | Branco suave, #FAFBFA          |
 | Divisórias                         | Cinza com matiz verde, #DEE7E6 |
-| Avaliações e atenção               | Âmbar, #A66608                 |
+| Avaliações e atenção               | Âmbar, #9F6207                 |
 
 A fonte Manrope usa quatro pesos locais: regular, médio, semibold e bold. Títulos de 28 a 31 pontos, corpo de 14 pontos e legendas menores definem a hierarquia. Valores monetários e horários usam números tabulares onde isso ajuda a comparação.
 
