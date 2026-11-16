@@ -22,7 +22,7 @@ const BOTOES = {
 
 function CartaoReserva({ reserva, carona, onAcao }) {
   const motorista = carona.motorista || {};
-  const veiculo = motorista.veiculo ? `${motorista.veiculo.modelo} ${motorista.veiculo.cor || ""}`.trim() : null;
+  const veiculo = motorista.veiculo ? [motorista.veiculo.modelo, motorista.veiculo.cor].filter(Boolean).join(", ") : null;
   return (
     <View style={estilos.cartao}>
       <View style={estilos.topo}>
