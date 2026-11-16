@@ -20,11 +20,13 @@ export default function EstadoViagem({ status }) {
   const theme = useTheme();
   const visual = states[status] || { color: "textSecondary", icon: "circle" };
   const color = theme.colors[visual.color];
+  // Rótulos antigos vêm com maiúscula no meio ("Aguardando Saída"); na tela fica só a primeira.
+  const texto = status ? status.charAt(0) + status.slice(1).toLowerCase() : status;
   return (
-    <View accessible accessibilityLabel={status} style={styles.row}>
+    <View accessible accessibilityLabel={texto} style={styles.row}>
       <Feather name={visual.icon} size={14} color={color} />
       <Text style={[styles.label, { color, fontFamily: theme.fonts.semibold }]}>
-        {status}
+        {texto}
       </Text>
     </View>
   );
