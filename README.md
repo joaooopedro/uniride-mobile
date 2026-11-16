@@ -88,11 +88,20 @@ Para montar tela sem internet e sem conta: crie um `.env` com `EXPO_PUBLIC_MODO_
 Precisa do login do Firebase no computador (`npx firebase-tools login`, conta com acesso ao projeto `uniride-uniacademia`).
 
 ```bash
-node scripts/limpar.js   # apaga as contas de exemplo e tudo que elas criaram
-node scripts/seed.js     # cria os logins de teste, mais 2 motoristas de exemplo, e 6 caronas nos próximos dias em Juiz de Fora
+node scripts/limpar.js   # zera o banco de teste: todos os documentos e todas as contas
+node scripts/seed.js     # cria uma conta por integrante e 6 caronas nos próximos dias em Juiz de Fora
 ```
 
-Logins de teste: `motorista@uniride.app` (com veículo e caronas) e `passageiro@uniride.app`, com e-mail verificado e senha `uniride2026` (troque com `SEED_SENHA=... node scripts/seed.js`). As caronas vencem em poucos dias: rode os dois comandos de novo no dia da apresentação.
+Logins de teste, um por integrante (os motoristas já têm veículo e duas caronas cada), com e-mail verificado e senha `uniride2026` (troque com `SEED_SENHA=... node scripts/seed.js`). As caronas vencem em poucos dias: rode os dois comandos de novo no dia da apresentação.
+
+| Pessoa | Papel | E-mail |
+| --- | --- | --- |
+| Jonathan Delmonte | Motorista | `jonathan@uniride.app` |
+| Gabriel Caputo Morais | Motorista | `gabriel@uniride.app` |
+| João Pedro | Motorista | `joao.motorista@uniride.app` |
+| Caio Soranço Castilho | Passageiro | `caio@uniride.app` |
+| Nicolas Isaac Pinto de Jesus | Passageiro | `nicolas@uniride.app` |
+| João Pedro | Passageiro | `joao.passageiro@uniride.app` |
 
 ### Regras do banco
 

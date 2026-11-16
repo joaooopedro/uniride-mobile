@@ -1,10 +1,10 @@
 # Apresentação do UniRide (18 e 19/11)
 
-Apresentação presencial, sem slides. Cada integrante fala da própria parte, na ordem abaixo, e a demonstração roda ao vivo em dois celulares: um passageiro e um motorista.
+Apresentação presencial, sem slides. Cada integrante fala da própria parte, na ordem abaixo, e a demonstração roda ao vivo nos celulares do grupo, cada um com a própria conta.
 
 Contas da demonstração (senha `uniride2026`):
-- Motorista: `motorista@uniride.app` (Ana Ribeiro)
-- Passageiro: `passageiro@uniride.app` (Paulo Teixeira)
+- Motoristas: `jonathan@uniride.app`, `gabriel@uniride.app` e `joao.motorista@uniride.app`
+- Passageiros: `caio@uniride.app`, `nicolas@uniride.app` e `joao.passageiro@uniride.app`
 
 Antes de começar: `node scripts/limpar.js && node scripts/seed.js`, para as caronas de exemplo estarem nos próximos dias.
 
@@ -24,6 +24,7 @@ Antes de começar: `node scripts/limpar.js && node scripts/seed.js`, para as car
 - Banco: repositórios no Firestore, reserva com transação para não vender a mesma vaga duas vezes, regras de segurança, seed (24).
 - Serviços: CEP, Nominatim, rota no OSRM, feriados, clima, mapa OpenStreetMap e 57 testes automáticos (25).
 - Notificações locais de pedido, aceite e mensagem (26); build e instalação nos iPhones e APK (27).
+- Conversas da carona com avisos rápidos e Minhas Reservas, completando a issue 32.
 - Revisão final: teste do fluxo completo no simulador e correções (28).
 
 ### Caio Soranço Castilho
@@ -40,7 +41,8 @@ Antes de começar: `node scripts/limpar.js && node scripts/seed.js`, para as car
 
 ### Jonathan Delmonte
 - Etapa 1: central de avisos rápidos com chat e camada de dados de exemplo (issues 9 e 10).
-- Final: componentes de estado (carregando, vazio, erro e aviso sem conexão), conversas da carona com avisos rápidos e Minhas Reservas (issue 32).
+- Etapa 1 também: refino da interface e da navegação (barra de abas, menu lateral, tema) e as diretrizes do DESIGN.md.
+- Final: componentes de estado (carregando, vazio, erro e aviso sem conexão), usados por todas as telas (issue 32).
 
 ## Roteiro da demonstração
 

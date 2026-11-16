@@ -57,11 +57,15 @@ Este guia cobre a instalação, criação e confirmação da conta, recuperaçã
 
 ## Contas de demonstração
 
-Use as contas fornecidas pela equipe para navegar sem cadastrar outro usuário. A senha de ambas é `uniride2026`.
+Use as contas fornecidas pela equipe para navegar sem cadastrar outro usuário. A senha de todas é `uniride2026`.
 
-| Papel | E-mail |
-| --- | --- |
-| Motorista | `motorista@uniride.app` |
-| Passageiro | `passageiro@uniride.app` |
+| Pessoa | Papel | E-mail |
+| --- | --- | --- |
+| Jonathan Delmonte | Motorista | `jonathan@uniride.app` |
+| Gabriel Caputo Morais | Motorista | `gabriel@uniride.app` |
+| João Pedro | Motorista | `joao.motorista@uniride.app` |
+| Caio Soranço Castilho | Passageiro | `caio@uniride.app` |
+| Nicolas Isaac Pinto de Jesus | Passageiro | `nicolas@uniride.app` |
+| João Pedro | Passageiro | `joao.passageiro@uniride.app` |
 
 Para comparar os dois lados, entre como motorista em um aparelho e passageiro em outro. Se as caronas de demonstração expirarem, peça à equipe para executar o seed novamente. Não altere a senha das contas de teste.
