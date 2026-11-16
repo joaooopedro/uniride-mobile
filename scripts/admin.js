@@ -15,12 +15,16 @@ const IDENTIDADE = `https://identitytoolkit.googleapis.com/v1/projects/${PROJETO
 // Contas de exemplo. Senha comum para a apresentação.
 const SENHA = process.env.SEED_SENHA || "uniride2026";
 const MOTORISTAS = [
-  { email: "motorista@uniride.app", nome: "Ana Ribeiro", curso: "Engenharia Civil", periodo: 7, veiculo: { marca: "Fiat", modelo: "Argo", cor: "Prata", placa: "QPX4F21" }, lugares: 4 },
-  { email: "bruno.seed@uniride.app", nome: "Bruno Almeida", curso: "Direito", periodo: 5, veiculo: { marca: "Volkswagen", modelo: "Gol", cor: "Branco", placa: "HMT2389" }, lugares: 3 },
-  { email: "carla.seed@uniride.app", nome: "Carla Menezes", curso: "Psicologia", periodo: 3, veiculo: { marca: "Hyundai", modelo: "HB20", cor: "Azul", placa: "RVB7C04" }, lugares: 4 },
+  { email: "jonathan@uniride.app", nome: "Jonathan Delmonte", curso: "Ciência da Computação", periodo: 5, veiculo: { marca: "Fiat", modelo: "Argo", cor: "Prata", placa: "QPX4F21" }, lugares: 4 },
+  { email: "gabriel@uniride.app", nome: "Gabriel Caputo Morais", curso: "Ciência da Computação", periodo: 5, veiculo: { marca: "Volkswagen", modelo: "Gol", cor: "Branco", placa: "HMT2389" }, lugares: 3 },
+  { email: "joao.motorista@uniride.app", nome: "João Pedro Silva de Almeida", curso: "Ciência da Computação", periodo: 5, veiculo: { marca: "Hyundai", modelo: "HB20", cor: "Azul", placa: "RVB7C04" }, lugares: 4 },
 ];
-// Passageiros para testar o outro lado: pedir vaga, chat e avaliação.
-const PASSAGEIROS = [{ email: "passageiro@uniride.app", nome: "Paulo Teixeira", curso: "Ciência da Computação", periodo: 4 }];
+// Passageiros: pedir vaga, chat e avaliação.
+const PASSAGEIROS = [
+  { email: "caio@uniride.app", nome: "Caio Soranço Castilho", curso: "Ciência da Computação", periodo: 5 },
+  { email: "nicolas@uniride.app", nome: "Nicolas Isaac Pinto de Jesus", curso: "Ciência da Computação", periodo: 5 },
+  { email: "joao.passageiro@uniride.app", nome: "João Pedro Silva de Almeida", curso: "Ciência da Computação", periodo: 5 },
+];
 
 let token;
 function tokenAdmin() {
