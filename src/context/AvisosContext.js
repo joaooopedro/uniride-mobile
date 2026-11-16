@@ -90,8 +90,14 @@ export function AvisosProvider({ children }) {
         const naoLidas = mensagens.filter(
           (m) => m.autorId !== uid && (paraData(m.criadoEm)?.getTime() || 0) > lidoEm,
         ).length;
-        return { carona, ultimaMensagem, naoLidas };
+        return { carona, ultimaMensagem, naoLidas, total: mensagens.length };
       })
+      // Carona do motorista sem nenhum passageiro aceito e sem mensagem ainda não tem com quem conversar.
+      .filter(({ carona, total }) => {
+        if (carona.motoristaId !== uid || total > 0) return true;
+        return (carona.vagasTotais ?? 0) - (carona.vagasRestantes ?? 0) > 0;
+      })
+      .map(({ total, ...item }) => item)
       .sort((a, b) => {
         const ta = paraData(a.ultimaMensagem?.criadoEm)?.getTime() || paraData(a.carona.saidaEm)?.getTime() || 0;
         const tb = paraData(b.ultimaMensagem?.criadoEm)?.getTime() || paraData(b.carona.saidaEm)?.getTime() || 0;

@@ -4,21 +4,29 @@ import { Feather } from "@expo/vector-icons";
 import { useTheme } from "styled-components/native";
 
 const states = {
-  Confirmada: { color: "success", icon: "check" },
+  Solicitada: { color: "warning", icon: "clock" },
+  Aceita: { color: "success", icon: "check" },
+  Recusada: { color: "danger", icon: "x" },
+  Cancelada: { color: "danger", icon: "x" },
+  "Em andamento": { color: "secondary", icon: "navigation" },
+  Concluída: { color: "textSecondary", icon: "flag" },
+  // Rótulos ainda usados pelas telas do motorista.
   "Aguardando Saída": { color: "warning", icon: "clock" },
   "Em Andamento": { color: "secondary", icon: "navigation" },
-  Concluída: { color: "textSecondary", icon: "check-circle" },
+  Confirmada: { color: "success", icon: "check" },
 };
 
 export default function EstadoViagem({ status }) {
   const theme = useTheme();
   const visual = states[status] || { color: "textSecondary", icon: "circle" };
   const color = theme.colors[visual.color];
+  // Rótulos antigos vêm com maiúscula no meio ("Aguardando Saída"); na tela fica só a primeira.
+  const texto = status ? status.charAt(0) + status.slice(1).toLowerCase() : status;
   return (
-    <View accessible accessibilityLabel={status} style={styles.row}>
+    <View accessible accessibilityLabel={texto} style={styles.row}>
       <Feather name={visual.icon} size={14} color={color} />
       <Text style={[styles.label, { color, fontFamily: theme.fonts.semibold }]}>
-        {status}
+        {texto}
       </Text>
     </View>
   );

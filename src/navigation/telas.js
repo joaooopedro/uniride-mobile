@@ -1,4 +1,3 @@
-import { criarTelaPendente } from "../screens/provisorias/TelaPendente";
 import {
   TelaCadastroProvisoria,
   TelaEntradaProvisoria,
@@ -15,10 +14,11 @@ import TelaCadastroMotorista from "../screens/motorista/TelaCadastroMotorista";
 import TelaOferecerCarona from "../screens/motorista/TelaOferecerCarona";
 import TelaMinhasRotas from "../screens/motorista/TelaMinhasRotas";
 import TelaSolicitacoes from "../screens/motorista/TelaSolicitacoes";
+import TelaConversa from "../screens/comunicacao/TelaConversa";
+import TelaConversas from "../screens/comunicacao/TelaConversas";
+import TelaMinhasReservas from "../screens/comunicacao/TelaMinhasReservas";
 
 // Mapa rota -> tela. Cada integrante troca a linha da sua tela quando ela ficar pronta.
-const pendente = (titulo, issue, responsavel, descricao) =>
-  criarTelaPendente({ titulo, issue, responsavel, descricao });
 
 export const TELAS = {
   // Acesso (issue #29, Caio)
@@ -40,7 +40,7 @@ export const TELAS = {
   Avaliacoes: TelaAvaliacoesSeguranca,
   Perfil: TelaPerfilUniversitario,
   // Comunicação (issue #32, Jonathan)
-  Reservas: pendente("Minhas reservas", 32, "Jonathan", "Próximas e histórico, com status e ações."),
-  Conversas: pendente("Conversas", 32, "Jonathan", "Uma conversa por carona, com mensagens não lidas."),
-  Conversa: pendente("Conversa", 32, "Jonathan", "Chat da carona com avisos rápidos."),
+  Reservas: TelaMinhasReservas,
+  Conversas: TelaConversas,
+  Conversa: TelaConversa,
 };

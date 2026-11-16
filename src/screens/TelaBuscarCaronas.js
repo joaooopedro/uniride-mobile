@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   chipAtivo: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
   chipTexto: { fontFamily: theme.fonts.medium, fontSize: 12, color: theme.colors.primary },
   filtros: { flexDirection: "column", alignItems: "stretch", gap: theme.spacing.xs },
-  precoInput: { alignSelf: Platform.OS === "web" ? "flex-start" : "auto", marginHorizontal: Platform.OS === "web" ? theme.spacing.md : 0, marginBottom: Platform.OS === "web" ? theme.spacing.sm : 0, minHeight: 44, minWidth: 106, paddingHorizontal: 9, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radii.md, flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: theme.colors.surface },
+  precoInput: { alignSelf: "flex-start", marginHorizontal: theme.spacing.md, marginBottom: theme.spacing.sm, minHeight: 44, minWidth: 106, paddingHorizontal: 9, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radii.md, flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: theme.colors.surface },
   precoLabel: { fontFamily: theme.fonts.medium, fontSize: 12, color: theme.colors.textSecondary },
   precoText: { width: 56, minHeight: 38, color: theme.colors.primary, fontFamily: theme.fonts.semibold },
   segmento: { marginHorizontal: theme.spacing.md, marginTop: theme.spacing.xs, marginBottom: theme.spacing.sm, padding: 3, borderRadius: theme.radii.md, backgroundColor: theme.colors.primaryLight, flexDirection: "row" },

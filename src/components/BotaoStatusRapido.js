@@ -1,7 +1,7 @@
 import React from "react";
 import styled, { useTheme } from "styled-components/native";
 import MotionPressable from "./MotionPressable";
-import { Ionicons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 
 const Botao = styled(MotionPressable)`
   flex-direction: row;
@@ -23,17 +23,19 @@ const TextoBotao = styled.Text`
   font-family: ${(props) => props.theme.fonts.semibold};
 `;
 
-export default function BotaoStatusRapido({ texto, icone, onPress }) {
+export default function BotaoStatusRapido({ texto, icone, onPress, disabled }) {
   const theme = useTheme();
 
   return (
     <Botao
       onPress={onPress}
+      disabled={disabled}
+      style={disabled ? { opacity: 0.55 } : null}
       activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={`Enviar aviso: ${texto}`}
     >
-      <Ionicons name={icone} size={16} color={theme.colors.primary} />
+      <Feather name={icone} size={16} color={theme.colors.secondary} />
       <TextoBotao>{texto}</TextoBotao>
     </Botao>
   );
