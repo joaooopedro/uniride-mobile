@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   filtros: { flexDirection: "column", alignItems: "stretch", gap: theme.spacing.xs },
   precoInput: { alignSelf: "flex-start", marginHorizontal: theme.spacing.md, marginBottom: theme.spacing.sm, minHeight: 44, minWidth: 106, paddingHorizontal: 9, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radii.md, flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: theme.colors.surface },
   precoLabel: { fontFamily: theme.fonts.medium, fontSize: 12, color: theme.colors.textSecondary },
-  precoText: { width: 56, minHeight: 38, color: theme.colors.primary, fontFamily: theme.fonts.semibold },
+  precoText: { width: 80, minHeight: 38, color: theme.colors.primary, fontFamily: theme.fonts.semibold },
   segmento: { marginHorizontal: theme.spacing.md, marginTop: theme.spacing.xs, marginBottom: theme.spacing.sm, padding: 3, borderRadius: theme.radii.md, backgroundColor: theme.colors.primaryLight, flexDirection: "row" },
   segmentoOpcao: { flex: 1, minHeight: 44, borderRadius: theme.radii.sm, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
   segmentoAtivo: { backgroundColor: theme.colors.primary },
