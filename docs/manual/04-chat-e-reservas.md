@@ -94,7 +94,3 @@ Acima do campo de mensagem há uma linha de atalhos. Deslize para o lado para ve
 Um toque envia o aviso para todos da carona, sem digitar. O aviso aparece no chat como um cartão verde-claro com ícone, diferente das mensagens comuns, para ninguém perder.
 
 Print: `04-avisos-rapidos.png`
-
-## TODO
-
-Tirar os prints no simulador e salvar em `docs/manual/img/` com os nomes acima: `04-reservas.png`, `04-reservas-vazio.png`, `04-reservas-acoes.png`, `04-conversas.png`, `04-conversa.png`, `04-avisos-rapidos.png`.
