@@ -17,14 +17,14 @@ Cada reserva mostra o horário de saída em destaque, a data, o valor, o bairro 
 
 Puxe a lista para baixo para atualizar.
 
-Print: `04-reservas.png`
+![](img/04-reservas.png)
 
 ### Se a lista estiver vazia ou der erro
 
 - Sem nenhuma reserva, aparece "Você ainda não reservou carona" com o botão **Buscar caronas**, que leva para a aba Buscar.
 - Se faltar internet ou o banco não responder, aparece a mensagem do erro e o botão **Tentar de novo**.
 
-Print: `04-reservas-vazio.png`
+![](img/04-reservas-vazio.png)
 
 ## 2. Entender os status
 
@@ -47,7 +47,7 @@ Os botões mudam conforme o status:
 - **Conversa**: só em reserva aceita. Abre o chat da carona.
 - **Avaliar**: só em viagem concluída que você ainda não avaliou.
 
-Print: `04-reservas-acoes.png`
+![](img/04-reservas-acoes.png)
 
 ## 4. Ver suas conversas
 
@@ -62,7 +62,7 @@ O número na aba Conversas soma as não lidas de todas as caronas.
 
 A conversa aparece quando você tem uma reserva aceita ou, como motorista, uma carona publicada.
 
-Print: `04-conversas.png`
+![](img/04-conversas.png)
 
 ## 5. Conversar com o motorista ou com os passageiros
 
@@ -79,7 +79,7 @@ O chat rola sozinho para a última mensagem ao abrir e quando chega mensagem nov
 
 Ao abrir a conversa, as mensagens contam como lidas e a bolinha de não lidas some.
 
-Print: `04-conversa.png`
+![](img/04-conversa.png)
 
 ## 6. Usar os avisos rápidos
 
@@ -93,8 +93,4 @@ Acima do campo de mensagem há uma linha de atalhos. Deslize para o lado para ve
 
 Um toque envia o aviso para todos da carona, sem digitar. O aviso aparece no chat como um cartão verde-claro com ícone, diferente das mensagens comuns, para ninguém perder.
 
-Print: `04-avisos-rapidos.png`
-
-## TODO
-
-Tirar os prints no simulador e salvar em `docs/manual/img/` com os nomes acima: `04-reservas.png`, `04-reservas-vazio.png`, `04-reservas-acoes.png`, `04-conversas.png`, `04-conversa.png`, `04-avisos-rapidos.png`.
+![](img/04-avisos-rapidos.png)
