@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import Animated, { useAnimatedKeyboard, useAnimatedStyle } from "react-native-reanimated";
 import { Feather } from "@expo/vector-icons";
-import { useHeaderHeight } from "@react-navigation/elements";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import BalaoMensagem from "../../components/BalaoMensagem";
@@ -47,8 +47,13 @@ export default function TelaConversa({ navigation, route }) {
   const { mensagens, carregando, erro } = useMensagens(caronaId);
   const { carona } = useCarona(caronaId);
   const { podeAnimar } = useInterface();
-  const alturaCabecalho = useHeaderHeight();
   const insets = useSafeAreaInsets();
+  // A tela vai até o fim da tela do aparelho: sobe o conteúdo só o que o teclado cobre,
+  // descontando a margem de baixo que o rodapé já tem.
+  const teclado = useAnimatedKeyboard();
+  const estiloTeclado = useAnimatedStyle(() => ({
+    paddingBottom: Math.max(teclado.height.value - insets.bottom + theme.spacing.sm, 0),
+  }));
   const lista = useRef(null);
   const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -106,11 +111,7 @@ export default function TelaConversa({ navigation, route }) {
   const habilitado = podeEnviar(texto, enviando);
 
   return (
-    <KeyboardAvoidingView
-      style={s.flex}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={alturaCabecalho}
-    >
+    <Animated.View style={[s.flex, estiloTeclado]}>
       {carona ? <Cabecalho carona={carona} onDetalhes={() => navigation.navigate("DetalhesCarona", { caronaId })} /> : null}
 
       <FlatList
@@ -187,7 +188,7 @@ export default function TelaConversa({ navigation, route }) {
           <Text style={estilos.contador}>{texto.length} de {LIMITE_MENSAGEM}</Text>
         ) : null}
       </View>
-    </KeyboardAvoidingView>
+    </Animated.View>
   );
 }
 
