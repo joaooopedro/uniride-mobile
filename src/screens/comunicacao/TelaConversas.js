@@ -107,8 +107,6 @@ const estilos = StyleSheet.create({
   icone: {
     width: 48,
     height: 48,
-    borderRadius: theme.radii.full,
-    backgroundColor: theme.colors.primaryLight,
     alignItems: "center",
     justifyContent: "center",
   },

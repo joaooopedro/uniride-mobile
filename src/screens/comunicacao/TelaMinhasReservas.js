@@ -5,13 +5,12 @@ import Animated from "react-native-reanimated";
 
 import EstadoTela from "../../components/EstadoTela";
 import EstadoViagem from "../../components/EstadoViagem";
-import { useAuth } from "../../context/AuthContext";
 import { useCaronas } from "../../context/CaronasContext";
 import theme from "../../theme";
 import { formatarData, formatarHora, formatarMoeda } from "../../utils";
 import { Acao, s, Titulo } from "../acesso/ComponentesAcesso";
 import { Avatar, useEntrada } from "../motorista/comum";
-import { primeiroNome, saudacao } from "../motorista/logica";
+
 import { acoesDaReserva, separarReservas, statusDaReserva } from "./logica";
 
 const BOTOES = {
@@ -75,7 +74,6 @@ function CartaoReserva({ reserva, carona, onAcao }) {
 }
 
 export default function TelaMinhasReservas({ navigation }) {
-  const { perfil } = useAuth();
   const { minhasReservas, carregandoCaronas, erroCaronas, recarregar } = useCaronas();
   const entrada = useEntrada();
 
@@ -101,7 +99,7 @@ export default function TelaMinhasReservas({ navigation }) {
     if (acao === "avaliar") navigation.navigate("AvaliarViagem", { reservaId: reserva.id });
   }
 
-  const resumo = `${saudacao()}, ${primeiroNome(perfil?.nome)}. ${proximas.length} ${proximas.length === 1 ? "reserva próxima" : "reservas próximas"}.`;
+  const resumo = proximas.length === 0 ? "Nenhuma reserva próxima." : `${proximas.length} ${proximas.length === 1 ? "reserva próxima" : "reservas próximas"}.`;
   let indice = 0;
   const secao = (titulo, itens, vazio) => (
     <View style={estilos.secao}>

@@ -72,7 +72,7 @@ function Selo({ selo }) {
       style={[estilos.selo, !on && estilos.seloApagado]}
       accessibilityLabel={`${selo.titulo}, ${on ? "conquistado" : `não conquistado. ${selo.falta}`}`}
     >
-      <View style={[estilos.medalha, on && { backgroundColor: theme.colors.secondaryLight }]}>
+      <View style={estilos.medalha}>
         <Feather name={selo.icone} size={24} color={on ? theme.colors.secondary : theme.colors.textMuted} />
       </View>
       <View style={estilos.flex}>
@@ -204,7 +204,7 @@ const estilos = StyleSheet.create({
   barraTotal: { width: 28, textAlign: "right", fontFamily: theme.fonts.medium, fontSize: 12, color: theme.colors.textSecondary },
   selo: { flexDirection: "row", alignItems: "center", gap: theme.spacing.mdSm, minHeight: 60 },
   seloApagado: { opacity: 0.6 },
-  medalha: { width: 52, height: 52, borderRadius: theme.radii.full, backgroundColor: theme.colors.borderLight, alignItems: "center", justifyContent: "center" },
+  medalha: { width: 52, height: 52, alignItems: "center", justifyContent: "center" },
   seloTitulo: { fontFamily: theme.fonts.bold, fontSize: 15, color: theme.colors.primary },
   diretriz: { borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
   diretrizTopo: { minHeight: 52, flexDirection: "row", alignItems: "center", gap: theme.spacing.mdSm },

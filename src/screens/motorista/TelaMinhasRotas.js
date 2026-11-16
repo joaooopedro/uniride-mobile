@@ -5,13 +5,12 @@ import Animated from "react-native-reanimated";
 
 import EstadoTela from "../../components/EstadoTela";
 import EstadoViagem from "../../components/EstadoViagem";
-import { useAuth } from "../../context/AuthContext";
 import { useCaronas } from "../../context/CaronasContext";
 import theme from "../../theme";
 import { formatarData, formatarHora, formatarMoeda } from "../../utils";
 import { Acao, s, Titulo } from "../acesso/ComponentesAcesso";
 import { Avatar, Vazio, useEntrada } from "./comum";
-import { acoesDaRota, primeiroNome, rotuloStatus, saudacao, separarRotas } from "./logica";
+import { acoesDaRota, rotuloStatus, separarRotas } from "./logica";
 
 const BOTOES = {
   iniciar: { rotulo: "Iniciar viagem", icone: "play" },
@@ -86,7 +85,6 @@ function CartaoRota({ rota, ocupado, erro, onAcao }) {
 }
 
 export default function TelaMinhasRotas({ navigation }) {
-  const { perfil } = useAuth();
   const { minhasRotas, carregandoCaronas, erroCaronas, recarregar, iniciarViagem, concluirViagem, cancelarCarona } = useCaronas();
   const [ocupado, setOcupado] = useState(null);
   const [erros, setErros] = useState({});
@@ -128,7 +126,7 @@ export default function TelaMinhasRotas({ navigation }) {
     ]);
   }
 
-  const resumo = `${saudacao()}, ${primeiroNome(perfil?.nome)}. ${proximas.length} ${proximas.length === 1 ? "carona próxima" : "caronas próximas"}.`;
+  const resumo = proximas.length === 0 ? "Nenhuma carona próxima." : `${proximas.length} ${proximas.length === 1 ? "carona próxima" : "caronas próximas"}.`;
   let indice = 0;
   const secao = (titulo, rotas) =>
     rotas.length ? (
