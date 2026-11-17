@@ -90,6 +90,7 @@ Precisa do login do Firebase no computador (`npx firebase-tools login`, conta co
 ```bash
 node scripts/limpar.js   # zera o banco de teste: todos os documentos e todas as contas
 node scripts/seed.js     # cria uma conta por integrante e 6 caronas nos próximos dias em Juiz de Fora
+node scripts/cenario.js  # viagens passadas avaliadas, reservas aceitas com conversa e um pedido aguardando
 ```
 
 Logins de teste, um por integrante (os motoristas já têm veículo e duas caronas cada), com e-mail verificado e senha `uniride2026` (troque com `SEED_SENHA=... node scripts/seed.js`). As caronas vencem em poucos dias: rode os dois comandos de novo no dia da apresentação.

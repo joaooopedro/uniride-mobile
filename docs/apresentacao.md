@@ -6,7 +6,7 @@ Contas da demonstração (senha `uniride2026`):
 - Motoristas: `jonathan@uniride.app`, `gabriel@uniride.app` e `joao.motorista@uniride.app`
 - Passageiros: `caio@uniride.app`, `nicolas@uniride.app` e `joao.passageiro@uniride.app`
 
-Antes de começar: `node scripts/limpar.js && node scripts/seed.js`, para as caronas de exemplo estarem nos próximos dias.
+Antes de começar: `node scripts/limpar.js && node scripts/seed.js && node scripts/cenario.js`. O seed cria as contas e as caronas dos próximos dias; o cenário acrescenta viagens passadas avaliadas, reservas aceitas com conversa e um pedido aguardando resposta. Nicolas começa sem reserva para pedir vaga ao vivo.
 
 ## Como o app evoluiu
 
@@ -46,8 +46,16 @@ Antes de começar: `node scripts/limpar.js && node scripts/seed.js`, para as car
 
 ## Roteiro da demonstração
 
-1. Passageiro busca carona e pede vaga.
-2. Motorista recebe o aviso e aceita o pedido.
-3. Os dois conversam no chat; o motorista manda o aviso rápido "Cheguei no ponto de encontro".
-4. Motorista inicia e conclui a viagem.
-5. Passageiro avalia o motorista.
+| Passo | Quem | Conta | O que faz |
+|---|---|---|---|
+| 1 | João | `joao.motorista@` | Abertura e arquitetura; mostra o pedido do Caio aguardando |
+| 2 | Caio | `caio@` | Entrada e busca; Reservas com a vaga aceita e o pedido aguardando |
+| 3 | João | `joao.motorista@` | Aceita o pedido; o Caio recebe o aviso |
+| 4 | Nicolas | `nicolas@` | Detalhes da carona do Gabriel, selos e avaliações; pede a vaga; perfil |
+| 5 | Gabriel | `gabriel@` | Aceita o Nicolas; Oferecer carona com CEP; inicia a viagem |
+| 6 | Jonathan | `jonathan@` (Android) | Conversa já pronta, aviso rápido "Cheguei no ponto de encontro"; modo avião; estado vazio |
+| 7 | Gabriel | `gabriel@` | Conclui a viagem |
+| 8 | Nicolas | `nicolas@` | Avalia o Gabriel |
+| 9 | João | `joao.motorista@` | Transação, regras, teste com o Maestro; perguntas |
+
+Reserva: `joao.passageiro@` em qualquer celular que sobrar.
