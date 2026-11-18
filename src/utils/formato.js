@@ -96,3 +96,17 @@ export function turnoDaHora(valor) {
   if (hora < 18) return "Tarde";
   return "Noite";
 }
+
+const DIAS_SEMANA = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+
+// "Hoje", "Amanhã" ou "qui, 19/11": o dia em destaque ao lado do horário.
+export function rotuloDia(valor, agora = new Date()) {
+  const data = paraData(valor);
+  if (!data) return "";
+  const meiaNoite = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const dias = Math.round((meiaNoite(data) - meiaNoite(agora)) / 86400000);
+  if (dias === 0) return "Hoje";
+  if (dias === 1) return "Amanhã";
+  if (dias === -1) return "Ontem";
+  return `${DIAS_SEMANA[data.getDay()]}, ${formatarData(data)}`;
+}

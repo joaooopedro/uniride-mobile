@@ -29,7 +29,7 @@ const exigirSessao = () => {
 
 const resumoPassageiro = (perfil) => ({
   nome: perfil.nome,
-  curso: `${perfil.curso}, ${perfil.periodo}º período`,
+  curso: `${perfil.curso}, ${perfil.periodo}° período`,
   nota: mediaAvaliacao(perfil.notaPassageiro).media,
   fotoBase64: perfil.fotoBase64 || null,
 });
@@ -141,7 +141,7 @@ export const caronas = {
       motoristaId: perfil.uid,
       motorista: {
         nome: perfil.nome,
-        curso: `${perfil.curso}, ${perfil.periodo}º período`,
+        curso: `${perfil.curso}, ${perfil.periodo}° período`,
         nota: mediaAvaliacao(perfil.notaMotorista).media,
         fotoBase64: perfil.fotoBase64 || null,
         veiculo: perfil.motorista.veiculo,
@@ -177,6 +177,7 @@ export const caronas = {
       .filter((r) => r.caronaId === caronaId && r.status === "aceita")
       .forEach((r) => {
         r.status = "concluida";
+        r.pagoEm = new Date();
       });
     avisar();
   },
@@ -240,6 +241,11 @@ export const reservas = {
     banco.reservas[reservaId].status = "recusada";
     avisar();
   },
+  async marcarPago(reservaId) {
+    await espera();
+    banco.reservas[reservaId].pagoEm = new Date();
+    avisar();
+  },
   async cancelar(reservaId) {
     await espera();
     const reserva = banco.reservas[reservaId];
@@ -282,5 +288,31 @@ export const avaliacoes = {
   },
   observarRecebidas(uid, callback) {
     return observar(() => Object.values(banco.avaliacoes).filter((a) => a.avaliadoId === uid), callback);
+  },
+};
+
+// Pedidos de carona dos passageiros, em memória.
+const pedidos = {};
+export const interesses = {
+  observarMeu(uid, callback) {
+    return observar(() => pedidos[uid] || null, callback);
+  },
+  observarAbertos(callback) {
+    return observar(() => Object.values(pedidos).filter((p) => p.status === "aberto"), callback);
+  },
+  async salvar(perfil, dados) {
+    await espera();
+    pedidos[perfil.uid] = { id: perfil.uid, passageiroId: perfil.uid, passageiro: { nome: perfil.nome }, ...dados, status: "aberto", caronaId: null, motorista: null };
+    avisar();
+  },
+  async cancelar(uid) {
+    await espera();
+    delete pedidos[uid];
+    avisar();
+  },
+  async combinar(interesse, caronaId, motorista) {
+    await espera();
+    Object.assign(pedidos[interesse.passageiroId], { status: "combinado", caronaId, motorista: { uid: motorista.uid, nome: motorista.nome } });
+    avisar();
   },
 };

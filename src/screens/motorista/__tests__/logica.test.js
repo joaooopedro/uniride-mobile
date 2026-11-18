@@ -229,3 +229,13 @@ test("resultadoResposta só recusa quando o aceite falha por vaga", () => {
   expect(resultadoResposta("aceitar", "Este pedido já foi respondido.")).toBe("erro");
   expect(resultadoResposta("recusar", "Não há mais vagas nesta carona.")).toBe("erro");
 });
+
+import { podeIniciar } from "../logica";
+
+describe("podeIniciar", () => {
+  it("só libera com passageiro confirmado e carona aberta", () => {
+    expect(podeIniciar({ status: "aberta", passageirosAceitos: [] })).toBe(false);
+    expect(podeIniciar({ status: "aberta", passageirosAceitos: [{ uid: "a" }] })).toBe(true);
+    expect(podeIniciar({ status: "em_andamento", passageirosAceitos: [{ uid: "a" }] })).toBe(false);
+  });
+});

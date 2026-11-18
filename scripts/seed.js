@@ -37,6 +37,9 @@ async function contaVerificada(auth, m) {
   return uid;
 }
 
+// node scripts/seed.js --sem-caronas: só contas e perfis, banco zerado para a apresentação ao vivo.
+const SEM_CARONAS = process.argv.includes("--sem-caronas");
+
 async function main() {
   for (const [i, m] of MOTORISTAS.entries()) {
     const app = initializeApp(CONFIG, `seed-${i}`);
@@ -62,13 +65,13 @@ async function main() {
     await motorista.commit();
 
     // Duas caronas por motorista, nos próximos três dias.
-    for (const [j, o] of ORIGENS.slice(i * 2, i * 2 + 2).entries()) {
+    for (const [j, o] of (SEM_CARONAS ? [] : ORIGENS.slice(i * 2, i * 2 + 2)).entries()) {
       const campus = CAMPI[o.campus];
       const ref = doc(collection(db, "caronas"));
       const lote = writeBatch(db);
       lote.set(ref, {
         motoristaId: uid,
-        motorista: { nome: m.nome, curso: `${m.curso}, ${m.periodo}º período`, nota: 0, fotoBase64: null, veiculo: m.veiculo },
+        motorista: { nome: m.nome, curso: `${m.curso}, ${m.periodo}° período`, nota: 0, fotoBase64: null, veiculo: m.veiculo },
         origem: { cep: o.cep, rua: o.rua, numero: "", bairro: o.bairro, ponto: o.ponto, lat: o.lat, lng: o.lng },
         campusDestino: campus.nome,
         destino: { lat: campus.lat, lng: campus.lng },
@@ -88,7 +91,7 @@ async function main() {
       });
       await lote.commit();
     }
-    console.log(`${m.nome} (${m.email}): perfil de motorista e 2 caronas`);
+    console.log(`${m.nome} (${m.email}): perfil de motorista${SEM_CARONAS ? "" : " e 2 caronas"}`);
     await terminate(db);
   }
   for (const [i, p] of PASSAGEIROS.entries()) {

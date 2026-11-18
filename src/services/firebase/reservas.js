@@ -50,10 +50,31 @@ export const reservas = {
       if (atual.vagasRestantes < 1) throw erroNegocio("Esta carona já lotou.");
       const passageiro = {
         nome: perfil.nome,
-        curso: `${perfil.curso}, ${perfil.periodo}º período`,
+        curso: `${perfil.curso}, ${perfil.periodo}° período`,
         nota: perfil.notaPassageiro?.media ?? mediaAvaliacao(perfil.notaPassageiro).media,
         fotoBase64: perfil.fotoBase64 || null,
       };
+      // Passageiro com quem o motorista combinou o ponto entra direto, sem esperar aceite.
+      if (!reservaSnap.exists() && (atual.convidados || []).includes(perfil.uid)) {
+        tx.update(caronaRef(carona.id), {
+          vagasRestantes: atual.vagasRestantes - 1,
+          participantes: [...atual.participantes, perfil.uid],
+          passageirosAceitos: [...atual.passageirosAceitos, { uid: perfil.uid, nome: perfil.nome }],
+          atualizadoEm: serverTimestamp(),
+        });
+        tx.set(ref(id), {
+          caronaId: carona.id,
+          passageiroId: perfil.uid,
+          motoristaId: atual.motoristaId,
+          passageiro,
+          status: "aceita",
+          avaliadaPeloPassageiro: false,
+          avaliadaPeloMotorista: false,
+          criadoEm: serverTimestamp(),
+          atualizadoEm: serverTimestamp(),
+        });
+        return id;
+      }
       if (reservaSnap.exists()) {
         const status = reservaSnap.data().status;
         if (status === "recusada") throw erroNegocio("O motorista recusou seu pedido nesta carona.");
@@ -125,5 +146,15 @@ export const reservas = {
       }
       tx.update(ref(reservaId), { status: "cancelada", canceladaPor: "passageiro", atualizadoEm: serverTimestamp() });
     }, "Não foi possível cancelar a reserva.");
+  },
+
+  // Passageiro avisa que pagou o motorista pelo Pix depois da viagem concluída.
+  marcarPago(reservaId) {
+    return transacao(async (tx) => {
+      const snap = await tx.get(ref(reservaId));
+      if (!snap.exists() || snap.data().status !== "concluida") throw erroNegocio("Só dá para pagar depois da viagem concluída.");
+      if (snap.data().pagoEm) return;
+      tx.update(ref(reservaId), { pagoEm: serverTimestamp(), atualizadoEm: serverTimestamp() });
+    }, "Não foi possível registrar o pagamento.");
   },
 };

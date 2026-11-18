@@ -9,6 +9,7 @@ const CORES = {
   origem: theme.colors.primary,
   destino: theme.colors.secondary,
   carona: theme.colors.warning,
+  encontro: theme.colors.success,
 };
 
 // O HTML não muda depois de carregado: pontos e rota chegam por injectJavaScript,
@@ -64,7 +65,7 @@ const HTML = `<!doctype html>
   enviar({ tipo: "pronto" });
 </script></body></html>`;
 
-// pontos: [{ lat, lng, titulo, tipo: 'origem' | 'destino' | 'carona' }], linha: [[lat, lng]]
+// pontos: [{ lat, lng, titulo, tipo: 'origem' | 'destino' | 'carona' | 'encontro' }], linha: [[lat, lng]]
 export default function MapaRota({ pontos = [], linha, altura = 220, onToque, onToquePonto, style }) {
   const webview = useRef(null);
   const [pronto, setPronto] = useState(false);

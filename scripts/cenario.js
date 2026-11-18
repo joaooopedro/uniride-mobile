@@ -53,7 +53,7 @@ async function main() {
   for (const p of [...MOTORISTAS, ...PASSAGEIROS]) {
     const uid = await uidPorEmail(p.email);
     if (!uid) throw new Error(`${p.email} não existe: rode scripts/seed.js antes`);
-    pessoa[p.email.split("@")[0]] = { uid, nome: p.nome, curso: `${p.curso}, ${p.periodo}º período`, perfil: await obter(`usuarios/${uid}`) };
+    pessoa[p.email.split("@")[0]] = { uid, nome: p.nome, curso: `${p.curso}, ${p.periodo}° período`, perfil: await obter(`usuarios/${uid}`) };
   }
   const { jonathan, gabriel, caio, nicolas } = pessoa;
   const joaoM = pessoa["joao.motorista"];

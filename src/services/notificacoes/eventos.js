@@ -14,6 +14,21 @@ const PARA_PASSAGEIRO = {
   cancelada: (r) => r.canceladaPor === "motorista" && { titulo: "Carona cancelada", corpo: "O motorista cancelou a carona." },
 };
 
+// Motorista combinou o ponto com o passageiro que pediu carona.
+export function eventosDoInteresse(interesse) {
+  if (interesse?.status !== "combinado" || !interesse.caronaId) return [];
+  const nome = interesse.motorista?.nome?.split(" ")[0] || "Um motorista";
+  return [
+    {
+      chave: `interesse:${interesse.caronaId}`,
+      titulo: "Carona combinada",
+      corpo: `${nome} combinou um ponto de encontro com você. Confirme a vaga.`,
+      rota: "DetalhesCarona",
+      parametros: { caronaId: interesse.caronaId },
+    },
+  ];
+}
+
 export function eventosDasReservas({ uid, doMotorista = [], doPassageiro = [] }) {
   const eventos = [];
   doMotorista.forEach((reserva) => {

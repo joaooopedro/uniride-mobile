@@ -7,7 +7,7 @@ import EstadoTela from "../../components/EstadoTela";
 import EstadoViagem from "../../components/EstadoViagem";
 import { useCaronas } from "../../context/CaronasContext";
 import theme from "../../theme";
-import { formatarData, formatarHora, formatarMoeda } from "../../utils";
+import { formatarData, formatarHora, formatarMoeda, rotuloDia } from "../../utils";
 import { Acao, s, Titulo } from "../acesso/ComponentesAcesso";
 import { Avatar, useEntrada } from "../motorista/comum";
 
@@ -17,6 +17,7 @@ const BOTOES = {
   detalhes: { rotulo: "Detalhes", icone: "file-text", secundario: true },
   conversa: { rotulo: "Conversa", icone: "message-circle" },
   avaliar: { rotulo: "Avaliar", icone: "star" },
+  pagar: { rotulo: "Pagar", icone: "credit-card" },
 };
 
 function CartaoReserva({ reserva, carona, onAcao }) {
@@ -27,7 +28,7 @@ function CartaoReserva({ reserva, carona, onAcao }) {
       <View style={estilos.topo}>
         <View>
           <Text style={estilos.hora}>{formatarHora(carona.saidaEm)}</Text>
-          <Text style={s.secundario}>{formatarData(carona.saidaEm)}</Text>
+          <Text style={estilos.dia}>{rotuloDia(carona.saidaEm)}</Text>
         </View>
         <View style={estilos.direita}>
           <Text style={estilos.preco}>{formatarMoeda(carona.valorCentavos)}</Text>
@@ -52,7 +53,7 @@ function CartaoReserva({ reserva, carona, onAcao }) {
         <Avatar nome={motorista.nome} fotoBase64={motorista.fotoBase64} tamanho={36} />
         <View style={estilos.flex}>
           <Text style={estilos.nome} numberOfLines={1}>{motorista.nome}</Text>
-          {veiculo ? <Text style={s.secundario} numberOfLines={1}>{veiculo}</Text> : null}
+          {veiculo ? <Text style={estilos.veiculo} numberOfLines={1}>{veiculo}</Text> : null}
         </View>
       </View>
 
@@ -97,6 +98,7 @@ export default function TelaMinhasReservas({ navigation }) {
     if (acao === "detalhes") navigation.navigate("DetalhesCarona", { caronaId: carona.id });
     if (acao === "conversa") navigation.navigate("Conversa", { caronaId: carona.id });
     if (acao === "avaliar") navigation.navigate("AvaliarViagem", { reservaId: reserva.id });
+    if (acao === "pagar") navigation.navigate("Pagamento", { caronaId: carona.id });
   }
 
   const resumo = proximas.length === 0 ? "Nenhuma reserva próxima." : `${proximas.length} ${proximas.length === 1 ? "reserva próxima" : "reservas próximas"}.`;
@@ -130,6 +132,8 @@ export default function TelaMinhasReservas({ navigation }) {
 }
 
 const estilos = StyleSheet.create({
+  dia: { fontFamily: theme.fonts.semibold, fontSize: 15, color: theme.colors.secondary },
+  veiculo: { fontFamily: theme.fonts.medium, fontSize: 14, color: theme.colors.text },
   flex: { flex: 1 },
   pagina: { padding: theme.spacing.md, paddingBottom: theme.spacing.xl, gap: theme.spacing.lg },
   secao: { gap: theme.spacing.mdSm },

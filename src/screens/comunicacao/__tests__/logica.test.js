@@ -49,8 +49,9 @@ describe("reservas", () => {
     expect(acoesDaReserva({ status: "solicitada" }, { status: "aberta" })).toEqual(["detalhes"]);
     expect(acoesDaReserva({ status: "aceita" }, { status: "aberta" })).toEqual(["detalhes", "conversa"]);
     expect(acoesDaReserva({ status: "aceita" }, { status: "cancelada" })).toEqual(["detalhes"]);
-    expect(acoesDaReserva({ status: "concluida", avaliadaPeloPassageiro: false }, {})).toEqual(["detalhes", "avaliar"]);
-    expect(acoesDaReserva({ status: "concluida", avaliadaPeloPassageiro: true }, {})).toEqual(["detalhes"]);
+    expect(acoesDaReserva({ status: "concluida", avaliadaPeloPassageiro: false }, {})).toEqual(["detalhes", "pagar"]);
+    expect(acoesDaReserva({ status: "concluida", pagoEm: new Date(), avaliadaPeloPassageiro: false }, {})).toEqual(["detalhes", "avaliar"]);
+    expect(acoesDaReserva({ status: "concluida", pagoEm: new Date(), avaliadaPeloPassageiro: true }, {})).toEqual(["detalhes"]);
     expect(acoesDaReserva({ status: "recusada" }, {})).toEqual(["detalhes"]);
   });
 });

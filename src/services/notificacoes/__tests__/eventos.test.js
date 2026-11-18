@@ -53,3 +53,15 @@ test("viagem em destaque: aceita, perto da saída ou em andamento", () => {
   expect(viagemEmDestaque([longe, perto, pedida], agora).carona.id).toBe("c2");
   expect(viagemEmDestaque([longe], agora)).toBeNull();
 });
+
+import { eventosDoInteresse } from "../eventos";
+
+describe("eventosDoInteresse", () => {
+  it("avisa uma vez quando o motorista combina", () => {
+    expect(eventosDoInteresse(null)).toEqual([]);
+    expect(eventosDoInteresse({ status: "aberto" })).toEqual([]);
+    const [evento] = eventosDoInteresse({ status: "combinado", caronaId: "c1", motorista: { nome: "Gabriel Caputo" } });
+    expect(evento.chave).toBe("interesse:c1");
+    expect(evento.corpo).toContain("Gabriel");
+  });
+});

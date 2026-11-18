@@ -74,8 +74,8 @@ export const estilos = StyleSheet.create({
     justifyContent: "center",
   },
   // Etapa numerada do formulário: o círculo marca a ordem.
-  marcadorNumero: { backgroundColor: theme.colors.primaryLight },
-  numero: { fontFamily: theme.fonts.bold, fontSize: 15 },
+  marcadorNumero: {},
+  numero: { fontFamily: theme.fonts.bold, fontSize: 20 },
   secaoTitulo: { fontFamily: theme.fonts.semibold, fontSize: 19, lineHeight: 27, color: theme.colors.primary },
   avatar: { backgroundColor: theme.colors.primaryLight, alignItems: "center", justifyContent: "center", overflow: "hidden" },
   sobreposto: { marginLeft: -theme.spacing.mdSm, borderWidth: 2, borderColor: theme.colors.surface },

@@ -24,11 +24,9 @@ function validarPeriodo(valor) {
 function Linha({ icone, rotulo, valor }) {
   return (
     <View style={estilos.linha} accessibilityLabel={`${rotulo}: ${valor || "não informado"}`}>
-      <Feather name={icone} size={18} color={theme.colors.textSecondary} />
-      <View style={estilos.flex}>
-        <Text style={estilos.linhaRotulo}>{rotulo}</Text>
-        <Text style={estilos.linhaValor}>{valor || "Não informado"}</Text>
-      </View>
+      <Feather name={icone} size={18} color={theme.colors.primary} />
+      <Text style={estilos.linhaRotulo}>{rotulo}</Text>
+      <Text style={estilos.linhaValor} numberOfLines={1}>{valor || "Não informado"}</Text>
     </View>
   );
 }
@@ -132,7 +130,7 @@ function DadosPessoais({ perfil, salvarPerfil }) {
           <Linha icone="mail" rotulo="E-mail" valor={perfil.email} />
           <Linha icone="hash" rotulo="Matrícula" valor={perfil.matricula} />
           <Linha icone="book-open" rotulo="Curso" valor={perfil.curso} />
-          <Linha icone="layers" rotulo="Período" valor={perfil.periodo ? `${perfil.periodo}º período` : ""} />
+          <Linha icone="layers" rotulo="Período" valor={perfil.periodo ? `${perfil.periodo}° período` : ""} />
           <Linha icone="phone" rotulo="Telefone" valor={perfil.telefone} />
           {aviso ? <Mensagem sucesso>{aviso}</Mensagem> : null}
           <BotaoEditar onPress={abrir} rotulo="Editar dados pessoais" />
@@ -310,8 +308,8 @@ export default function TelaPerfilUniversitario({ navigation }) {
         <Animated.View entering={entrada(0)} style={estilos.cabecalho}>
           <Avatar nome={perfil.nome} fotoBase64={perfil.fotoBase64} tamanho={96} />
           <Text style={estilos.nome}>{perfil.nome}</Text>
-          <Text style={s.secundario}>
-            {[perfil.curso, perfil.periodo ? `${perfil.periodo}º período` : null].filter(Boolean).join(", ")}
+          <Text style={estilos.curso}>
+            {[perfil.curso, perfil.periodo ? `${perfil.periodo}° período` : null].filter(Boolean).join(", ")}
           </Text>
           {selos.length ? (
             <View style={estilos.selos}>
@@ -341,7 +339,7 @@ export default function TelaPerfilUniversitario({ navigation }) {
             <Atalho
               icone="repeat"
               texto={destino === "motorista" ? "Trocar para modo motorista" : "Trocar para modo passageiro"}
-              detalhe={destino === "motorista" && !perfil.ehMotorista ? "Você cadastra o veículo no próximo passo" : undefined}
+
               carregando={trocando}
               onPress={trocar}
             />
@@ -363,8 +361,9 @@ const estilos = StyleSheet.create({
   selo: { flexDirection: "row", alignItems: "center", gap: theme.spacing.xs, minHeight: 32, paddingHorizontal: theme.spacing.mdSm, borderRadius: theme.radii.sm, backgroundColor: theme.colors.secondaryLight },
   seloTexto: { fontFamily: theme.fonts.semibold, fontSize: 12, color: theme.colors.primary },
   linha: { flexDirection: "row", alignItems: "center", gap: theme.spacing.mdSm, minHeight: 48 },
-  linhaRotulo: { fontFamily: theme.fonts.medium, fontSize: 12, color: theme.colors.textSecondary },
-  linhaValor: { fontFamily: theme.fonts.semibold, fontSize: 15, color: theme.colors.primary },
+  linhaRotulo: { fontFamily: theme.fonts.medium, fontSize: 15, color: theme.colors.text },
+  linhaValor: { flex: 1, fontFamily: theme.fonts.semibold, fontSize: 15, color: theme.colors.primary, textAlign: "right" },
+  curso: { fontFamily: theme.fonts.medium, fontSize: 15, color: theme.colors.text, textAlign: "center" },
   editar: { minHeight: 48, flexDirection: "row", alignItems: "center", gap: theme.spacing.sm, alignSelf: "flex-start" },
   editarTexto: { fontFamily: theme.fonts.semibold, fontSize: 14, color: theme.colors.secondary },
   botoes: { flexDirection: "row", gap: theme.spacing.sm },

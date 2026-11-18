@@ -94,6 +94,10 @@ export default function RootNavigator({ onReady }) {
             <Stack.Screen name="Principal" component={Principal} />
             <Stack.Screen name="DetalhesCarona" component={TELAS.DetalhesCarona} options={cabecalho("Detalhes")} />
             <Stack.Screen name="Conversa" component={TELAS.Conversa} options={cabecalho("Conversa")} />
+            <Stack.Screen name="Pagamento" component={TELAS.Pagamento} options={cabecalho("Pagamento")} />
+            <Stack.Screen name="Cobranca" component={TELAS.Cobranca} options={cabecalho("Receber")} />
+            <Stack.Screen name="Combinar" component={TELAS.Combinar} options={cabecalho("Combinar")} />
+            <Stack.Screen name="PedirCarona" component={TELAS.PedirCarona} options={cabecalho("Pedido")} />
             <Stack.Screen name="AvaliarViagem" component={TELAS.AvaliarViagem} options={cabecalho("Avaliar")} />
             <Stack.Screen name="Avaliacoes" component={TELAS.Avaliacoes} options={cabecalho("Comunidade")} />
             <Stack.Screen name="CadastroMotorista" component={TELAS.CadastroMotorista} options={cabecalho("Veículo")} />

@@ -139,7 +139,6 @@ function Conteudo({ navigation, reservaId, aoTentar }) {
           <Feather name="check" size={38} color={theme.colors.success} />
         </View>
         <Text style={estilos.obrigadoTitulo}>Obrigado pela avaliação</Text>
-        <Text style={[s.secundario, { textAlign: "center" }]}>Ela ajuda os outros alunos a escolher com quem viajar.</Text>
         <Acao icone="arrow-left" secundario onPress={() => navigation.goBack()} style={{ alignSelf: "stretch" }}>
           Voltar
         </Acao>
@@ -159,12 +158,12 @@ function Conteudo({ navigation, reservaId, aoTentar }) {
           <View style={estilos.flex}>
             <Text style={estilos.nome}>{outro.nome}</Text>
             <View style={estilos.linha}>
-              <Feather name="clock" size={14} color={theme.colors.textSecondary} />
-              <Text style={s.secundario}>{formatarDataHora(carona.saidaEm)}</Text>
+              <Feather name="clock" size={14} color={theme.colors.secondary} />
+              <Text style={estilos.meta}>{formatarDataHora(carona.saidaEm)}</Text>
             </View>
             <View style={estilos.linha}>
-              <Feather name="flag" size={14} color={theme.colors.textSecondary} />
-              <Text style={s.secundario} numberOfLines={1}>{carona.campusDestino}</Text>
+              <Feather name="flag" size={14} color={theme.colors.secondary} />
+              <Text style={estilos.meta} numberOfLines={1}>{carona.campusDestino}</Text>
             </View>
           </View>
         </View>
@@ -243,6 +242,7 @@ export default function TelaAvaliarViagem({ navigation, route }) {
 }
 
 const estilos = StyleSheet.create({
+  meta: { fontFamily: theme.fonts.medium, fontSize: 14, color: theme.colors.text },
   flex: { flex: 1 },
   pagina: { padding: theme.spacing.md, gap: theme.spacing.md },
   pessoa: { flexDirection: "row", alignItems: "center", gap: theme.spacing.mdSm, paddingVertical: theme.spacing.sm, borderTopWidth: 1, borderBottomWidth: 1, borderColor: theme.colors.border },
