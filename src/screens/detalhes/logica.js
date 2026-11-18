@@ -24,6 +24,7 @@ export const STATUS_RESERVA = {
   recusada: { icone: "x-circle", texto: "Recusada", cor: "danger" },
   cancelada: { icone: "slash", texto: "Cancelada", cor: "textMuted" },
   concluida: { icone: "check", texto: "Concluída", cor: "textSecondary" },
+  paga: { icone: "check-circle", texto: "Pago", cor: "success" },
 };
 
 // Qual bloco de ação o passageiro vê, conforme a carona e a reserva dele.
@@ -32,7 +33,8 @@ export function estadoDoPassageiro(carona, reserva) {
   if (status === "solicitada") return "solicitada";
   if (status === "aceita") return "aceita";
   if (status === "recusada") return "recusada";
-  if (status === "concluida") return reserva.avaliadaPeloPassageiro ? "avaliada" : "avaliar";
+  // Depois da viagem: primeiro paga o motorista, depois avalia.
+  if (status === "concluida") return !reserva.pagoEm ? "pagar" : reserva.avaliadaPeloPassageiro ? "avaliada" : "avaliar";
   if (carona.status === "cancelada") return "cancelada";
   if (carona.status !== "aberta") return "indisponivel";
   return carona.vagasRestantes > 0 ? "solicitar" : "sem_vaga";

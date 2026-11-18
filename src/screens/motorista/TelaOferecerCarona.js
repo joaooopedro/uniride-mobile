@@ -3,24 +3,15 @@ import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, S
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import BuscaRua from "../../components/BuscaRua";
 import MapaRota from "../../components/MapaRota";
 import MotionPressable from "../../components/MotionPressable";
 import { useAuth } from "../../context/AuthContext";
 import { useCaronas } from "../../context/CaronasContext";
-import { buscarCep, calcularRota, feriadoNaData, geocodificar } from "../../services/api";
+import { calcularRota, feriadoNaData, geocodificar } from "../../services/api";
 import { descartarRascunho, lerRascunho, salvarRascunho } from "../../services/localStore";
 import theme from "../../theme";
-import {
-  CAMPI,
-  campusPorNome,
-  formatarData,
-  formatarDistancia,
-  formatarDuracao,
-  formatarMoeda,
-  mascararCep,
-  soDigitos,
-  sugerirRateio,
-} from "../../utils";
+import { CAMPI, campusPorNome, formatarData, formatarDistancia, formatarDuracao, formatarMoeda, sugerirRateio } from "../../utils";
 import { Acao, Campo, Mensagem, s, Titulo } from "../acesso/ComponentesAcesso";
 import { Secao } from "./comum";
 import {
@@ -30,7 +21,6 @@ import {
   dataParaIso,
   errosOferta,
   mascararHora,
-  mesclarEndereco,
   montarSaida,
   ofertaVazia,
   proximosDias,
@@ -39,7 +29,10 @@ import {
 
 const ALTURA_CABECALHO = 62;
 const montarEndereco = (oferta) =>
-  [oferta.rua, oferta.numero, oferta.bairro].map((parte) => parte.trim()).filter(Boolean).join(", ");
+  [oferta.rua, oferta.numero, oferta.bairro]
+    .map((parte) => parte.trim())
+    .filter(Boolean)
+    .join(", ");
 
 export default function TelaOferecerCarona({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -53,8 +46,6 @@ export default function TelaOferecerCarona({ navigation }) {
   const [pronto, setPronto] = useState(false);
   const [restaurado, setRestaurado] = useState(false);
   const [tocados, setTocados] = useState({});
-  const [buscandoCep, setBuscandoCep] = useState(false);
-  const [erroCep, setErroCep] = useState("");
   const [localizando, setLocalizando] = useState(false);
   const [erroMapa, setErroMapa] = useState("");
   const [calculando, setCalculando] = useState(false);
@@ -63,7 +54,6 @@ export default function TelaOferecerCarona({ navigation }) {
   const [publicando, setPublicando] = useState(false);
   const [falha, setFalha] = useState("");
   const montado = useRef(true);
-  const pedidoCep = useRef(0);
   const pedidoGeo = useRef(0);
   const sugestaoAtual = useRef(null);
   const enviando = useRef(false);
@@ -100,30 +90,20 @@ export default function TelaOferecerCarona({ navigation }) {
     return () => clearTimeout(timer);
   }, [pronto, oferta, uid]);
 
-  async function preencherPorCep(cep) {
-    const pedido = ++pedidoCep.current;
-    const atual = () => pedido === pedidoCep.current && montado.current;
-    setBuscandoCep(true);
-    setErroCep("");
-    try {
-      const endereco = await buscarCep(cep);
-      if (atual()) setOferta((anterior) => mesclarEndereco(anterior, endereco));
-    } catch (erro) {
-      if (atual()) setErroCep(`${erro.message} Digite o endereço abaixo.`);
-    } finally {
-      if (atual()) setBuscandoCep(false);
-    }
-  }
-
-  function mudarCep(texto) {
-    const cep = mascararCep(texto);
-    mudar("cep")(cep);
-    setErroCep("");
-    if (soDigitos(cep).length === 8) preencherPorCep(cep);
-    else {
-      pedidoCep.current += 1;
-      setBuscandoCep(false);
-    }
+  function escolherRua(sugestao) {
+    pedidoGeo.current += 1;
+    setErroMapa("");
+    setTocados((atuais) => ({ ...atuais, rua: true }));
+    setOferta((anterior) => {
+      const nova = {
+        ...anterior,
+        rua: sugestao.rua,
+        bairro: sugestao.bairro || anterior.bairro,
+        lat: sugestao.lat,
+        lng: sugestao.lng,
+      };
+      return { ...nova, geoEndereco: montarEndereco(nova) };
+    });
   }
 
   const endereco = montarEndereco(oferta);
@@ -141,12 +121,23 @@ export default function TelaOferecerCarona({ navigation }) {
       setErroMapa("");
       try {
         const ponto = await geocodificar(`${endereco}, Juiz de Fora, MG`);
-        if (vigente()) setOferta((anterior) => ({ ...anterior, lat: ponto.lat, lng: ponto.lng, geoEndereco: endereco }));
+        if (vigente())
+          setOferta((anterior) => ({
+            ...anterior,
+            lat: ponto.lat,
+            lng: ponto.lng,
+            geoEndereco: endereco,
+          }));
       } catch (erro) {
         // Endereço mudou e não foi achado: o ponto antigo não vale mais. Publicar trava até tocar no mapa.
         if (vigente()) {
           setErroMapa(`${erro.message} Toque no mapa para marcar o ponto.`);
-          setOferta((anterior) => ({ ...anterior, lat: null, lng: null, rota: null }));
+          setOferta((anterior) => ({
+            ...anterior,
+            lat: null,
+            lng: null,
+            rota: null,
+          }));
         }
       } finally {
         if (vigente()) setLocalizando(false);
@@ -181,9 +172,7 @@ export default function TelaOferecerCarona({ navigation }) {
           ...anterior,
           rota: { ...rota, chave: chaveRota },
           valorCentavos:
-            anterior.valorCentavos === sugestaoAnterior || anterior.valorCentavos === sugerirRateio(0, lugares)
-              ? nova
-              : anterior.valorCentavos,
+            anterior.valorCentavos === sugestaoAnterior || anterior.valorCentavos === sugerirRateio(0, lugares) ? nova : anterior.valorCentavos,
         }));
       })
       .catch((erro) => ativo && setErroRota(erro.message))
@@ -208,7 +197,6 @@ export default function TelaOferecerCarona({ navigation }) {
   }, [oferta.dia]);
 
   function recomecar() {
-    pedidoCep.current += 1;
     pedidoGeo.current += 1;
     sugestaoAtual.current = null;
     const nova = ofertaVazia(lugares);
@@ -216,9 +204,7 @@ export default function TelaOferecerCarona({ navigation }) {
     setOferta(nova);
     setRestaurado(false);
     setTocados({});
-    setBuscandoCep(false);
     setLocalizando(false);
-    setErroCep("");
     setErroMapa("");
     setErroRota("");
     setFalha("");
@@ -230,20 +216,13 @@ export default function TelaOferecerCarona({ navigation }) {
   }
 
   const erros = errosOferta(oferta, lugares);
-  const etapas = [
-    !erros.bairro && !erros.ponto && !erros.mapa,
-    !erros.campus,
-    !erros.saida,
-    !erros.vagas && !erros.valor,
-  ];
-  const tocouEndereco = tocados.cep || tocados.rua || tocados.bairro;
-  const ocupado = buscandoCep || localizando || calculando;
+  const etapas = [!erros.bairro && !erros.ponto && !erros.mapa, !erros.campus, !erros.saida, !erros.vagas && !erros.valor];
+  const tocouEndereco = tocados.rua || tocados.bairro;
+  const ocupado = localizando || calculando;
   const pendencia = localizando
     ? "Procurando o endereço no mapa."
     : calculando
       ? "Calculando a rota."
-      : buscandoCep
-        ? "Buscando o CEP."
         : Object.values(erros)[0];
   const sugestao = oferta.rota ? sugerirRateio(oferta.rota.distanciaKm, lugares) : null;
 
@@ -256,7 +235,7 @@ export default function TelaOferecerCarona({ navigation }) {
       const { chave, ...rota } = oferta.rota || {};
       await oferecerCarona({
         origem: {
-          cep: oferta.cep,
+          cep: "",
           rua: oferta.rua.trim(),
           numero: oferta.numero.trim(),
           bairro: oferta.bairro.trim(),
@@ -286,8 +265,18 @@ export default function TelaOferecerCarona({ navigation }) {
   }
 
   const pontos = [
-    marcado && { lat: oferta.lat, lng: oferta.lng, titulo: "Ponto de encontro", tipo: "origem" },
-    campus && { lat: campus.lat, lng: campus.lng, titulo: campus.nome, tipo: "destino" },
+    marcado && {
+      lat: oferta.lat,
+      lng: oferta.lng,
+      titulo: "Ponto de encontro",
+      tipo: "origem",
+    },
+    campus && {
+      lat: campus.lat,
+      lng: campus.lng,
+      titulo: campus.nome,
+      tipo: "destino",
+    },
   ].filter(Boolean);
   const dias = proximosDias();
 
@@ -298,9 +287,7 @@ export default function TelaOferecerCarona({ navigation }) {
       keyboardVerticalOffset={insets.top + ALTURA_CABECALHO}
     >
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={estilos.pagina}>
-        <Titulo texto={`Até ${lugares} ${lugares === 1 ? "lugar" : "lugares"} no seu carro. Preencha as 4 etapas.`}>
-          Oferecer carona
-        </Titulo>
+        <Titulo texto={`Até ${lugares} ${lugares === 1 ? "lugar" : "lugares"} no seu carro. Preencha as 4 etapas.`}>Oferecer carona</Titulo>
 
         <View style={estilos.progresso} accessibilityLabel={`${etapas.filter(Boolean).length} de 4 etapas prontas`}>
           {etapas.map((ok, i) => (
@@ -319,21 +306,16 @@ export default function TelaOferecerCarona({ navigation }) {
         ) : null}
 
         <Secao numero="1" titulo="Ponto de encontro" ok={etapas[0]}>
-          <Campo
-            label="CEP"
-            icon="map-pin"
-            value={oferta.cep}
-            onChangeText={mudarCep}
-            onBlur={tocar("cep")}
-            keyboardType="number-pad"
-            maxLength={9}
-            placeholder="36000-000"
-            error={erroCep}
-            trailing={buscandoCep ? <ActivityIndicator color={theme.colors.secondary} /> : null}
-          />
-          <Campo label="Rua" icon="navigation-2" value={oferta.rua} onChangeText={mudar("rua")} onBlur={tocar("rua")} placeholder="Rua Halfeld" />
+          <BuscaRua valor={oferta.rua} onMudarTexto={mudar("rua")} onEscolher={escolherRua} onBlur={tocar("rua")} />
           <View style={estilos.linha}>
-            <Campo label="Número" icon="hash" value={oferta.numero} onChangeText={mudar("numero")} keyboardType="numbers-and-punctuation" containerStyle={estilos.numero} />
+            <Campo
+              label="Número"
+              icon="hash"
+              value={oferta.numero}
+              onChangeText={mudar("numero")}
+              keyboardType="numbers-and-punctuation"
+              containerStyle={estilos.numero}
+            />
             <Campo
               label="Bairro"
               icon="home"
@@ -364,11 +346,20 @@ export default function TelaOferecerCarona({ navigation }) {
               pedidoGeo.current += 1;
               setLocalizando(false);
               setErroMapa("");
-              setOferta((anterior) => ({ ...anterior, lat, lng, geoEndereco: montarEndereco(anterior) }));
+              setOferta((anterior) => ({
+                ...anterior,
+                lat,
+                lng,
+                geoEndereco: montarEndereco(anterior),
+              }));
             }}
           />
           <View style={estilos.dica}>
-            {localizando ? <ActivityIndicator color={theme.colors.secondary} /> : <Feather name="crosshair" size={15} color={theme.colors.textSecondary} />}
+            {localizando ? (
+              <ActivityIndicator color={theme.colors.secondary} />
+            ) : (
+              <Feather name="crosshair" size={15} color={theme.colors.textSecondary} />
+            )}
             <Text style={[s.secundario, estilos.flex]}>
               {localizando ? "Procurando o endereço no mapa." : "Toque no mapa para ajustar o ponto exato."}
             </Text>
@@ -390,7 +381,6 @@ export default function TelaOferecerCarona({ navigation }) {
                 <Feather name={ativo ? "check-circle" : "circle"} size={20} color={ativo ? theme.colors.secondary : theme.colors.textMuted} />
                 <View style={estilos.flex}>
                   <Text style={estilos.opcaoTitulo}>{opcao.nome}</Text>
-                  <Text style={s.secundario}>{opcao.endereco}</Text>
                 </View>
               </MotionPressable>
             );
@@ -524,12 +514,21 @@ export default function TelaOferecerCarona({ navigation }) {
 }
 
 const estilos = StyleSheet.create({
-  pagina: { padding: theme.spacing.md, paddingBottom: theme.spacing.xl, gap: theme.spacing.md },
+  pagina: {
+    padding: theme.spacing.md,
+    paddingBottom: theme.spacing.xl,
+    gap: theme.spacing.md,
+  },
   flex: { flex: 1 },
   linha: { flexDirection: "row", gap: theme.spacing.mdSm },
   numero: { width: 112 },
   progresso: { flexDirection: "row", gap: theme.spacing.xs },
-  etapa: { flex: 1, height: 6, borderRadius: theme.radii.full, backgroundColor: theme.colors.border },
+  etapa: {
+    flex: 1,
+    height: 6,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.border,
+  },
   etapaOk: { backgroundColor: theme.colors.secondary },
   faixa: {
     flexDirection: "row",
@@ -541,8 +540,17 @@ const estilos = StyleSheet.create({
     borderRadius: theme.radii.md,
     backgroundColor: theme.colors.primaryLight,
   },
-  faixaTexto: { flex: 1, fontFamily: theme.fonts.semibold, fontSize: 13, lineHeight: 20 },
-  faixaBotao: { minHeight: 48, justifyContent: "center", paddingHorizontal: theme.spacing.xs },
+  faixaTexto: {
+    flex: 1,
+    fontFamily: theme.fonts.semibold,
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  faixaBotao: {
+    minHeight: 48,
+    justifyContent: "center",
+    paddingHorizontal: theme.spacing.xs,
+  },
   dica: { flexDirection: "row", alignItems: "center", gap: theme.spacing.sm },
   opcao: {
     minHeight: 64,
@@ -555,8 +563,15 @@ const estilos = StyleSheet.create({
     borderRadius: theme.radii.md,
     backgroundColor: theme.colors.surface,
   },
-  opcaoAtiva: { borderColor: theme.colors.secondary, backgroundColor: theme.colors.secondaryLight },
-  opcaoTitulo: { fontFamily: theme.fonts.semibold, fontSize: 15, color: theme.colors.primary },
+  opcaoAtiva: {
+    borderColor: theme.colors.secondary,
+    backgroundColor: theme.colors.secondaryLight,
+  },
+  opcaoTitulo: {
+    fontFamily: theme.fonts.semibold,
+    fontSize: 15,
+    color: theme.colors.primary,
+  },
   chips: { gap: theme.spacing.sm },
   chip: {
     minHeight: 48,
@@ -567,12 +582,29 @@ const estilos = StyleSheet.create({
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
   },
-  chipAtivo: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
-  chipTexto: { fontFamily: theme.fonts.semibold, fontSize: 14, color: theme.colors.primary },
+  chipAtivo: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  chipTexto: {
+    fontFamily: theme.fonts.semibold,
+    fontSize: 14,
+    color: theme.colors.primary,
+  },
   rota: { flexDirection: "row", gap: theme.spacing.md },
   dado: { flexDirection: "row", alignItems: "center", gap: theme.spacing.xs },
-  dadoTexto: { fontFamily: theme.fonts.bold, fontSize: 16, color: theme.colors.primary, fontVariant: ["tabular-nums"] },
-  valorLinha: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: theme.spacing.mdSm },
+  dadoTexto: {
+    fontFamily: theme.fonts.bold,
+    fontSize: 16,
+    color: theme.colors.primary,
+    fontVariant: ["tabular-nums"],
+  },
+  valorLinha: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: theme.spacing.mdSm,
+  },
   passo: {
     width: 56,
     height: 56,
@@ -584,9 +616,27 @@ const estilos = StyleSheet.create({
     justifyContent: "center",
   },
   apagado: { opacity: 0.55 },
-  valor: { flex: 1, textAlign: "center", fontFamily: theme.fonts.bold, fontSize: 31, lineHeight: 40, color: theme.colors.primary, fontVariant: ["tabular-nums"] },
-  sugestao: { flexDirection: "row", alignItems: "center", gap: theme.spacing.sm, flexWrap: "wrap" },
-  sugestaoTexto: { flex: 1, fontFamily: theme.fonts.bold, fontSize: 15, color: theme.colors.secondary },
+  valor: {
+    flex: 1,
+    textAlign: "center",
+    fontFamily: theme.fonts.bold,
+    fontSize: 31,
+    lineHeight: 40,
+    color: theme.colors.primary,
+    fontVariant: ["tabular-nums"],
+  },
+  sugestao: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+    flexWrap: "wrap",
+  },
+  sugestaoTexto: {
+    flex: 1,
+    fontFamily: theme.fonts.bold,
+    fontSize: 15,
+    color: theme.colors.secondary,
+  },
   assentos: { flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm },
   assento: {
     width: 56,
@@ -598,5 +648,8 @@ const estilos = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  assentoAceso: { borderColor: theme.colors.secondary, backgroundColor: theme.colors.secondaryLight },
+  assentoAceso: {
+    borderColor: theme.colors.secondary,
+    backgroundColor: theme.colors.secondaryLight,
+  },
 });

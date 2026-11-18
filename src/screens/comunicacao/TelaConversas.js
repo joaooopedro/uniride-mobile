@@ -16,7 +16,9 @@ import { horaDaConversa, previaDaMensagem } from "./logica";
 function LinhaConversa({ conversa, uid, onPress }) {
   const { carona, ultimaMensagem, naoLidas } = conversa;
   const souMotorista = carona.motoristaId === uid;
-  const nome = souMotorista ? "Passageiros da sua carona" : carona.motorista?.nome;
+  // Motorista vê quem está na carona; sem passageiro aceito ainda, o título fica genérico.
+  const aceitos = (carona.passageirosAceitos || []).map((p) => String(p.nome || "").split(" ")[0]).filter(Boolean);
+  const nome = souMotorista ? (aceitos.length ? aceitos.join(", ") : "Sua carona") : carona.motorista?.nome;
   const temNovas = naoLidas > 0;
   return (
     <MotionPressable

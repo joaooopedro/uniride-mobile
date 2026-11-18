@@ -166,6 +166,11 @@ const ACOES = {
   em_andamento: ["concluir", "conversa"],
 };
 
+// Iniciar só faz sentido com alguém confirmado na carona.
+export function podeIniciar(rota) {
+  return rota?.status === "aberta" && (rota.passageirosAceitos || []).length > 0;
+}
+
 export function acoesDaRota(status) {
   return ACOES[status] || [];
 }

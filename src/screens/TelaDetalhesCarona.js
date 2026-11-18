@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Linking, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Feather, FontAwesome } from "@expo/vector-icons";
+import { Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -8,12 +8,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import EstadoTela from "../components/EstadoTela";
 import MapaRota from "../components/MapaRota";
 import MotionPressable from "../components/MotionPressable";
+import { useAuth } from "../context/AuthContext";
 import { useCaronas, useCarona } from "../context/CaronasContext";
 import { previsaoNaHora } from "../services/api";
 import theme from "../theme";
-import { formatarDataHora, formatarDistancia, formatarDuracao, formatarHora, formatarMoeda, formatarNota } from "../utils";
+import { formatarDataHora, formatarDistancia, formatarDuracao, formatarHora, formatarMoeda, formatarNota, rotuloDia } from "../utils";
 import { Acao, Mensagem, s } from "./acesso/ComponentesAcesso";
 import { Avatar, Secao, useEntrada } from "./motorista/comum";
+import { primeiroNome } from "./motorista/logica";
 import {
   enderecoCompleto,
   estadoDoPassageiro,
@@ -125,12 +127,7 @@ function LinhaTempo({ carona }) {
 function Ferramenta({ icone, familia = "feather", rotulo, onPress, carregando }) {
   const Icone = familia === "fa" ? FontAwesome : Feather;
   return (
-    <MotionPressable
-      onPress={onPress}
-      disabled={carregando}
-      accessibilityLabel={rotulo}
-      style={estilos.ferramenta}
-    >
+    <MotionPressable onPress={onPress} disabled={carregando} accessibilityLabel={rotulo} style={estilos.ferramenta}>
       <View style={estilos.ferramentaIcone}>
         <Icone name={icone} size={22} color={theme.colors.primary} />
       </View>
@@ -156,11 +153,81 @@ function abrirMapas(lat, lng, aoFalhar) {
   );
 }
 
+// A ação do passageiro fica sempre à vista no rodapé, no estado em que a reserva está.
+function BarraPassageiro({ convidado, estado, carona, ocupado, onPedir, onCancelarPedido, onCancelarVaga, onConversa, onPagar, onAvaliar }) {
+  const preco = (
+    <View style={estilos.barraPreco}>
+      <Text style={estilos.barraValor}>{formatarMoeda(carona.valorCentavos)}</Text>
+      <Text style={estilos.barraRotulo}>
+        {carona.vagasRestantes} {carona.vagasRestantes === 1 ? "vaga livre" : "vagas livres"}
+      </Text>
+    </View>
+  );
+  const status = (icone, texto, cor) => (
+    <View style={estilos.barraStatus}>
+      <Feather name={icone} size={18} color={theme.colors[cor]} />
+      <Text style={[estilos.barraStatusTexto, { color: theme.colors[cor] }]}>{texto}</Text>
+    </View>
+  );
+  switch (estado) {
+    case "solicitar":
+      return (
+        <View style={estilos.barraLinha}>
+          {preco}
+          <Acao icone="check-circle" carregando={ocupado === "solicitar"} onPress={onPedir} style={estilos.barraBotao}>
+            {convidado ? "Confirmar vaga" : "Pedir vaga"}
+          </Acao>
+        </View>
+      );
+    case "solicitada":
+      return (
+        <View style={estilos.barraLinha}>
+          {status("clock", "Aguardando o motorista", "warning")}
+          <Acao icone="x" secundario carregando={ocupado === "cancelar"} onPress={onCancelarPedido} style={estilos.barraBotaoPequeno}>
+            Cancelar
+          </Acao>
+        </View>
+      );
+    case "aceita":
+      return (
+        <View style={estilos.barraLinha}>
+          <Acao icone="x" secundario carregando={ocupado === "cancelar"} onPress={onCancelarVaga} style={estilos.barraBotaoPequeno}>
+            Sair
+          </Acao>
+          <Acao icone="message-circle" onPress={onConversa} style={estilos.barraBotao}>
+            Conversa
+          </Acao>
+        </View>
+      );
+    case "pagar":
+      return (
+        <Acao icone="credit-card" onPress={onPagar}>
+          {`Pagar ${formatarMoeda(carona.valorCentavos)}`}
+        </Acao>
+      );
+    case "avaliar":
+      return (
+        <Acao icone="star" onPress={onAvaliar}>
+          Avaliar viagem
+        </Acao>
+      );
+    case "avaliada":
+      return status("check-circle", "Viagem paga e avaliada", "success");
+    case "sem_vaga":
+      return status("users", "Carona lotada", "textSecondary");
+    case "recusada":
+      return status("x-circle", "O motorista recusou. Procure outra carona", "danger");
+    default:
+      return status("info", "Esta carona não aceita novos pedidos", "textSecondary");
+  }
+}
+
 function Conteudo({ navigation, caronaId, aoTentar }) {
   const insets = useSafeAreaInsets();
   const entrada = useEntrada();
   const { carona, reservas, minhaReserva, souMotorista, contato, carregando, erro } = useCarona(caronaId);
-  const { solicitarReserva, cancelarReserva } = useCaronas();
+  const { solicitarReserva, cancelarReserva, aceitarReserva, recusarReserva, iniciarViagem } = useCaronas();
+  const { usuario } = useAuth();
   const [ocupado, setOcupado] = useState(null);
   const [falha, setFalha] = useState("");
   const [aviso, setAviso] = useState("");
@@ -206,14 +273,15 @@ function Conteudo({ navigation, caronaId, aoTentar }) {
 
   function pedirVaga() {
     Alert.alert(
-      "Solicitar vaga",
-      `${formatarMoeda(carona.valorCentavos)} · ${formatarDataHora(carona.saidaEm)}\nO motorista precisa aceitar o pedido.`,
+      convidado ? "Confirmar vaga" : "Solicitar vaga",
+      `${formatarMoeda(carona.valorCentavos)}, ${formatarDataHora(carona.saidaEm)}\n${convidado ? "O ponto foi combinado com você: a vaga fica confirmada na hora." : "O motorista precisa aceitar o pedido."}`,
       [
         { text: "Agora não", style: "cancel" },
-        { text: "Solicitar", onPress: () => executar("solicitar", () => solicitarReserva(carona.id)) },
+        { text: convidado ? "Confirmar" : "Solicitar", onPress: () => executar("solicitar", () => solicitarReserva(carona.id)) },
       ],
     );
   }
+
 
   function cancelarPedido() {
     executar("cancelar", () => cancelarReserva(carona.id));
@@ -252,195 +320,225 @@ function Conteudo({ navigation, caronaId, aoTentar }) {
     });
 
   const aceitos = carona.passageirosAceitos || [];
+  const convidado = !souMotorista && (carona.convidados || []).includes(usuario?.uid);
   const ocupadas = carona.vagasTotais - carona.vagasRestantes;
 
   return (
-    <ScrollView style={s.flex} contentContainerStyle={{ paddingBottom: insets.bottom + theme.spacing.lg }} showsVerticalScrollIndicator={false}>
-      <MapaRota pontos={pontos} linha={rota?.linha} altura={240} style={estilos.mapa} />
+    <View style={s.flex}>
+      <ScrollView style={s.flex} contentContainerStyle={{ paddingBottom: theme.spacing.lg }} showsVerticalScrollIndicator={false}>
+        <MapaRota pontos={pontos} linha={rota?.linha} altura={240} style={estilos.mapa} />
 
-      <View style={estilos.pagina}>
-        <Animated.View entering={entrada(0)} style={estilos.topo}>
-          <View style={estilos.flex}>
-            <Text style={estilos.hora} accessibilityLabel={`Saída às ${formatarHora(carona.saidaEm)}`}>
-              {formatarHora(carona.saidaEm)}
-            </Text>
-            <Text style={estilos.contagem}>{textoSaida(carona.saidaEm, agora)}</Text>
-            <Text style={s.secundario}>{formatarDataHora(carona.saidaEm)}</Text>
-          </View>
-          <View style={estilos.precoCaixa}>
-            <Text style={estilos.preco}>{formatarMoeda(carona.valorCentavos)}</Text>
-            <Text style={s.secundario}>por pessoa</Text>
-          </View>
-        </Animated.View>
-        <EstadoReserva icone={statusCarona.icone} texto={statusCarona.texto} cor={statusCarona.cor} />
-
-        <Animated.View entering={entrada(1)}>
-          <LinhaTempo carona={carona} />
-        </Animated.View>
-
-        <Animated.View entering={entrada(2)}>
-          <Clima saidaEm={carona.saidaEm} />
-        </Animated.View>
-
-        <Animated.View entering={entrada(3)} style={estilos.ferramentas}>
-          <Ferramenta
-            icone="map"
-            rotulo="Abrir no Maps"
-            onPress={() => Number.isFinite(origem.lat) ? abrirMapas(origem.lat, origem.lng, setFalha) : setFalha("Esta carona não tem local no mapa.")}
-          />
-          {estado === "aceita" && contato?.telefone ? (
-            <>
-              <Ferramenta icone="phone" rotulo="Ligar" onPress={() => abrirLink(urlTelefone(contato.telefone), "Não foi possível abrir o telefone.")} />
-              <Ferramenta
-                icone="whatsapp"
-                familia="fa"
-                rotulo="WhatsApp"
-                onPress={() => abrirLink(urlWhatsapp(contato.telefone), "Não foi possível abrir o WhatsApp.")}
-              />
-            </>
-          ) : null}
-          {estado === "aceita" && contato?.chavePix ? <Ferramenta icone="copy" rotulo="Copiar PIX" onPress={copiarPix} /> : null}
-        </Animated.View>
-
-        <Secao icone="user" titulo="Motorista">
-          <MotionPressable
-            onPress={abrirAvaliacoes}
-            accessibilityLabel={`Ver avaliações de ${motorista.nome}`}
-            style={estilos.motorista}
-          >
-            <Avatar nome={motorista.nome} fotoBase64={motorista.fotoBase64} tamanho={56} />
+        <View style={estilos.pagina}>
+          <Animated.View entering={entrada(0)} style={estilos.topo}>
             <View style={estilos.flex}>
-              <Text style={estilos.nome}>{motorista.nome}</Text>
-              {motorista.curso ? <Text style={s.secundario}>{motorista.curso}</Text> : null}
-              <View style={estilos.nota} accessibilityLabel={`Nota ${formatarNota(motorista.nota)}`}>
-                <Feather name="star" size={15} color={theme.colors.warning} />
-                <Text style={estilos.notaTexto}>{formatarNota(motorista.nota)}</Text>
-              </View>
-            </View>
-            <Feather name="chevron-right" size={20} color={theme.colors.textMuted} />
-          </MotionPressable>
-          {veiculo.modelo ? (
-            <View style={estilos.veiculo}>
-              <Feather name="truck" size={18} color={theme.colors.primary} />
-              <Text style={[estilos.flex, estilos.veiculoTexto]}>
-                {[veiculo.marca, veiculo.modelo].filter(Boolean).join(" ")}
-                {veiculo.cor ? `, ${veiculo.cor}` : ""}
+              <Text style={estilos.hora} accessibilityLabel={`Saída às ${formatarHora(carona.saidaEm)}`}>
+                {formatarHora(carona.saidaEm)}
               </Text>
-              {veiculo.placa ? (
-                <View style={estilos.placa} accessibilityLabel={`Placa ${veiculo.placa}`}>
-                  <Text style={estilos.placaTexto}>{veiculo.placa}</Text>
+              <Text style={estilos.contagem}>{rotuloDia(carona.saidaEm, agora) === "Hoje" ? `Hoje, ${textoSaida(carona.saidaEm, agora)}` : rotuloDia(carona.saidaEm, agora)}</Text>
+            </View>
+            <View style={estilos.precoCaixa}>
+              <Text style={estilos.preco}>{formatarMoeda(carona.valorCentavos)}</Text>
+            </View>
+          </Animated.View>
+          <EstadoReserva icone={statusCarona.icone} texto={statusCarona.texto} cor={statusCarona.cor} />
+
+          <Animated.View entering={entrada(1)}>
+            <LinhaTempo carona={carona} />
+          </Animated.View>
+
+          <Animated.View entering={entrada(2)}>
+            <Clima saidaEm={carona.saidaEm} />
+          </Animated.View>
+
+          <Animated.View entering={entrada(3)} style={estilos.ferramentas}>
+            <Ferramenta
+              icone="map"
+              rotulo="Abrir no Maps"
+              onPress={() =>
+                Number.isFinite(origem.lat) ? abrirMapas(origem.lat, origem.lng, setFalha) : setFalha("Esta carona não tem local no mapa.")
+              }
+            />
+            {estado === "aceita" && contato?.telefone ? (
+              <>
+                <Ferramenta
+                  icone="phone"
+                  rotulo="Ligar"
+                  onPress={() => abrirLink(urlTelefone(contato.telefone), "Não foi possível abrir o telefone.")}
+                />
+                <Ferramenta
+                  icone="whatsapp"
+                  familia="fa"
+                  rotulo="WhatsApp"
+                  onPress={() => abrirLink(urlWhatsapp(contato.telefone), "Não foi possível abrir o WhatsApp.")}
+                />
+              </>
+            ) : null}
+            {estado === "aceita" && contato?.chavePix ? <Ferramenta icone="copy" rotulo="Copiar PIX" onPress={copiarPix} /> : null}
+          </Animated.View>
+
+          <Secao icone="user" titulo="Motorista">
+            <MotionPressable onPress={abrirAvaliacoes} accessibilityLabel={`Ver avaliações de ${motorista.nome}`} style={estilos.motorista}>
+              <Avatar nome={motorista.nome} fotoBase64={motorista.fotoBase64} tamanho={56} />
+              <View style={estilos.flex}>
+                <Text style={estilos.nome}>{motorista.nome}</Text>
+                {motorista.curso ? <Text style={s.secundario}>{motorista.curso}</Text> : null}
+                <View style={estilos.nota} accessibilityLabel={`Nota ${formatarNota(motorista.nota)}`}>
+                  <Feather name="star" size={15} color={theme.colors.warning} />
+                  <Text style={estilos.notaTexto}>{formatarNota(motorista.nota)}</Text>
                 </View>
-              ) : null}
-            </View>
-          ) : null}
-        </Secao>
-
-        {carona.comodidades?.length ? (
-          <Secao icone="coffee" titulo="Comodidades">
-            <View style={estilos.chips}>
-              {carona.comodidades.map((item) => (
-                <View key={item} style={estilos.chip}>
-                  <Feather name="check" size={14} color={theme.colors.secondary} />
-                  <Text style={estilos.chipTexto}>{item}</Text>
-                </View>
-              ))}
-            </View>
-          </Secao>
-        ) : null}
-
-        <Secao icone="users" titulo="Passageiros">
-          <View style={estilos.passageiros}>
-            <View style={estilos.avatares}>
-              {aceitos.map((p, i) => (
-                <Avatar key={p.uid || i} nome={p.nome} tamanho={40} sobreposto={i > 0} />
-              ))}
-            </View>
-            <Text style={s.secundario}>
-              {aceitos.length ? `${ocupadas} de ${carona.vagasTotais} vagas ocupadas` : `Nenhum passageiro ainda. ${carona.vagasRestantes} de ${carona.vagasTotais} vagas livres.`}
-            </Text>
-          </View>
-        </Secao>
-
-        {souMotorista ? (
-          <Secao icone="list" titulo="Reservas">
-            {reservas.length ? (
-              reservas.map((r) => {
-                const st = STATUS_RESERVA[r.status] || STATUS_RESERVA.solicitada;
-                return (
-                  <View key={r.id} style={estilos.reserva}>
-                    <Avatar nome={r.passageiro?.nome} fotoBase64={r.passageiro?.fotoBase64} tamanho={44} />
-                    <View style={estilos.flex}>
-                      <Text style={estilos.nomePequeno}>{r.passageiro?.nome}</Text>
-                      {r.passageiro?.curso ? <Text style={s.secundario}>{r.passageiro.curso}</Text> : null}
-                    </View>
-                    <EstadoReserva icone={st.icone} texto={st.texto} cor={st.cor} />
+              </View>
+              <Feather name="chevron-right" size={20} color={theme.colors.textMuted} />
+            </MotionPressable>
+            {veiculo.modelo ? (
+              <View style={estilos.veiculo}>
+                <Ionicons name="car-outline" size={19} color={theme.colors.primary} />
+                <Text style={[estilos.flex, estilos.veiculoTexto]}>
+                  {[veiculo.marca, veiculo.modelo].filter(Boolean).join(" ")}
+                  {veiculo.cor ? `, ${veiculo.cor}` : ""}
+                </Text>
+                {veiculo.placa ? (
+                  <View style={estilos.placa} accessibilityLabel={`Placa ${veiculo.placa}`}>
+                    <Text style={estilos.placaTexto}>{veiculo.placa}</Text>
                   </View>
-                );
-              })
-            ) : (
-              <Text style={s.secundario}>Ninguém pediu vaga ainda. Os pedidos aparecem na aba Pedidos.</Text>
-            )}
-            <Acao icone="message-circle" secundario onPress={irParaConversa}>
-              Abrir conversa
-            </Acao>
+                ) : null}
+              </View>
+            ) : null}
           </Secao>
-        ) : (
-          <Secao icone="bookmark" titulo="Sua vaga">
-            {estado === "solicitar" && (
-              <Acao icone="check-circle" carregando={ocupado === "solicitar"} onPress={pedirVaga}>
-                Solicitar vaga
-              </Acao>
-            )}
-            {estado === "sem_vaga" && <EstadoReserva icone="users" texto="Esta carona está sem vagas" cor="textSecondary" />}
-            {estado === "solicitada" && (
-              <>
-                <EstadoReserva icone="clock" texto="Aguardando o motorista" cor="warning" />
-                <Acao icone="x" secundario carregando={ocupado === "cancelar"} onPress={cancelarPedido}>
-                  Cancelar solicitação
-                </Acao>
-              </>
-            )}
-            {estado === "aceita" && (
-              <>
-                <EstadoReserva icone="check-circle" texto="Vaga confirmada" cor="success" />
-                <Acao icone="message-circle" onPress={irParaConversa}>
-                  Abrir conversa
-                </Acao>
-                <Acao icone="x" secundario carregando={ocupado === "cancelar"} onPress={cancelarVaga}>
-                  Cancelar reserva
-                </Acao>
-              </>
-            )}
-            {estado === "recusada" && <Mensagem>O motorista recusou seu pedido. Procure outra carona.</Mensagem>}
-            {estado === "avaliar" && (
-              <Acao icone="star" onPress={() => navigation.navigate("AvaliarViagem", { reservaId: minhaReserva.id })}>
-                Avaliar viagem
-              </Acao>
-            )}
-            {estado === "avaliada" && <EstadoReserva icone="check-circle" texto="Você já avaliou esta viagem" cor="success" />}
-            {(estado === "cancelada" || estado === "indisponivel") && (
-              <EstadoReserva icone="info" texto="Esta carona não aceita novos pedidos" cor="textSecondary" />
-            )}
-          </Secao>
-        )}
 
-        {aviso ? <Mensagem sucesso>{aviso}</Mensagem> : null}
-        <Mensagem>{falha}</Mensagem>
+          {carona.comodidades?.length ? (
+            <Secao icone="coffee" titulo="Comodidades">
+              <View style={estilos.chips}>
+                {carona.comodidades.map((item) => (
+                  <View key={item} style={estilos.chip}>
+                    <Feather name="check" size={14} color={theme.colors.secondary} />
+                    <Text style={estilos.chipTexto}>{item}</Text>
+                  </View>
+                ))}
+              </View>
+            </Secao>
+          ) : null}
+
+          <Secao icone="users" titulo="Passageiros">
+            <View style={estilos.passageiros}>
+              <View style={estilos.avatares}>
+                {aceitos.map((p, i) => (
+                  <Avatar key={p.uid || i} nome={p.nome} tamanho={40} sobreposto={i > 0} />
+                ))}
+              </View>
+              <Text style={s.secundario}>
+                {aceitos.length
+                  ? `${ocupadas} de ${carona.vagasTotais} vagas ocupadas`
+                  : `Nenhum passageiro ainda. ${carona.vagasRestantes} de ${carona.vagasTotais} vagas livres.`}
+              </Text>
+            </View>
+          </Secao>
+
+          {souMotorista ? (
+            <Secao icone="list" titulo="Reservas">
+              {reservas.length ? (
+                reservas.map((r) => {
+                  const st = r.status === "concluida" && r.pagoEm ? STATUS_RESERVA.paga : STATUS_RESERVA[r.status] || STATUS_RESERVA.solicitada;
+                  return (
+                    <View key={r.id} style={estilos.reservaBloco}>
+                      <View style={estilos.reserva}>
+                        <Avatar nome={r.passageiro?.nome} fotoBase64={r.passageiro?.fotoBase64} tamanho={44} />
+                        <View style={estilos.flex}>
+                          <Text style={estilos.nomePequeno}>{r.passageiro?.nome}</Text>
+                          {r.passageiro?.curso ? <Text style={s.secundario}>{r.passageiro.curso}</Text> : null}
+                        </View>
+                        <EstadoReserva icone={st.icone} texto={st.texto} cor={st.cor} />
+                      </View>
+                      {r.status === "solicitada" && carona.status === "aberta" ? (
+                        <View style={estilos.resposta}>
+                          <Acao
+                            icone="x"
+                            secundario
+                            disabled={!!ocupado}
+                            carregando={ocupado === `recusar-${r.id}`}
+                            onPress={() =>
+                              Alert.alert(`Recusar o pedido de ${primeiroNome(r.passageiro?.nome)}?`, "O passageiro recebe o aviso.", [
+                                { text: "Voltar", style: "cancel" },
+                                { text: "Recusar", style: "destructive", onPress: () => executar(`recusar-${r.id}`, () => recusarReserva(r.id)) },
+                              ])
+                            }
+                            style={estilos.flex}
+                          >
+                            Recusar
+                          </Acao>
+                          <Acao
+                            icone="check"
+                            disabled={!!ocupado}
+                            carregando={ocupado === `aceitar-${r.id}`}
+                            onPress={() => executar(`aceitar-${r.id}`, () => aceitarReserva(r.id))}
+                            style={estilos.flex}
+                          >
+                            Aceitar
+                          </Acao>
+                        </View>
+                      ) : null}
+                    </View>
+                  );
+                })
+              ) : (
+                <Text style={s.secundario}>Ninguém pediu vaga ainda.</Text>
+              )}
+            </Secao>
+          ) : null}
+
+          {aviso ? <Mensagem sucesso>{aviso}</Mensagem> : null}
+          <Mensagem>{falha}</Mensagem>
+        </View>
+      </ScrollView>
+      <View style={[estilos.barra, { paddingBottom: insets.bottom + 12 }]}>
+        {souMotorista ? (
+          <View style={estilos.barraLinha}>
+            <Acao icone="message-circle" secundario onPress={irParaConversa} style={estilos.barraBotaoPequeno}>
+              Conversa
+            </Acao>
+            {carona.status === "aberta" ? (
+              <Acao
+                icone="play"
+                disabled={!aceitos.length}
+                carregando={ocupado === "iniciar"}
+                onPress={() =>
+                  Alert.alert("Iniciar a viagem agora?", "Pedidos sem resposta serão recusados.", [
+                    { text: "Voltar", style: "cancel" },
+                    { text: "Iniciar", onPress: () => executar("iniciar", () => iniciarViagem(carona.id)) },
+                  ])
+                }
+                style={estilos.barraBotao}
+              >
+                {aceitos.length ? "Iniciar viagem" : "Aceite alguém"}
+              </Acao>
+            ) : null}
+            {carona.status === "em_andamento" ? (
+              <Acao icone="flag" onPress={() => navigation.navigate("Cobranca", { caronaId: carona.id })} style={estilos.barraBotao}>
+                Finalizar e receber
+              </Acao>
+            ) : null}
+          </View>
+        ) : (
+          <BarraPassageiro
+            convidado={convidado}
+            estado={estado}
+            carona={carona}
+            ocupado={ocupado}
+            onPedir={pedirVaga}
+            onCancelarPedido={cancelarPedido}
+            onCancelarVaga={cancelarVaga}
+            onConversa={irParaConversa}
+            onPagar={() => navigation.navigate("Pagamento", { caronaId: carona.id })}
+            onAvaliar={() => navigation.navigate("AvaliarViagem", { reservaId: minhaReserva.id })}
+          />
+        )}
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 export default function TelaDetalhesCarona({ navigation, route }) {
   const [tentativa, setTentativa] = useState(0);
-  return (
-    <Conteudo
-      key={tentativa}
-      navigation={navigation}
-      caronaId={route.params?.caronaId}
-      aoTentar={() => setTentativa((n) => n + 1)}
-    />
-  );
+  return <Conteudo key={tentativa} navigation={navigation} caronaId={route.params?.caronaId} aoTentar={() => setTentativa((n) => n + 1)} />;
 }
 
 const estilos = StyleSheet.create({
@@ -467,7 +565,13 @@ const estilos = StyleSheet.create({
   climaLinha: { flexDirection: "row", alignItems: "center", gap: theme.spacing.mdSm, minHeight: 48 },
   temperatura: { fontFamily: theme.fonts.bold, fontSize: 24, color: theme.colors.primary },
   climaTitulo: { fontFamily: theme.fonts.semibold, fontSize: 14, color: theme.colors.primary },
-  ferramentas: { flexDirection: "row", gap: theme.spacing.sm, borderTopWidth: 1, borderColor: theme.colors.border, paddingVertical: theme.spacing.mdSm },
+  ferramentas: {
+    flexDirection: "row",
+    gap: theme.spacing.sm,
+    borderTopWidth: 1,
+    borderColor: theme.colors.border,
+    paddingVertical: theme.spacing.mdSm,
+  },
   ferramenta: { flex: 1, minHeight: 72, alignItems: "center", justifyContent: "center", gap: theme.spacing.xs },
   ferramentaIcone: { width: 48, height: 48, alignItems: "center", justifyContent: "center" },
   ferramentaTexto: { fontFamily: theme.fonts.medium, fontSize: 12, color: theme.colors.primary },
@@ -478,12 +582,44 @@ const estilos = StyleSheet.create({
   notaTexto: { fontFamily: theme.fonts.bold, fontSize: 15, color: theme.colors.primary },
   veiculo: { flexDirection: "row", alignItems: "center", gap: theme.spacing.mdSm, minHeight: 48 },
   veiculoTexto: { fontFamily: theme.fonts.medium, fontSize: 15, color: theme.colors.primary },
-  placa: { borderWidth: 2, borderColor: theme.colors.primary, borderRadius: theme.radii.sm, paddingHorizontal: theme.spacing.mdSm, paddingVertical: theme.spacing.xs, backgroundColor: theme.colors.surface },
+  placa: {
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
+    borderRadius: theme.radii.sm,
+    paddingHorizontal: theme.spacing.mdSm,
+    paddingVertical: theme.spacing.xs,
+    backgroundColor: theme.colors.surface,
+  },
   placaTexto: { fontFamily: theme.fonts.bold, fontSize: 16, letterSpacing: 2, color: theme.colors.primary },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm },
-  chip: { flexDirection: "row", alignItems: "center", gap: theme.spacing.xs, minHeight: 36, paddingHorizontal: theme.spacing.mdSm, borderRadius: theme.radii.sm, backgroundColor: theme.colors.secondaryLight },
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.xs,
+    minHeight: 36,
+    paddingHorizontal: theme.spacing.mdSm,
+    borderRadius: theme.radii.sm,
+    backgroundColor: theme.colors.secondaryLight,
+  },
   chipTexto: { fontFamily: theme.fonts.medium, fontSize: 13, color: theme.colors.primary },
   passageiros: { gap: theme.spacing.sm },
   avatares: { flexDirection: "row", paddingLeft: theme.spacing.mdSm },
   reserva: { flexDirection: "row", alignItems: "center", gap: theme.spacing.mdSm, minHeight: 56 },
+  reservaBloco: { gap: theme.spacing.sm },
+  barra: {
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    backgroundColor: theme.colors.background,
+  },
+  barraLinha: { flexDirection: "row", alignItems: "center", gap: 12 },
+  barraPreco: { flex: 1 },
+  barraValor: { fontFamily: theme.fonts.bold, fontSize: 22, color: theme.colors.primary, fontVariant: ["tabular-nums"] },
+  barraRotulo: { fontFamily: theme.fonts.semibold, fontSize: 13, color: theme.colors.success },
+  barraBotao: { flex: 1.3 },
+  barraBotaoPequeno: { flex: 0.8 },
+  barraStatus: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8, minHeight: 52 },
+  barraStatusTexto: { flexShrink: 1, fontFamily: theme.fonts.semibold, fontSize: 15 },
+  resposta: { flexDirection: "row", gap: theme.spacing.sm },
 });

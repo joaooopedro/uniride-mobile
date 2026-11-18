@@ -97,7 +97,8 @@ service cloud.firestore {
       allow create: if verificado()
         && novo().motoristaId == request.auth.uid
         && get(caminho('usuarios', request.auth.uid)).data.ehMotorista == true
-        && novo().keys().hasOnly(['motoristaId', 'motorista', 'origem', 'campusDestino', 'destino', 'saidaEm', 'vagasTotais', 'vagasRestantes', 'valorCentavos', 'rota', 'participantes', 'passageirosAceitos', 'status', 'criadoEm', 'atualizadoEm'])
+        && novo().keys().hasOnly(['motoristaId', 'motorista', 'origem', 'campusDestino', 'destino', 'saidaEm', 'vagasTotais', 'vagasRestantes', 'valorCentavos', 'rota', 'participantes', 'passageirosAceitos', 'convidados', 'status', 'criadoEm', 'atualizadoEm'])
+        && (!('convidados' in novo()) || (novo().convidados is list && novo().convidados.size() <= 6))
         && novo().status == 'aberta'
         && novo().saidaEm is timestamp && novo().saidaEm > request.time
         && novo().vagasTotais is int && novo().vagasTotais >= 1 && novo().vagasTotais <= 6
@@ -107,7 +108,22 @@ service cloud.firestore {
         && novo().passageirosAceitos == []
         && textoValido(novo().campusDestino, 60);
 
-      allow update: if verificado() && (mudancaDoMotorista() || aceiteDoMotorista() || saidaDoPassageiro());
+      allow update: if verificado() && (mudancaDoMotorista() || aceiteDoMotorista() || saidaDoPassageiro() || entradaDoConvidado());
+
+      // Passageiro com ponto combinado entra sozinho: só ele, uma vaga a menos, e a reserva dele nasce aceita.
+      function entradaDoConvidado() {
+        let uid = request.auth.uid;
+        return !souMotoristaDaCarona()
+          && resource.data.status == 'aberta'
+          && ('convidados' in resource.data) && resource.data.convidados.hasAny([uid])
+          && !resource.data.participantes.hasAny([uid])
+          && soMudou(['vagasRestantes', 'participantes', 'passageirosAceitos', 'atualizadoEm'])
+          && novo().participantes == resource.data.participantes.concat([uid])
+          && novo().vagasRestantes == resource.data.vagasRestantes - 1
+          && novo().vagasRestantes >= 0
+          && novo().passageirosAceitos.size() == resource.data.passageirosAceitos.size() + 1
+          && reservaDepois(caronaId + '_' + uid).status == 'aceita';
+      }
 
       allow delete: if false;
 
@@ -195,7 +211,7 @@ service cloud.firestore {
         && novo().avaliadaPeloMotorista == false;
 
       allow update: if verificado()
-        && (novoPedidoAposCancelar() || cancelamentoDoPassageiro() || respostaDoMotorista() || marcaDeAvaliacao());
+        && (novoPedidoAposCancelar() || cancelamentoDoPassageiro() || respostaDoMotorista() || marcaDeAvaliacao() || pagamentoDoPassageiro());
 
       allow delete: if false;
 
@@ -203,7 +219,10 @@ service cloud.firestore {
         let alvo = carona(novo().caronaId);
         return reservaId == novo().caronaId + '_' + request.auth.uid
           && novo().passageiroId == request.auth.uid
-          && novo().status == 'solicitada'
+          && (novo().status == 'solicitada'
+            || (novo().status == 'aceita'
+              && ('convidados' in alvo) && alvo.convidados.hasAny([request.auth.uid])
+              && caronaDepois(novo().caronaId).participantes.hasAny([request.auth.uid])))
           && novo().motoristaId == alvo.motoristaId
           && alvo.motoristaId != request.auth.uid
           && alvo.status == 'aberta'
@@ -240,11 +259,21 @@ service cloud.firestore {
         let para = novo().status;
         let depois = caronaDepois(resource.data.caronaId);
         return souMotorista()
-          && soMudou(['status', 'canceladaPor', 'atualizadoEm'])
+          && soMudou(['status', 'canceladaPor', 'pagoEm', 'atualizadoEm'])
+          && (!('pagoEm' in request.resource.data) || ('pagoEm' in resource.data) || (para == 'concluida' && novo().pagoEm == request.time))
           && ((de == 'solicitada' && para == 'aceita' && depois.participantes.hasAny([resource.data.passageiroId]))
             || (de == 'solicitada' && para == 'recusada')
             || (de in ['solicitada', 'aceita'] && para == 'cancelada' && depois.status == 'cancelada')
             || (de == 'aceita' && para == 'concluida' && depois.status == 'concluida'));
+      }
+
+      // Depois da viagem, o passageiro registra uma vez que pagou o motorista.
+      function pagamentoDoPassageiro() {
+        return souPassageiro()
+          && resource.data.status == 'concluida'
+          && !('pagoEm' in resource.data)
+          && novo().pagoEm == request.time
+          && soMudou(['pagoEm', 'atualizadoEm']);
       }
 
       function marcaDeAvaliacao() {
@@ -256,6 +285,23 @@ service cloud.firestore {
           && soMudou([campo, 'atualizadoEm'])
           && existsAfter(caminho('avaliacoes', reservaId + '_' + request.auth.uid));
       }
+    }
+
+    // Pedido de carona do passageiro. Motoristas leem para combinar; só o dono cria, edita e apaga.
+    // O motorista só pode marcar como combinado, ligando a uma carona que é dele.
+    match /interesses/{uid} {
+      allow read: if verificado();
+      allow create, update: if verificado() && uid == request.auth.uid
+        && novo().passageiroId == uid
+        && novo().keys().hasOnly(['passageiroId', 'passageiro', 'origem', 'campusDestino', 'dia', 'hora', 'status', 'caronaId', 'motorista', 'criadoEm', 'atualizadoEm'])
+        && (request.method == 'update' || novo().status == 'aberto');
+      allow update: if verificado()
+        && resource.data.status == 'aberto'
+        && novo().status == 'combinado'
+        && soMudou(['status', 'caronaId', 'motorista', 'atualizadoEm'])
+        && novo().motorista.uid == request.auth.uid
+        && carona(novo().caronaId).motoristaId == request.auth.uid;
+      allow delete: if verificado() && uid == request.auth.uid;
     }
 
     // Avaliação: uma por pessoa por viagem concluída, sempre do outro lado da reserva.

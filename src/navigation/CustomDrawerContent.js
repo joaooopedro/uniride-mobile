@@ -75,14 +75,7 @@ export default function CustomDrawerContent({ navigation }) {
       </View>
       <View style={styles.identity}>
         <Text style={styles.name}>{perfil?.nome || "Aluno UniAcademia"}</Text>
-        {!!perfil?.curso && (
-          <Text style={styles.course}>
-            {perfil.curso}, {perfil.periodo}º período
-          </Text>
-        )}
-        <Text style={styles.course}>
-          {modo === "motorista" ? "Usando como motorista" : "Usando como passageiro"}
-        </Text>
+        <Text style={styles.mode}>{modo === "motorista" ? "Motorista" : "Passageiro"}</Text>
         {emailVerificado && (
           <View style={styles.verified}>
             <Ionicons name="checkmark" size={14} color={theme.colors.success} />
@@ -101,17 +94,13 @@ export default function CustomDrawerContent({ navigation }) {
               onPress={item.onPress}
             >
               <Ionicons name={item.icon} size={21} color={theme.colors.textSecondary} />
-              <View style={styles.copy}>
-                <Text style={styles.label}>{item.label}</Text>
-                <Text style={styles.description}>{item.description}</Text>
-              </View>
+              <Text style={[styles.label, styles.copy]}>{item.label}</Text>
               <Ionicons name="chevron-forward" size={15} color={theme.colors.textMuted} />
             </MotionPressable>
           ))}
         </View>
       ))}
       <View style={styles.footer}>
-        <Text style={styles.footerText}>UniAcademia · Juiz de Fora</Text>
         <Text style={styles.version}>Versão 2.0.0</Text>
       </View>
     </ScrollView>
@@ -133,6 +122,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  mode: { marginTop: 4, fontFamily: theme.fonts.semibold, fontSize: 15, color: theme.colors.secondary },
   identity: {
     paddingTop: 32,
     paddingBottom: 28,

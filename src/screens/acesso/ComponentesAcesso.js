@@ -11,7 +11,8 @@ export function PaginaAcesso({ children }) {
     <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[s.pagina, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 28 }]}>{children}</ScrollView>
   </KeyboardAvoidingView>;
 }
-export function Titulo({ children, texto }) { return <View style={{ gap: 6 }}><Text style={s.titulo}>{children}</Text>{texto ? <Text style={s.secundario}>{texto}</Text> : null}</View>; }
+// Título de página sozinho: sem legenda cinza embaixo. O texto que importa vai no conteúdo.
+export function Titulo({ children }) { return <Text style={s.titulo} accessibilityRole="header">{children}</Text>; }
 export function Acao({ children, onPress, secundario, disabled, carregando, icone, style }) {
   return <MotionPressable onPress={onPress} disabled={disabled || carregando} style={[s.acao, secundario && s.acaoSecundaria, (disabled || carregando) && { opacity: 0.55 }, style]}>
     {carregando ? <ActivityIndicator color={secundario ? theme.colors.primary : theme.colors.surface} /> : <>{icone ? <Feather name={icone} size={18} color={secundario ? theme.colors.primary : theme.colors.surface} /> : null}<Text style={[s.acaoTexto, secundario && s.acaoTextoSecundaria]}>{children}</Text></>}

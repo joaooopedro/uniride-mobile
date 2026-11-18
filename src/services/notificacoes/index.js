@@ -10,7 +10,7 @@ import theme from "../../theme";
 import { formatarHora } from "../../utils/formato";
 import { repo } from "..";
 import { lerEventosNotificados, salvarEventosNotificados } from "../localStore";
-import { eventosDasMensagens, eventosDasReservas, filtrarNovos, viagemEmDestaque } from "./eventos";
+import { eventosDasMensagens, eventosDasReservas, eventosDoInteresse, filtrarNovos, viagemEmDestaque } from "./eventos";
 
 // Conta gratuita da Apple não tem push remoto: o app escuta o Firestore
 // e dispara notificação local no próprio aparelho.
@@ -66,7 +66,7 @@ async function mostrarViagem(item) {
   await Notifications.scheduleNotificationAsync({
     identifier: ID_VIAGEM,
     content: {
-      title: emViagem ? `Em viagem para ${carona.campusDestino}` : `Saída às ${formatarHora(carona.saidaEm)} · ${veiculo.placa || ""}`,
+      title: emViagem ? `Em viagem para ${carona.campusDestino}` : `Saída às ${formatarHora(carona.saidaEm)}${veiculo.placa ? `, placa ${veiculo.placa}` : ""}`,
       body: `${carona.origem?.ponto || carona.origem?.bairro}. ${carona.motorista?.nome}, ${veiculo.modelo || ""} ${veiculo.cor || ""}, placa ${veiculo.placa || ""}.`,
       data: { rota: "Conversa", parametros: { caronaId: carona.id } },
       sticky: true,
@@ -80,7 +80,7 @@ async function mostrarViagem(item) {
 export function useNotificacoes() {
   const { usuario, perfil } = useAuth();
   const uid = usuario?.uid;
-  const { minhasReservas } = useCaronas();
+  const { minhasReservas, meuInteresse } = useCaronas();
   const { conversas } = useAvisos();
   const [permitido, setPermitido] = useState(false);
   const [doMotorista, setDoMotorista] = useState([]);
@@ -109,6 +109,7 @@ export function useNotificacoes() {
     const eventos = [
       ...eventosDasReservas({ uid, doMotorista, doPassageiro: minhasReservas }),
       ...eventosDasMensagens({ uid, conversas }),
+      ...eventosDoInteresse(meuInteresse),
     ];
     // Uma checagem por vez, para duas mudanças seguidas não lerem o mesmo histórico.
     fila.current = fila.current.then(async () => {
@@ -123,7 +124,7 @@ export function useNotificacoes() {
         });
       }
     }).catch(() => {});
-  }, [uid, permitido, doMotorista, minhasReservas, conversas]);
+  }, [uid, permitido, doMotorista, minhasReservas, conversas, meuInteresse]);
 
   // Notificação contínua da próxima carona aceita, no lugar da Live Activity (que exigiria código nativo).
   // ponytail: a janela de 2 h só é reavaliada quando as reservas mudam; um relógio resolveria se fizer falta.

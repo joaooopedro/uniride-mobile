@@ -34,7 +34,8 @@ export function acoesDaReserva(reserva, carona) {
   const acoes = ["detalhes"];
   const status = reserva?.status;
   if (status === "aceita" && carona?.status !== "cancelada") acoes.push("conversa");
-  if (status === "concluida" && !reserva.avaliadaPeloPassageiro) acoes.push("avaliar");
+  if (status === "concluida" && !reserva.pagoEm) acoes.push("pagar");
+  else if (status === "concluida" && !reserva.avaliadaPeloPassageiro) acoes.push("avaliar");
   return acoes;
 }
 

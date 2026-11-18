@@ -95,3 +95,70 @@ describe("rateio e média", () => {
     expect(mediaAvaliacao({ soma: 14, total: 3 })).toEqual({ media: 4.7, total: 3 });
   });
 });
+
+import { rotuloDia } from "../formato";
+
+describe("rotuloDia", () => {
+  const agora = new Date(2026, 10, 18, 11, 0);
+  it("diz hoje, amanhã ou o dia da semana", () => {
+    expect(rotuloDia(new Date(2026, 10, 18, 23, 0), agora)).toBe("Hoje");
+    expect(rotuloDia(new Date(2026, 10, 19, 7, 0), agora)).toBe("Amanhã");
+    expect(rotuloDia(new Date(2026, 10, 20, 7, 0), agora)).toBe("sex, 20/11");
+  });
+});
+
+import { codigoPix, crc16 } from "../pix";
+
+describe("pix", () => {
+  it("calcula o CRC16-CCITT padrão", () => {
+    expect(crc16("123456789")).toBe("29B1");
+  });
+  it("monta o código com chave, valor, nome e CRC no fim", () => {
+    const codigo = codigoPix({ chave: "gabriel@uniride.app", nome: "Gabriel Caputo Morais", centavos: 450 });
+    expect(codigo.startsWith("000201")).toBe(true);
+    expect(codigo).toContain("0014br.gov.bcb.pix0119gabriel@uniride.app");
+    expect(codigo).toContain("54044.50");
+    expect(codigo).toContain("5921GABRIEL CAPUTO MORAIS");
+    expect(codigo.slice(-4)).toBe(crc16(codigo.slice(0, -4)));
+    expect(codigoPix({ chave: "", centavos: 100 })).toBe("");
+  });
+});
+
+import { pontoDeEncontro, textoCaminhada } from "../encontro";
+
+describe("pontoDeEncontro", () => {
+  // Rota reta de oeste para leste; passageiro um pouco ao norte do meio dela.
+  const linha = [
+    [-21.76, -43.36],
+    [-21.76, -43.34],
+  ];
+  it("projeta o passageiro no caminho do motorista", () => {
+    const ponto = pontoDeEncontro(linha, { lat: -21.757, lng: -43.35 });
+    expect(ponto.lat).toBeCloseTo(-21.76, 4);
+    expect(ponto.lng).toBeCloseTo(-43.35, 4);
+    expect(ponto.distancia).toBeGreaterThan(300);
+    expect(ponto.distancia).toBeLessThan(370);
+  });
+  it("prende no fim da rota quando o passageiro está depois dele", () => {
+    const ponto = pontoDeEncontro(linha, { lat: -21.76, lng: -43.3 });
+    expect(ponto.lng).toBeCloseTo(-43.34, 4);
+    expect(pontoDeEncontro([], { lat: 0, lng: 0 })).toBeNull();
+  });
+  it("descreve a caminhada", () => {
+    expect(textoCaminhada(40)).toBe("Na porta do passageiro");
+    expect(textoCaminhada(347)).toBe("350 m a pé para o passageiro");
+    expect(textoCaminhada(1234)).toBe("1,2 km a pé para o passageiro");
+  });
+});
+
+import { pedidoVencido } from "../encontro";
+
+describe("pedidoVencido", () => {
+  const agora = new Date(2026, 10, 18, 12, 0);
+  it("vence meia hora depois do horário pedido", () => {
+    expect(pedidoVencido({ dia: "2026-11-18", hora: "11:45" }, agora)).toBe(false);
+    expect(pedidoVencido({ dia: "2026-11-18", hora: "11:20" }, agora)).toBe(true);
+    expect(pedidoVencido({ dia: "2026-11-19", hora: "07:00" }, agora)).toBe(false);
+    expect(pedidoVencido({ dia: "", hora: "" }, agora)).toBe(true);
+  });
+});

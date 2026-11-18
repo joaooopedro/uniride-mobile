@@ -108,7 +108,7 @@ export const caronas = {
         motoristaId: perfil.uid,
         motorista: {
           nome: perfil.nome,
-          curso: `${perfil.curso}, ${perfil.periodo}º período`,
+          curso: `${perfil.curso}, ${perfil.periodo}° período`,
           nota: perfil.notaMotorista?.media ?? mediaAvaliacao(perfil.notaMotorista).media,
           fotoBase64: perfil.fotoBase64 || null,
           veiculo: perfil.motorista.veiculo,
@@ -136,6 +136,7 @@ export const caronas = {
             }
           : null,
         participantes: [perfil.uid],
+        ...(dados.convidados?.length ? { convidados: dados.convidados } : {}),
         passageirosAceitos: [],
         status: "aberta",
         criadoEm: serverTimestamp(),
@@ -186,7 +187,10 @@ export const caronas = {
       const aceitas = await reservasDaCarona(caronaId, ["aceita"]);
       const lote = writeBatch(db);
       lote.update(ref(caronaId), { status: "concluida", atualizadoEm: serverTimestamp() });
-      aceitas.docs.forEach((reserva) => lote.update(reserva.ref, { status: "concluida", atualizadoEm: serverTimestamp() }));
+      // O motorista só conclui depois de confirmar que recebeu o Pix de quem estava na carona.
+      aceitas.docs.forEach((reserva) =>
+        lote.update(reserva.ref, { status: "concluida", pagoEm: serverTimestamp(), atualizadoEm: serverTimestamp() }),
+      );
       await lote.commit();
     } catch (erro) {
       throw erroAmigavel(erro, "Não foi possível concluir a viagem.");

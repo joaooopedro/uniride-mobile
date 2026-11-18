@@ -65,7 +65,7 @@ export function criarDadosIniciais() {
     const nota = u.notaMotorista.total ? u.notaMotorista.soma / u.notaMotorista.total : 0;
     return {
       nome: u.nome,
-      curso: `${u.curso}, ${u.periodo}º período`,
+      curso: `${u.curso}, ${u.periodo}° período`,
       nota: Math.round(nota * 10) / 10,
       fotoBase64: null,
       veiculo: u.motorista?.veiculo || null,
@@ -132,13 +132,13 @@ export function criarDadosIniciais() {
   const reservas = {
     "demo-c1_demo-joao": {
       id: "demo-c1_demo-joao", caronaId: "demo-c1", passageiroId: "demo-joao", motoristaId: "demo-mariana",
-      passageiro: { nome: "João Pedro Silva", curso: "Ciência da Computação, 5º período", nota: 4.8, fotoBase64: null },
+      passageiro: { nome: "João Pedro Silva", curso: "Ciência da Computação, 5° período", nota: 4.8, fotoBase64: null },
       status: "solicitada", avaliadaPeloPassageiro: false, avaliadaPeloMotorista: false,
       criadoEm: new Date(agora - 20 * 60 * 1000), atualizadoEm: new Date(agora - 20 * 60 * 1000),
     },
     "demo-c3_demo-bianca": {
       id: "demo-c3_demo-bianca", caronaId: "demo-c3", passageiroId: "demo-bianca", motoristaId: "demo-joao",
-      passageiro: { nome: "Bianca Reis", curso: "Psicologia, 4º período", nota: 4.8, fotoBase64: null },
+      passageiro: { nome: "Bianca Reis", curso: "Psicologia, 4° período", nota: 4.8, fotoBase64: null },
       status: "solicitada", avaliadaPeloPassageiro: false, avaliadaPeloMotorista: false,
       criadoEm: new Date(agora - 8 * 60 * 1000), atualizadoEm: new Date(agora - 8 * 60 * 1000),
     },

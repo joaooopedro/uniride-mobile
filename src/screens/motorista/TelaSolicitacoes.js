@@ -7,10 +7,10 @@ import EstadoTela from "../../components/EstadoTela";
 import { useAuth } from "../../context/AuthContext";
 import { useCaronas } from "../../context/CaronasContext";
 import theme from "../../theme";
-import { formatarDataHora, formatarNota } from "../../utils";
+import { formatarDataHora, formatarNota, rotuloDia } from "../../utils";
 import { Acao, Mensagem, s, Titulo } from "../acesso/ComponentesAcesso";
 import { Avatar, Vazio, useEntrada } from "./comum";
-import { primeiroNome, resultadoResposta } from "./logica";
+import { montarSaida, primeiroNome, resultadoResposta } from "./logica";
 
 function CartaoPedido({ pedido, ocupado, emAndamento, erro, onAceitar, onRecusar }) {
   const { passageiro = {}, carona } = pedido;
@@ -55,15 +55,46 @@ function CartaoPedido({ pedido, ocupado, emAndamento, erro, onAceitar, onRecusar
   );
 }
 
+// Aluno que avisou que precisa de carona; o motorista combina o ponto de encontro.
+function CartaoInteresse({ interesse, onCombinar }) {
+  const { passageiro = {}, origem = {} } = interesse;
+  return (
+    <View style={estilos.cartao}>
+      <View style={estilos.pessoa}>
+        <Avatar nome={passageiro.nome} fotoBase64={passageiro.fotoBase64} tamanho={48} />
+        <View style={estilos.flex}>
+          <Text style={estilos.nome}>{passageiro.nome}</Text>
+          <Text style={estilos.quando}>
+            {rotuloDia(montarSaida(interesse.dia, interesse.hora))}, {interesse.hora}
+          </Text>
+        </View>
+      </View>
+      <View style={estilos.carona}>
+        <View style={estilos.linha}>
+          <Feather name="map-pin" size={15} color={theme.colors.warning} />
+          <Text style={estilos.caronaTexto} numberOfLines={1}>{[origem.rua, origem.bairro].filter(Boolean).join(", ")}</Text>
+        </View>
+        <View style={estilos.linha}>
+          <Feather name="navigation" size={15} color={theme.colors.secondary} />
+          <Text style={estilos.caronaTexto} numberOfLines={1}>{interesse.campusDestino}</Text>
+        </View>
+      </View>
+      <Acao icone="map" onPress={onCombinar}>
+        Combinar ponto de encontro
+      </Acao>
+    </View>
+  );
+}
+
 export default function TelaSolicitacoes({ navigation }) {
   const { perfil } = useAuth();
-  const { solicitacoesPendentes, minhasRotas, carregandoCaronas, erroCaronas, recarregar, aceitarReserva, recusarReserva } = useCaronas();
+  const { solicitacoesPendentes, interessesAbertos, minhasRotas, carregandoCaronas, erroCaronas, recarregar, aceitarReserva, recusarReserva } = useCaronas();
   const [ocupado, setOcupado] = useState(null);
   const [erros, setErros] = useState({});
   const [aviso, setAviso] = useState("");
   const entrada = useEntrada();
 
-  const carregado = solicitacoesPendentes.length || minhasRotas.length;
+  const carregado = solicitacoesPendentes.length || minhasRotas.length || interessesAbertos.length;
   if (carregandoCaronas && !carregado) return <EstadoTela tipo="carregando" titulo="Carregando pedidos" />;
   if (erroCaronas && !carregado)
     return <EstadoTela tipo="erro" titulo="Não foi possível carregar" mensagem={erroCaronas} acao={{ rotulo: "Tentar de novo", onPress: recarregar }} />;
@@ -109,10 +140,10 @@ export default function TelaSolicitacoes({ navigation }) {
       contentContainerStyle={estilos.pagina}
       refreshControl={<RefreshControl refreshing={carregandoCaronas} onRefresh={recarregar} tintColor={theme.colors.secondary} />}
     >
-      <Titulo texto={resumo}>Pedidos de vaga</Titulo>
+      <Titulo>Pedidos</Titulo>
       <Mensagem>{aviso}</Mensagem>
-      {pedidos.length ? (
-        pedidos.map((pedido, i) => (
+      {pedidos.length ? <Text style={estilos.secaoTitulo}>Querem entrar nas suas caronas</Text> : null}
+      {pedidos.map((pedido, i) => (
           <Animated.View key={pedido.reserva.id} entering={entrada(i)}>
             <CartaoPedido
               pedido={pedido}
@@ -123,22 +154,32 @@ export default function TelaSolicitacoes({ navigation }) {
               onRecusar={() => recusar(pedido)}
             />
           </Animated.View>
-        ))
-      ) : (
+      ))}
+      {interessesAbertos.length ? (
+        <>
+          <Text style={estilos.secaoTitulo}>Precisam de carona</Text>
+          {interessesAbertos.map((interesse) => (
+            <CartaoInteresse key={interesse.id} interesse={interesse} onCombinar={() => navigation.navigate("Combinar", { interesseId: interesse.id })} />
+          ))}
+        </>
+      ) : null}
+      {!pedidos.length && !interessesAbertos.length ? (
         <Vazio
           icone="users"
           titulo="Nenhum pedido agora"
-          frase="Quando um passageiro pedir vaga em uma das suas rotas, o pedido aparece aqui."
+          frase="Pedidos de vaga e alunos que precisam de carona aparecem aqui."
           acao="Ver minhas rotas"
           iconeAcao="map"
           onAcao={() => navigation.navigate("Rotas")}
         />
-      )}
+      ) : null}
     </ScrollView>
   );
 }
 
 const estilos = StyleSheet.create({
+  secaoTitulo: { fontFamily: theme.fonts.bold, fontSize: 18, color: theme.colors.primary, marginTop: 4 },
+  quando: { fontFamily: theme.fonts.semibold, fontSize: 14, color: theme.colors.secondary },
   pagina: { padding: theme.spacing.md, paddingBottom: theme.spacing.xl, gap: theme.spacing.md },
   flex: { flex: 1 },
   cartao: {

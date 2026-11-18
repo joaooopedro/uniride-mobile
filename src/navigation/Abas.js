@@ -29,8 +29,8 @@ const ABAS = {
 export default function Abas({ navigation, modo }) {
   const { podeAnimar } = useInterface();
   const { naoLidasTotal } = useAvisos();
-  const { solicitacoesPendentes } = useCaronas();
-  const contadores = { mensagens: naoLidasTotal, solicitacoes: solicitacoesPendentes.length };
+  const { solicitacoesPendentes, interessesAbertos } = useCaronas();
+  const contadores = { mensagens: naoLidasTotal, solicitacoes: solicitacoesPendentes.length + interessesAbertos.length };
   const abas = ABAS[modo] || ABAS.passageiro;
 
   return (

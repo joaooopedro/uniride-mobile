@@ -106,3 +106,14 @@ describe("http e reservas", () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 });
+
+import { lerSugestoes } from "../geocodificacao";
+
+describe("lerSugestoes", () => {
+  it("tira rua e bairro do Nominatim e descarta repetidas", () => {
+    const item = { lat: "-21.76", lon: "-43.35", address: { road: "Rua Halfeld", suburb: "Centro" } };
+    const lista = lerSugestoes([item, item, { lat: "x", lon: "y", address: {} }]);
+    expect(lista).toEqual([{ rua: "Rua Halfeld", bairro: "Centro", lat: -21.76, lng: -43.35 }]);
+    expect(lerSugestoes(null)).toEqual([]);
+  });
+});

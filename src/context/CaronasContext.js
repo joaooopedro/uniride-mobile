@@ -1,9 +1,11 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { repo } from "../services";
+import { pedidoVencido } from "../utils/encontro";
 import { useAuth } from "./AuthContext";
 
 const CaronasContext = createContext(null);
+
 
 // Mantém uma inscrição por carona e devolve o mapa { caronaId: carona }.
 function useCaronasPorId(ids) {
@@ -53,6 +55,8 @@ export function CaronasProvider({ children }) {
   const [reservasPassageiro, setReservasPassageiro] = useState([]);
   const [reservasMotorista, setReservasMotorista] = useState([]);
   const [minhasRotas, setMinhasRotas] = useState([]);
+  const [meuInteresse, setMeuInteresse] = useState(null);
+  const [interessesAbertos, setInteressesAbertos] = useState([]);
 
   useEffect(() => {
     if (!uid) return undefined;
@@ -76,6 +80,8 @@ export function CaronasProvider({ children }) {
       repo.reservas.observarDoPassageiro(uid, setReservasPassageiro, () => {}),
       repo.reservas.observarDoMotorista(uid, setReservasMotorista, () => {}),
       repo.caronas.observarDoMotorista(uid, setMinhasRotas, () => {}),
+      repo.interesses.observarMeu(uid, setMeuInteresse, () => {}),
+      repo.interesses.observarAbertos(setInteressesAbertos, () => {}),
     ];
     return () => cancelar.forEach((fn) => fn());
   }, [uid, tentativa]);
@@ -86,7 +92,15 @@ export function CaronasProvider({ children }) {
     setReservasPassageiro([]);
     setReservasMotorista([]);
     setMinhasRotas([]);
+    setMeuInteresse(null);
+    setInteressesAbertos([]);
   }, [uid]);
+
+  // O dono apaga o próprio pedido vencido; ninguém mais vê depois do horário.
+  // ponytail: só confere quando o pedido muda ou o app abre; um relógio deixaria em tempo real.
+  useEffect(() => {
+    if (meuInteresse?.status === "aberto" && pedidoVencido(meuInteresse)) repo.interesses.cancelar(uid).catch(() => {});
+  }, [meuInteresse, uid]);
 
   const caronasDasReservas = useCaronasPorId(reservasPassageiro.map((r) => r.caronaId));
 
@@ -111,21 +125,37 @@ export function CaronasProvider({ children }) {
         .map((reserva) => ({ reserva, carona: rotasPorId[reserva.caronaId], passageiro: reserva.passageiro }))
         .sort((a, b) => a.reserva.criadoEm - b.reserva.criadoEm),
       oferecerCarona: (dados) => repo.caronas.criar(exigirPerfil(), dados),
+      meuInteresse,
+      // Pedido vencido não interessa a ninguém.
+      interessesAbertos: interessesAbertos.filter((i) => i.passageiroId !== uid && !pedidoVencido(i)),
+      salvarInteresse: (dados) => repo.interesses.salvar(exigirPerfil(), dados),
+      cancelarInteresse: () => repo.interesses.cancelar(uid),
+      // Publica a carona no ponto combinado e avisa o passageiro que pediu.
+      combinarInteresse: async (interesse, dados) => {
+        const caronaId = await repo.caronas.criar(exigirPerfil(), { ...dados, convidados: [interesse.passageiroId] });
+        await repo.interesses.combinar(interesse, caronaId, exigirPerfil());
+        return caronaId;
+      },
       cancelarCarona: (caronaId) => repo.caronas.cancelar(caronaId),
       iniciarViagem: (caronaId) => repo.caronas.iniciar(caronaId),
       concluirViagem: (caronaId) => repo.caronas.concluir(caronaId),
       solicitarReserva: (caronaId) => {
         const carona = abertas.find((c) => c.id === caronaId) || caronasDasReservas[caronaId];
         if (!carona) throw new Error("Carona não encontrada.");
-        return repo.reservas.solicitar(carona, exigirPerfil());
+        // Pedir vaga na carona combinada encerra o pedido "preciso de carona".
+        return repo.reservas.solicitar(carona, exigirPerfil()).then((resultado) => {
+          if (meuInteresse?.caronaId === caronaId) repo.interesses.cancelar(uid).catch(() => {});
+          return resultado;
+        });
       },
       cancelarReserva: (caronaId) => repo.reservas.cancelar(`${caronaId}_${uid}`),
       aceitarReserva: (reservaId) => repo.reservas.aceitar(reservaId),
       recusarReserva: (reservaId) => repo.reservas.recusar(reservaId),
+      marcarPago: (reservaId) => repo.reservas.marcarPago(reservaId),
       avaliar: ({ reservaId, avaliadoId, nota, comentario }) =>
         repo.avaliacoes.avaliar({ reservaId, avaliador: exigirPerfil(), avaliadoId, nota, comentario }),
     };
-  }, [abertas, carregandoCaronas, erroCaronas, reservasPassageiro, reservasMotorista, minhasRotas, caronasDasReservas, perfil, uid]);
+  }, [abertas, carregandoCaronas, erroCaronas, reservasPassageiro, reservasMotorista, minhasRotas, caronasDasReservas, perfil, uid, meuInteresse, interessesAbertos]);
 
   return <CaronasContext.Provider value={valor}>{children}</CaronasContext.Provider>;
 }

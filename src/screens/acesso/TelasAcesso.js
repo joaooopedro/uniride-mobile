@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
-import { AntDesign, Feather } from "@expo/vector-icons";
+import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
 import Wordmark from "../../components/Wordmark";
 import MotionPressable from "../../components/MotionPressable";
 import { useAuth } from "../../context/AuthContext";
@@ -9,19 +9,42 @@ import theme from "../../theme";
 import { Acao, Campo, Link, Mensagem, PaginaAcesso, s, Titulo } from "./ComponentesAcesso";
 
 export function TelaEntrada({ navigation }) {
-  return <PaginaAcesso><View style={{ alignItems: "center", marginTop: 22, marginBottom: 10 }}><Wordmark width={230} /></View><View style={{ alignItems: "center", gap: 12, paddingVertical: 10 }}><View style={{ flexDirection: "row", alignItems: "center", gap: 18 }}><Feather name="users" size={29} color={theme.colors.secondary} /><Feather name="map-pin" size={25} color={theme.colors.warning} /><Feather name="truck" size={32} color={theme.colors.primary} /></View><Text style={[s.secundario, { textAlign: "center" }]}>Carona segura entre alunos da UniAcademia.</Text></View><View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 6 }} />
-    <MotionPressable onPress={() => navigation.navigate("Login", { modo: "passageiro" })} style={s.escolha}><View style={s.icone}><Feather name="search" size={22} color={theme.colors.primary} /></View><View style={{ flex: 1 }}><Text style={s.escolhaTitulo}>Sou passageiro</Text><Text style={s.secundario}>Encontre uma carona para o campus</Text></View><Feather name="arrow-right" size={19} color={theme.colors.secondary} /></MotionPressable>
-    <View style={{ height: 1, backgroundColor: theme.colors.border }} /><MotionPressable onPress={() => navigation.navigate("Login", { modo: "motorista" })} style={s.escolha}><View style={s.icone}><Feather name="truck" size={22} color={theme.colors.primary} /></View><View style={{ flex: 1 }}><Text style={s.escolhaTitulo}>Sou motorista</Text><Text style={s.secundario}>Ofereça lugares na sua rota</Text></View><Feather name="arrow-right" size={19} color={theme.colors.secondary} /></MotionPressable>
-  </PaginaAcesso>;
+  const escolha = (modo, icone, titulo) => (
+    <MotionPressable onPress={() => navigation.navigate("Login", { modo })} style={entrada.cartao} accessibilityLabel={titulo}>
+      {icone}
+      <Text style={entrada.titulo}>{titulo}</Text>
+      <Feather name="arrow-right" size={20} color={theme.colors.primary} />
+    </MotionPressable>
+  );
+  return (
+    <PaginaAcesso>
+      <View style={entrada.marca}>
+        <Wordmark width={230} />
+        <Text style={entrada.slogan}>Carona entre alunos da UniAcademia</Text>
+      </View>
+      <View style={entrada.escolhas}>
+        {escolha("passageiro", <Feather name="search" size={22} color={theme.colors.primary} />, "Sou passageiro")}
+        {escolha("motorista", <Ionicons name="car-outline" size={24} color={theme.colors.primary} />, "Sou motorista")}
+      </View>
+    </PaginaAcesso>
+  );
 }
+
+const entrada = {
+  marca: { alignItems: "center", gap: 16, marginTop: 48, marginBottom: 40 },
+  slogan: { fontFamily: theme.fonts.semibold, fontSize: 17, color: theme.colors.primary, textAlign: "center" },
+  escolhas: { gap: 12 },
+  cartao: { flexDirection: "row", alignItems: "center", gap: 14, minHeight: 72, paddingHorizontal: 20, borderRadius: theme.radii.lg, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface },
+  titulo: { flex: 1, fontFamily: theme.fonts.bold, fontSize: 18, color: theme.colors.primary },
+};
 
 export function TelaLogin({ navigation, route }) {
   const modo = route.params?.modo || "passageiro", { entrar, definirModo, entrarComGoogle, googleDisponivel } = useAuth();
   const [email,setEmail]=useState(""); const [senha,setSenha]=useState(""); const [visivel,setVisivel]=useState(false); const [erroCampos,setErroCampos]=useState({}); const [erro,setErro]=useState(""); const [busy,setBusy]=useState(false);
   const validar=()=>{const e={email:validarEmail(email),senha:validarSenha(senha)};setErroCampos(e);return !Object.values(e).some(Boolean)};
   const enviar=async (google=false)=>{if(!google&&!validar())return;setBusy(true);setErro("");try{if(google)await entrarComGoogle();else await entrar({email:email.trim(),senha});await definirModo(modo);}catch(e){setErro(e.message||"Não foi possível entrar. Tente novamente.");}finally{setBusy(false);}};
-  return <PaginaAcesso><Titulo>{modo==="motorista"?"Entrar como motorista":"Entrar como passageiro"}</Titulo><Link onPress={()=>navigation.navigate("Entrada")}>Não é você? Trocar</Link>
-    <Campo label="E-mail" icon="mail" value={email} onChangeText={setEmail} onBlur={()=>setErroCampos(v=>({...v,email:validarEmail(email)}))} autoCapitalize="none" keyboardType="email-address" textContentType="username" autoComplete="email" error={erroCampos.email} returnKeyType="next" />
+  return <PaginaAcesso><Titulo>{modo==="motorista"?"Entrar como motorista":"Entrar como passageiro"}</Titulo><Link onPress={()=>navigation.navigate("Entrada")}>{modo==="motorista"?"Sou passageiro":"Sou motorista"}</Link>
+    <Campo label="E-mail" icon="mail" value={email} onChangeText={setEmail} onBlur={()=>setErroCampos(v=>({...v,email:validarEmail(email)}))} autoCapitalize="none" autoCorrect={false} spellCheck={false} keyboardType="email-address" textContentType="username" autoComplete="email" error={erroCampos.email} returnKeyType="next" />
     <Campo label="Senha" icon="lock" value={senha} onChangeText={setSenha} onBlur={()=>setErroCampos(v=>({...v,senha:validarSenha(senha)}))} secureTextEntry={!visivel} textContentType="password" autoComplete="current-password" error={erroCampos.senha} trailing={<MotionPressable onPress={()=>setVisivel(v=>!v)} style={{minWidth:48,minHeight:48,alignItems:"center",justifyContent:"center"}}><Feather name={visivel?"eye-off":"eye"} size={18} color={theme.colors.textSecondary}/></MotionPressable>} />
     <Mensagem>{erro}</Mensagem><Acao carregando={busy} disabled={busy} onPress={()=>enviar()}>Entrar</Acao><Link onPress={()=>navigation.navigate("EsqueciSenha",{modo})}>Esqueci minha senha</Link>
     {googleDisponivel ? <><View style={s.divider}><View style={s.linha}/><Text style={s.secundario}>ou</Text><View style={s.linha}/></View><Acao secundario onPress={()=>enviar(true)}><AntDesign name="google" size={17} color={theme.colors.primary}/> Entrar com Google</Acao></>:null}
@@ -40,7 +63,7 @@ export function TelaCadastro({ navigation, route }) {
  <MotionPressable onPress={()=>setD(x=>({...x,aceite:!x.aceite}))} style={{minHeight:48,flexDirection:"row",alignItems:"center",gap:10}}><Feather name={d.aceite?"check-square":"square"} size={20} color={theme.colors.secondary}/><Text style={[s.secundario,{flex:1}]}>Li e concordo com as regras de segurança do UniRide</Text></MotionPressable><Link onPress={()=>navigation.navigate("Avaliacoes")}>Ler regras de segurança</Link>{errors.aceite?<Text style={s.error}>{errors.aceite}</Text>:null}<Mensagem>{erro}</Mensagem><Acao carregando={busy} onPress={()=>{if(!d.aceite){setErrors(x=>({...x,aceite:"Aceite as regras para continuar."}));return;}submit();}}>Criar conta</Acao></PaginaAcesso>;
 }
 
-export function TelaEsqueciSenha({navigation,route}) { const {redefinirSenha}=useAuth(); const [email,setEmail]=useState("");const [error,setError]=useState("");const [ok,setOk]=useState(false);const [busy,setBusy]=useState(false);return <PaginaAcesso><Titulo texto="Enviaremos um link para você criar outra senha.">Recuperar senha</Titulo><Campo label="E-mail" icon="mail" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" textContentType="emailAddress" error={error}/>{ok?<Mensagem sucesso>Confira sua caixa de entrada e a pasta de spam para redefinir sua senha.</Mensagem>:null}<Mensagem>{ok?"":error}</Mensagem>{!ok?<Acao carregando={busy} onPress={async()=>{const e=validarEmail(email);if(e){setError(e);return;}setBusy(true);setError("");try{await redefinirSenha(email.trim());setOk(true);}catch(err){setError(err.message);}finally{setBusy(false);}}}>Enviar link</Acao>:<Acao onPress={()=>navigation.navigate("Login",{modo:route.params?.modo||"passageiro"})}>Voltar ao login</Acao>}</PaginaAcesso>; }
+export function TelaEsqueciSenha({navigation,route}) { const {redefinirSenha}=useAuth(); const [email,setEmail]=useState("");const [error,setError]=useState("");const [ok,setOk]=useState(false);const [busy,setBusy]=useState(false);return <PaginaAcesso><Titulo texto="Enviaremos um link para você criar outra senha.">Recuperar senha</Titulo><Campo label="E-mail" icon="mail" value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false} spellCheck={false} keyboardType="email-address" textContentType="emailAddress" error={error}/>{ok?<Mensagem sucesso>Confira sua caixa de entrada e a pasta de spam para redefinir sua senha.</Mensagem>:null}<Mensagem>{ok?"":error}</Mensagem>{!ok?<Acao carregando={busy} onPress={async()=>{const e=validarEmail(email);if(e){setError(e);return;}setBusy(true);setError("");try{await redefinirSenha(email.trim());setOk(true);}catch(err){setError(err.message);}finally{setBusy(false);}}}>Enviar link</Acao>:<Acao onPress={()=>navigation.navigate("Login",{modo:route.params?.modo||"passageiro"})}>Voltar ao login</Acao>}</PaginaAcesso>; }
 
 export function TelaVerificarEmail() { const {usuario,atualizarVerificacao,reenviarVerificacao,sair}=useAuth();const [busy,setBusy]=useState("");const [wait,setWait]=useState(0);const [msg,setMsg]=useState("");const [ok,setOk]=useState(false);useEffect(()=>{if(wait<=0)return;const id=setTimeout(()=>setWait(x=>x-1),1000);return()=>clearTimeout(id);},[wait]);return <PaginaAcesso><View style={s.envelope}><Feather name="mail" size={36} color={theme.colors.primary}/></View><Titulo texto="Abra o link que enviamos para ativar sua conta.">Confirme seu e-mail</Titulo><Text style={s.email}>{usuario?.email}</Text><Mensagem sucesso={ok}>{msg}</Mensagem><Acao carregando={busy==="check"} onPress={async()=>{setBusy("check");setMsg("");try{const valid=await atualizarVerificacao();setOk(valid);setMsg(valid?"E-mail confirmado.":"Ainda não recebemos a confirmação. Abra o link enviado e tente novamente.");}catch(e){setMsg(e.message);setOk(false);}finally{setBusy("");}}}>Já confirmei</Acao><Acao secundario carregando={busy==="resend"} disabled={!!wait} onPress={async()=>{setBusy("resend");setMsg("");try{await reenviarVerificacao();setWait(60);setMsg("E-mail reenviado. Confira também a pasta de spam.");setOk(true);}catch(e){setMsg(e.message);setOk(false);}finally{setBusy("");}}}>{wait?`Reenviar em ${wait} s`:"Reenviar e-mail"}</Acao><Link onPress={sair}>Sair</Link></PaginaAcesso>; }
 
